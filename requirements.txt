@@ -1,0 +1,45 @@
+# =============================================================================
+# requirements.txt — Dependências de produção
+# Commercial Planning Control Tower
+# =============================================================================
+#
+# INSTALAÇÃO:
+#   pip install -r requirements.txt
+#
+# POR QUE SEPARAR production de dev?
+#   Em projetos de dados, manter separado evita instalar ferramentas de
+#   teste (pytest, black, etc.) em ambientes de produção/servidor.
+# =============================================================================
+
+# --- Manipulação e análise de dados ------------------------------------------
+pandas==2.2.2
+# Biblioteca central do projeto. Usada para ler, limpar, transformar e
+# validar todos os DataFrames gerados pelo ETL.
+# Versão 2.x recomendada para projetos novos (melhor performance e copy-on-write).
+
+numpy==1.26.4
+# Suporte numérico base para pandas. Usado em cálculos vetorizados,
+# tratamento de NaN e operações matemáticas nos KPIs.
+
+# --- Leitura de arquivos Excel -----------------------------------------------
+openpyxl==3.1.2
+# Engine padrão para leitura e escrita de arquivos .xlsx com pandas.
+# Necessário para pd.read_excel() funcionar com o formato moderno do Excel.
+# Alternativa para .xls antigo seria xlrd, mas nossas fontes são .xlsx.
+
+# --- Conexão com SQL Server ---------------------------------------------------
+pyodbc==5.1.0
+# Driver ODBC para conectar Python ao SQL Server.
+# Necessita do "ODBC Driver 17 (ou 18) for SQL Server" instalado no sistema.
+# Download: https://learn.microsoft.com/en-us/sql/connect/odbc/download-odbc-driver-for-sql-server
+
+SQLAlchemy==2.0.30
+# ORM e engine de conexão. Usamos apenas como wrapper sobre pyodbc para
+# integrar com pandas (df.to_sql usa SQLAlchemy por baixo dos panos).
+# Versão 2.x tem sintaxe ligeiramente diferente da 1.x — atenção ao migrar.
+
+# --- Variáveis de ambiente ----------------------------------------------------
+python-dotenv==1.0.1
+# Lê arquivo .env e injeta as variáveis no os.environ.
+# Fundamental para não hardcodar senhas, strings de conexão ou caminhos
+# específicos do ambiente local no código-fonte.

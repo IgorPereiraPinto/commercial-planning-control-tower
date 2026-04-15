@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Commercial Planning Control Tower</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --blue:#0078D4;--blue-dark:#005A9E;--blue-light:#EFF6FF;
+  --green:#107C10;--green-light:#F0FFF4;
+  --red:#D83B01;--red-light:#FEF2F2;
+  --yellow:#E6A817;--yellow-light:#FFFBEB;
+  --purple:#5B2D8E;--purple-light:#F5F0FF;
+  --text:#1F2937;--text-light:#6B7280;
+  --border:#E5E7EB;--bg:#F9FAFB;--white:#fff;
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#111;color:var(--text);overflow:hidden;height:100vh;width:100vw}
+
+/* ─── SLIDE ENGINE ─── */
+.slide{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .35s ease;background:var(--white);display:flex;flex-direction:column}
+.slide.active{opacity:1;pointer-events:all}
+
+/* ─── CHROME ─── */
+#prog{position:fixed;top:0;left:0;height:3px;background:var(--blue);z-index:200;transition:width .3s}
+.counter{position:fixed;bottom:18px;right:22px;font-size:11px;font-weight:600;letter-spacing:.5px;z-index:200;color:rgba(255,255,255,.55)}
+.counter.dark{color:rgba(0,0,0,.3)}
+.dots{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:5px;z-index:200}
+.dot{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.3);cursor:pointer;transition:all .25s}
+.dot.active{width:18px;background:rgba(255,255,255,.9)}
+.dot.dk{background:rgba(0,0,0,.18)}
+.dot.dk.active{background:var(--blue)}
+.arr{position:fixed;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.5);width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;z-index:200;transition:all .2s}
+.arr:hover{background:rgba(255,255,255,.2);color:#fff}
+.arr.prev{left:14px} .arr.next{right:14px}
+.arr.dk{background:rgba(0,0,0,.06);color:rgba(0,0,0,.3)}
+.arr.dk:hover{background:rgba(0,0,0,.12);color:rgba(0,0,0,.7)}
+.kbd{position:fixed;bottom:18px;left:22px;font-size:10px;color:rgba(255,255,255,.3);z-index:200}
+.kbd.dk{color:rgba(0,0,0,.2)}
+
+/* ─── SHARED COMPONENTS ─── */
+.sh{padding:26px 52px 18px;border-bottom:1px solid var(--border)}
+.sh-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue);margin-bottom:5px}
+.sh-title{font-size:26px;font-weight:800;color:var(--text);line-height:1.2}
+.sb{flex:1;padding:20px 52px;display:flex;flex-direction:column;justify-content:center;overflow:hidden}
+
+.accent{width:36px;height:4px;background:var(--blue);border-radius:2px;margin-bottom:10px}
+
+.kpi-row{display:grid;gap:14px;margin-bottom:18px}
+.k4{grid-template-columns:repeat(4,1fr)}
+.k3{grid-template-columns:repeat(3,1fr)}
+.k2{grid-template-columns:repeat(2,1fr)}
+.kcard{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:18px;text-align:center}
+.kcard.bl{border-top:3px solid var(--blue)} .kcard.gr{border-top:3px solid var(--green)}
+.kcard.or{border-top:3px solid var(--yellow)} .kcard.rd{border-top:3px solid var(--red)}
+.kcard.pu{border-top:3px solid var(--purple)}
+.kv{font-size:30px;font-weight:800;line-height:1;margin-bottom:5px}
+.kv.bl{color:var(--blue)} .kv.gr{color:var(--green)} .kv.or{color:var(--yellow)}
+.kv.rd{color:var(--red)} .kv.pu{color:var(--purple)}
+.kl{font-size:12px;color:var(--text-light);font-weight:500}
+.ks{font-size:11px;color:var(--text-light);margin-top:3px}
+
+.col2{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.col3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+.col5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+
+.box{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:20px}
+.box-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+
+.hbox{border-left:4px solid var(--blue);background:var(--blue-light);border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:14px;font-size:13px;line-height:1.5}
+.hbox.gr{border-left-color:var(--green);background:var(--green-light)}
+.hbox.or{border-left-color:var(--yellow);background:var(--yellow-light)}
+.hbox.rd{border-left-color:var(--red);background:var(--red-light)}
+
+.li{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;line-height:1.4}
+.li:last-child{border-bottom:none}
+.li-ico{font-size:15px;flex-shrink:0;margin-top:1px}
+
+table.dt{width:100%;border-collapse:collapse;font-size:12px}
+table.dt th{background:var(--bg);padding:9px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-light);border-bottom:2px solid var(--border)}
+table.dt td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+table.dt tr:last-child td{border-bottom:none}
+
+.tag{display:inline-block;padding:2px 9px;border-radius:12px;font-size:10px;font-weight:600}
+.tag.bl{background:var(--blue-light);color:var(--blue)}
+.tag.gr{background:var(--green-light);color:var(--green)}
+.tag.or{background:var(--yellow-light);color:#92400E}
+.tag.rd{background:var(--red-light);color:var(--red)}
+
+/* ─── SLIDE 1 — CAPA ─── */
+#s1{background:linear-gradient(135deg,#001F4D 0%,#0050A0 55%,#0097CC 100%);color:#fff;justify-content:center;align-items:center;text-align:center}
+.cap-eye{font-size:11px;letter-spacing:3px;text-transform:uppercase;opacity:.65;margin-bottom:18px}
+.cap-t{font-size:54px;font-weight:900;letter-spacing:-2px;line-height:1;margin-bottom:14px}
+.cap-s{font-size:17px;opacity:.8;font-weight:300;max-width:580px;line-height:1.55;margin-bottom:44px}
+.cap-stack{display:flex;gap:7px;align-items:center;justify-content:center;flex-wrap:wrap}
+.sbadge{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);padding:5px 13px;border-radius:20px;font-size:11px;font-weight:500}
+.sarr{opacity:.45;font-size:13px}
+.cap-meta{position:absolute;bottom:24px;right:36px;text-align:right;font-size:11px;opacity:.55}
+
+/* ─── SLIDE 5 — IA ─── */
+.ai-flow{display:flex;align-items:center;gap:14px;justify-content:center;margin:20px 0}
+.ai-nd{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px 18px;text-align:center;min-width:130px}
+.ai-nd.human{background:linear-gradient(135deg,var(--blue),var(--blue-dark));border:none;color:#fff}
+.ai-nd.out{background:linear-gradient(135deg,var(--green),#085708);border:none;color:#fff}
+.ai-ico{font-size:26px;margin-bottom:5px}
+.ai-name{font-size:12px;font-weight:700}
+.ai-desc{font-size:10px;margin-top:2px;opacity:.7}
+.ai-arr{font-size:18px;color:var(--blue);flex-shrink:0}
+
+/* ─── SLIDE 6 — ARCH ─── */
+.arch{display:flex;align-items:stretch;gap:0;margin:18px 0}
+.astep{flex:1;text-align:center;padding:18px 10px;background:var(--bg);border:1px solid var(--border);border-radius:10px}
+.astep-ico{font-size:30px;margin-bottom:7px}
+.astep-name{font-size:12px;font-weight:700;color:var(--blue);margin-bottom:3px}
+.astep-tech{font-size:10px;color:var(--text-light);line-height:1.4}
+.aarr{font-size:20px;color:var(--blue);padding:0 8px;display:flex;align-items:center;flex-shrink:0}
+
+/* ─── SLIDE 7 — STAR SCHEMA ─── */
+.star-wrap{display:grid;grid-template-columns:1fr 2fr 1fr;gap:16px;align-items:center}
+.dims-left{display:flex;flex-direction:column;gap:8px}
+.dims-right{display:flex;flex-direction:column;gap:8px}
+.dim{background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:8px 12px;font-size:11px;font-weight:600;text-align:center}
+.dim.fact{background:var(--blue-light);border-color:#BFDBFE;color:var(--blue)}
+.fact-box{background:var(--blue);color:#fff;border-radius:10px;padding:20px;text-align:center;font-weight:700;font-size:15px}
+.fact-subs{font-size:11px;opacity:.8;margin-top:5px;font-weight:400}
+
+/* ─── SLIDE 8 — QUALITY ─── */
+.tgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.titem{display:flex;align-items:flex-start;gap:9px;background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:11px 13px}
+.tck{color:var(--green);font-size:15px;flex-shrink:0}
+.tn{font-size:12px;font-weight:600;color:var(--text)}
+.td2{font-size:11px;color:var(--text-light);line-height:1.3}
+
+/* ─── SLIDE 9 — DASHBOARD ─── */
+.pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.pcard{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:13px;text-align:center}
+.pnum{background:var(--blue);color:#fff;width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-bottom:7px}
+.ptitle{font-size:11px;font-weight:700;margin-bottom:4px}
+.pdesc{font-size:10px;color:var(--text-light);line-height:1.35}
+
+/* ─── SLIDE 10 — MAPE ─── */
+.mape-scale{display:flex;border-radius:7px;overflow:hidden;margin-top:10px}
+.ms{flex:1;padding:8px;text-align:center;font-size:10px;font-weight:700}
+.ms.ex{background:#D1FAE5;color:#065F46} .ms.go{background:#BBF7D0;color:#065F46}
+.ms.fa{background:#FEF3C7;color:#92400E} .ms.po{background:#FEE2E2;color:#991B1B}
+.bar-wrap{margin-top:14px}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:11px}
+.bar-label{width:80px;text-align:right;color:var(--text-light)}
+.bar-track{flex:1;background:var(--bg);border-radius:4px;height:16px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:8px;font-size:10px;font-weight:700;color:#fff}
+
+/* ─── SLIDE 11 — RLS ─── */
+.rls-tree{display:flex;flex-direction:column;align-items:center;gap:10px}
+.rls-top{background:var(--blue);color:#fff;padding:8px 24px;border-radius:20px;font-size:13px;font-weight:700}
+.rls-managers{display:flex;gap:60px;position:relative}
+.rls-mgr{display:flex;flex-direction:column;align-items:center;gap:6px}
+.rls-m{background:var(--blue-dark);color:#fff;padding:6px 18px;border-radius:16px;font-size:12px;font-weight:600}
+.rls-sellers{display:flex;gap:6px}
+.rls-s{background:var(--blue-light);color:var(--blue);border:1px solid #BFDBFE;padding:4px 12px;border-radius:12px;font-size:11px;font-weight:500}
+.rls-line{width:1px;height:12px;background:var(--border)}
+
+/* ─── SLIDE 12 — FLOWS ─── */
+.fcard{background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:14px 10px;text-align:center}
+.fco{font-size:26px;margin-bottom:6px}
+.ft{font-size:10px;font-weight:700;color:var(--blue);letter-spacing:.5px;margin-bottom:4px}
+.fn{font-size:11px;font-weight:700;margin-bottom:5px;line-height:1.25}
+.fd{font-size:10px;color:var(--text-light);line-height:1.3}
+.fch{font-size:10px;background:var(--blue-light);color:var(--blue);border-radius:4px;padding:2px 6px;margin-top:5px;display:inline-block}
+
+/* ─── SLIDE 13 — RESULTS ─── */
+.res-before{color:var(--red);font-size:13px}
+.res-after{color:var(--green);font-weight:600;font-size:13px}
+.res-impact{font-weight:800;color:var(--blue);font-size:12px}
+
+/* ─── SLIDE 14 — ROADMAP ─── */
+.phase{border-radius:10px;padding:18px}
+.phase.done{background:var(--green-light);border:1px solid #BBF7D0}
+.phase.now{background:var(--blue-light);border:1px solid #BFDBFE}
+.phase.fut{background:var(--bg);border:1px solid var(--border)}
+.phase-lbl{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px}
+.phase.done .phase-lbl{color:var(--green)} .phase.now .phase-lbl{color:var(--blue)}
+.phase.fut .phase-lbl{color:var(--text-light)}
+.phase-item{display:flex;gap:8px;padding:4px 0;font-size:12px;line-height:1.4}
+.llm-callout{background:linear-gradient(135deg,#1F1F1F,#333);color:#fff;border-radius:10px;padding:14px 18px;margin-top:14px;font-size:12px;line-height:1.5}
+.llm-callout strong{color:#60A5FA}
+</style>
+</head>
+<body>
+
+<div id="prog"></div>
+<div class="dots" id="dots"></div>
+<div class="counter" id="counter"></div>
+<div class="kbd" id="kbd">← → navegar &nbsp;·&nbsp; F tela cheia</div>
+<button class="arr prev" id="prev">&#8592;</button>
+<button class="arr next" id="next">&#8594;</button>
+
+<!-- ════════════════════════════════════════
+     SLIDE 1 — CAPA
+════════════════════════════════════════ -->
+<section class="slide" id="s1">
+  <div class="cap-eye">Case de Planejamento Comercial · Forecast & Budget</div>
+  <div class="cap-t">Commercial Planning<br>Control Tower</div>
+  <div class="cap-s">Estratégia → Execução → Monitoramento → Decisão<br>em uma plataforma analítica integrada</div>
+  <div class="cap-stack">
+    <span class="sbadge">📊 Excel</span><span class="sarr">→</span>
+    <span class="sbadge">🐍 Python</span><span class="sarr">→</span>
+    <span class="sbadge">🗄 SQL Server</span><span class="sarr">→</span>
+    <span class="sbadge">📊 Power BI</span><span class="sarr">→</span>
+    <span class="sbadge">⚡ Power Automate</span>
+  </div>
+  <div class="cap-meta">Igor Pereira Pinto · Analista de Dados/BI Sênior · Abril 2026</div>
+</section>
+
+<!-- ════════════════════════════════════════
+     SLIDE 2 — O PROBLEMA
+════════════════════════════════════════ -->
+<section class="slide" id="s2">
+  <div class="sh">
+    <div class="sh-label">O Problema</div>
+    <div class="sh-title">Dados fragmentados geram decisão lenta, forecast impreciso e retrabalho</div>
+  </div>
+  <div class="sb">
+    <div class="col2">
+      <div class="box">
+        <div class="box-title" style="color:var(--red)">❌ Situação anterior</div>
+        <div class="li"><span class="li-ico">❌</span><span>6 arquivos Excel sem integração — cada área com seu número</span></div>
+        <div class="li"><span class="li-ico">❌</span><span>Forecast manual sem métrica de acurácia</span></div>
+        <div class="li"><span class="li-ico">❌</span><span>Meta vs realizado calculado diferente por cada área</span></div>
+        <div class="li"><span class="li-ico">❌</span><span>Gerentes sem visibilidade do time em tempo real</span></div>
+        <div class="li"><span class="li-ico">❌</span><span>Fechamento mensal = 2 dias de trabalho manual</span></div>
+        <div class="li"><span class="li-ico">❌</span><span>Pedidos cancelados inflavam o faturamento reportado</span></div>
+      </div>
+      <div class="box">
+        <div class="box-title" style="color:var(--yellow)">⚡ Impacto no negócio</div>
+        <div class="li"><span class="li-ico">⏱</span><span>Decisões com dados de <strong>15–30 dias de atraso</strong></span></div>
+        <div class="li"><span class="li-ico">📉</span><span>Forecast com erro acima de <strong>30% em picos sazonais</strong></span></div>
+        <div class="li"><span class="li-ico">🔁</span><span><strong>Retrabalho recorrente</strong> todo fechamento de mês</span></div>
+        <div class="li"><span class="li-ico">👀</span><span>Riscos detectados <strong>depois que era tarde</strong> para agir</span></div>
+        <div class="li"><span class="li-ico">💸</span><span>Budget não refletia a realidade do campo</span></div>
+        <div class="li"><span class="li-ico">🗣</span><span>Reunião de resultado virava debate sobre <strong>qual planilha estava certa</strong></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     SLIDE 3 — O QUE TÍNHAMOS
+════════════════════════════════════════ -->
+<section class="slide" id="s3">
+  <div class="sh">
+    <div class="sh-label">Os Dados</div>
+    <div class="sh-title">20.004 transações, 4 anos de metas e 11 vendedores — tudo em Excel</div>
+  </div>
+  <div class="sb">
+    <div class="kpi-row k4" style="margin-bottom:20px">
+      <div class="kcard bl"><div class="kv bl">20.004</div><div class="kl">Transações de Vendas</div><div class="ks">Jan/2018 — Abr/2021</div></div>
+      <div class="kcard gr"><div class="kv gr">4 anos</div><div class="kl">Histórico de Metas</div><div class="ks">2018 · 2019 · 2020 · 2021</div></div>
+      <div class="kcard or"><div class="kv or">11</div><div class="kl">Vendedores</div><div class="ks">3 gerentes · 3 times</div></div>
+      <div class="kcard rd"><div class="kv rd">6</div><div class="kl">Arquivos Excel</div><div class="ks">sem integração</div></div>
+    </div>
+    <table class="dt">
+      <thead><tr><th>Arquivo</th><th>Conteúdo</th><th>Volume</th><th>Desafio</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Vendas.xlsx</strong></td><td>Transações: produto × vendedor × cliente</td><td>~20.004 linhas</td><td>Cabeçalho na linha 5 · pedidos cancelados misturados</td></tr>
+        <tr><td><strong>Dimensões.xlsx</strong></td><td>7 dimensões de negócio (7 abas)</td><td>~800 linhas total</td><td>Todas em abas diferentes de um único arquivo</td></tr>
+        <tr><td><strong>Meta 2018–2021</strong></td><td>Metas mensais por vendedor</td><td>4 × 132 = 528 linhas</td><td>Formato wide (meses como colunas) — requer UNPIVOT</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     SLIDE 4 — HIPÓTESES DE NEGÓCIO
+════════════════════════════════════════ -->
+<section class="slide" id="s4">
+  <div class="sh">
+    <div class="sh-label">Hipóteses de Negócio</div>
+    <div class="sh-title">Três hipóteses guiam o modelo analítico — levantadas antes de modelar</div>
+  </div>
+  <div class="sb">
+    <div class="col3">
+      <div class="box">
+        <div style="font-size:36px;margin-bottom:10px">📊</div>
+        <div style="font-size:14px;font-weight:800;margin-bottom:8px">Concentração (Pareto)</div>
+        <div class="hbox" style="font-size:13px">"20% dos vendedores provavelmente geram 80% da receita"</div>
+        <div class="li"><span class="li-ico">→</span><span style="font-size:12px">Priorizar retenção dos top performers</span></div>
+        <div class="li"><span class="li-ico">→</span><span style="font-size:12px">Identificar potencial da cauda longa</span></div>
+        <div style="margin-top:10px"><span class="tag bl">Pareto no dashboard</span></div>
+      </div>
+      <div class="box">
+        <div style="font-size:36px;margin-bottom:10px">📈</div>
+        <div style="font-size:14px;font-weight:800;margin-bottom:8px">Volatilidade do Forecast</div>
+        <div class="hbox or" style="font-size:13px">"Erro de previsão elevado em picos sazonais"</div>
+        <div class="li"><span class="li-ico">→</span><span style="font-size:12px">Processo de planejamento precisa de ajuste por período</span></div>
+        <div class="li"><span class="li-ico">→</span><span style="font-size:12px">MAPE > 20% sinaliza revisão do modelo de metas</span></div>
+        <div style="margin-top:10px"><span class="tag or">MAPE no dashboard</span></div>
+      </div>
+      <div class="box">
+        <div style="font-size:36px;margin-bottom:10px">📅</div>
+        <div style="font-size:14px;font-weight:800;margin-bottom:8px">Sazonalidade</div>
+        <div class="hbox gr" style="font-size:13px">"Concentração de vendas em meses específicos do ano"</div>
+        <div class="li"><span class="li-ico">→</span><span style="font-size:12px">Metas devem refletir sazonalidade, não histórico flat</span></div>
+        <div class="li"><span class="li-ico">→</span><span style="font-size:12px">Q4 é período crítico de acompanhamento</span></div>
+        <div style="margin-top:10px"><span class="tag gr">Calendário + YoY</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     SLIDE 5 — IA COM ORQUESTRAÇÃO HUMANA  ← SLIDE NOVO
+════════════════════════════════════════ -->
+<section class="slide" id="s5">
+  <div class="sh">
+    <div class="sh-label">Como este projeto foi construído</div>
+    <div class="sh-title">IA com orquestração humana — humano no comando, IA na execução</div>
+  </div>
+  <div class="sb">
+    <div class="ai-flow">
+      <div class="ai-nd">
+        <div class="ai-ico">🤖</div>
+        <div class="ai-name">Claude</div>
+        <div class="ai-desc">Arquitetura · Código · Docs</div>
+      </div>
+      <div class="ai-arr">+</div>
+      <div class="ai-nd">
+        <div class="ai-ico">🤖</div>
+        <div class="ai-name">ChatGPT</div>
+        <div class="ai-desc">Segunda opinião · Gaps</div>
+      </div>
+      <div class="ai-arr">→</div>
+      <div class="ai-nd human">
+        <div class="ai-ico">👤</div>
+        <div class="ai-name">Igor (orquestrador)</div>
+        <div class="ai-desc">Decide · Valida · Dirige</div>
+      </div>
+      <div class="ai-arr">→</div>
+      <div class="ai-nd out">
+        <div class="ai-ico">✅</div>
+        <div class="ai-name">46 arquivos</div>
+        <div class="ai-desc">Qualidade de squad completo</div>
+      </div>
+    </div>
+    <div class="col2" style="gap:16px">
+      <div>
+        <table class="dt">
+          <thead><tr><th>Papel da IA</th><th>Papel do Humano</th></tr></thead>
+          <tbody>
+            <tr><td>Gerar código, SQL, DAX, fluxos</td><td>Definir o problema de negócio</td></tr>
+            <tr><td>Manter padrões entre 46 arquivos</td><td>Validar cada entrega vs realidade</td></tr>
+            <tr><td>Propor arquitetura e padrões</td><td><strong>Decidir</strong> quais padrões adotar</td></tr>
+            <tr><td>Sugerir hipóteses e análises</td><td>Confirmar se fazem sentido</td></tr>
+            <tr><td>Incorporar input do ChatGPT</td><td>Julgar o que agrega valor real</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="hbox" style="margin-bottom:10px;font-size:13px">
+          <strong>Multi-LLM como validação:</strong> dois modelos analisaram o mesmo problema.
+          9 contribuições do ChatGPT foram avaliadas e incorporadas seletivamente — Control Tower naming, MAPE, Pareto, LLM narrativo, Fluxo 5.
+        </div>
+        <div class="hbox gr" style="font-size:13px">
+          <strong>Próxima fronteira:</strong> LLM narrativo integrado ao dashboard — Python lê o DW, chama API LLM e gera diagnóstico em linguagem natural automaticamente.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     SLIDE 6 — ARQUITETURA
+════════════════════════════════════════ -->
+<section class="slide" id="s6">
+  <div class="sh">
+    <div class="sh-label">Arquitetura</div>
+    <div class="sh-title">5 camadas integradas: do Excel bruto ao alerta automático</div>
+  </div>
+  <div class="sb">
+    <div class="arch">
+      <div class="astep"><div class="astep-ico">📊</div><div class="astep-name">Excel</div><div class="astep-tech">openpyxl · pandas<br>dtype=str · skiprows</div></div>
+      <div class="aarr">→</div>
+      <div class="astep"><div class="astep-ico">🐍</div><div class="astep-name">Python ETL</div><div class="astep-tech">Extract · Transform<br>Validate · Load<br>37 testes unitários</div></div>
+      <div class="aarr">→</div>
+      <div class="astep"><div class="astep-ico">🗄</div><div class="astep-name">SQL Server</div><div class="astep-tech">raw → staging → dw<br>Star Schema · dCalendario<br>Indexes · Computed cols</div></div>
+      <div class="aarr">→</div>
+      <div class="astep"><div class="astep-ico">📊</div><div class="astep-name">Power BI</div><div class="astep-tech">7 páginas · DAX<br>20+ medidas · RLS<br>MAPE · Pareto</div></div>
+      <div class="aarr">→</div>
+      <div class="astep"><div class="astep-ico">⚡</div><div class="astep-name">Power Automate</div><div class="astep-tech">5 fluxos automáticos<br>E-mail · Teams<br>Refresh dataset</div></div>
+    </div>
+    <div class="col3" style="margin-top:4px">
+      <div class="hbox" style="font-size:12px"><strong>Bronze (raw):</strong> dado bruto preservado, nunca modificado — auditoria e reprocessamento</div>
+      <div class="hbox or" style="font-size:12px"><strong>Silver (staging):</strong> limpeza, tipagem, normalização. Metas UNPIVOTADAS de wide para long</div>
+      <div class="hbox gr" style="font-size:12px"><strong>Gold (dw):</strong> star schema pronto para Power BI — colunas PERSISTED pré-calculadas</div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     SLIDE 7 — MODELAGEM DE DADOS
+════════════════════════════════════════ -->
+<section class="slide" id="s7">
+  <div class="sh">
+    <div class="sh-label">Modelagem de Dados</div>
+    <div class="sh-title">Star schema com 2 fatos e 8 dimensões — projetado para o Power BI</div>
+  </div>
+  <div class="sb">
+    <div class="star-wrap">
+      <div class="dims-left">
+        <div class="dim">dCalendario<div style="font-size:9px;color:var(--text-light);margin-top:2px">2.192 datas · 25 atributos</div></div>
+        <div class="dim">dProdutos<div style="font-size:9px;color:var(--text-light);margin-top:2px">499 produtos · Hierarquia Marca→Cat</div></div>
+        <div class="dim">dVendedor<div style="font-size:9px;color:var(--text-light);margin-top:2px">11 vendedores · Gerente (RLS)</div></div>
+        <div class="dim">dClientes → dCidade<div style="font-size:9px;color:var(--text-light);margin-top:2px">Hierarquia geográfica UF</div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+        <div class="fact-box">
+          fVendas (Fato Principal)
+          <div class="fact-subs">~20.004 linhas · granularidade: produto × pedido × data</div>
+          <div style="margin-top:10px;font-size:11px;background:rgba(255,255,255,.2);border-radius:6px;padding:6px">
+            PERSISTED: <strong>Margem Bruta</strong> = Fat − Custo<br>
+            PERSISTED: <strong>Resultado Líquido</strong> = Fat − Custo − Desp − Imp − Com
+          </div>
+        </div>
+        <div class="dim fact">
+          fMetas (Fato Budget)
+          <div style="font-size:9px;margin-top:2px">528 linhas · vendedor × mês · relação inativa c/ dCalendario</div>
+        </div>
+      </div>
+      <div class="dims-right">
+        <div class="dim">dUnidades<div style="font-size:9px;color:var(--text-light);margin-top:2px">11 unidades · Filial / Matriz</div></div>
+        <div class="dim">dStatus<div style="font-size:9px;color:var(--text-light);margin-top:2px">Conta Para Faturamento BIT</div></div>
+        <div class="dim">dPagamento<div style="font-size:9px;color:var(--text-light);margin-top:2px">À Vista · Parcelado · Digital</div></div>
+        <div class="dim" style="background:var(--blue-light);border-color:#BFDBFE;color:var(--blue)">13 índices<div style="font-size:9px;margin-top:2px">nonclustered + INCLUDE</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     SLIDE 8 — QUALIDADE DE DADOS
+════════════════════════════════════════ -->
+<section class="slide" id="s8">
+  <div class="sh">
+    <div class="sh-label">Qualidade de Dados</div>
+    <div class="sh-title">8 testes automáticos garantem que nenhum dado inválido chega ao dashboard</div>
+  </div>
+  <div class="sb">
+    <div class="col2" style="gap:20px;align-items:start">
+      <div class="tgrid">
+        <div class="titem"><span class="tck">✅</span><div><div class="tn">Nulos em chaves primárias</div><div class="td2">Id Produto, Vendedor, Cliente ≠ NULL</div></div></div>
+        <div class="titem"><span class="tck">✅</span><div><div class="tn">Integridade referencial</div><div class="td2">Zero FKs órfãs — todas as dimensões</div></div></div>
+        <div class="titem"><span class="tck">✅</span><div><div class="tn">Duplicidade de transações</div><div class="td2">Num Venda + Id Produto = único</div></div></div>
+        <div class="titem"><span class="tck">✅</span><div><div class="tn">Cobertura de metas</div><div class="td2">Todos os meses 2018–2021 com meta</div></div></div>
+        <div class="titem"><span class="tck">✅</span><div><div class="tn">Valores negativos</div><div class="td2">Faturamento nunca &lt; zero</div></div></div>
+        <div class="titem"><span class="tck">✅</span><div><div class="tn">Consistência temporal</div><div class="td2">Data Envio ≥ Data Venda</div></div></div>
+        <div class="titem"><span class="tck">✅</span><div><div class="tn">Contagem de linhas</div><div class="td2">Volume mínimo: ≥ 15.000 linhas</div></div></div>
+        <div class="titem"><span class="tck">✅</span><div><div class="tn">Status válidos</div><div class="td2">Apenas status mapeados no DW</div></div></div>
+      </div>
+      <div>
+        <div class="kpi-row k2" style="margin-bottom:16px">
+          <div class="kcard gr"><div class="kv gr">37</div><div class="kl">testes unitários</div><div class="ks">pytest · 3 arquivos</div></div>
+          <div class="kcard bl"><div class="kv bl">8</div><div class="kl">validações de pipeline</div><div class="ks">crítico + warning</div></div>
+        </div>
+        <div class="hbox" style="font-size:12px;margin-bottom:10px"><strong>Falha crítica = pipeline para.</strong> O dado nunca chega ao DW sem passar pela régua de qualidade.</div>
+        <div class="hbox gr" style="font-size:12px"><strong>Dry Run:</strong> <code>--dry-run</code> valida tudo sem gravar no banco — seguro para testar em produção.</div>
+        <div class="hbox or" style="font-size:12px;margin-top:10px"><strong>Logging:</strong> cada execução gera <code>logs/etl.log</code> com timestamp e rastreabilidade completa.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     SLIDE 9 — DASHBOARD EXECUTIVO
+════════════════════════════════════════ -->
+<section class="slide" id="s9">
+  <div class="sh">
+    <div class="sh-label">Dashboard Executivo</div>
+    <div class="sh-title">7 páginas de análise — do resumo executivo ao diagnóstico profundo</div>
+  </div>
+  <div class="sb">
+    <div class="pgrid" style="margin-bottom:18px">
+      <div class="pcard"><div class="pnum">1</div><div class="ptitle">Executive Summary</div><div class="pdesc">KPIs globais + tendência + cartões semafóricos</div></div>
+      <div class="pcard"><div class="pnum">2</div><div class="ptitle">Meta vs Realizado</div><div class="pdesc">YTD · MTD · Atingimento % por vendedor</div></div>
+      <div class="pcard"><div class="pnum">3</div><div class="ptitle">Análise de Produtos</div><div class="pdesc">Top 10 · Pareto · Treemap por categoria</div></div>
+      <div class="pcard"><div class="pnum">4</div><div class="ptitle">Análise de Margens</div><div class="pdesc">Waterfall: Fat → MB → Resultado Líquido</div></div>
+      <div class="pcard"><div class="pnum">5</div><div class="ptitle">Análise Geográfica</div><div class="pdesc">Mapa + ranking de faturamento por UF</div></div>
+      <div class="pcard"><div class="pnum">6</div><div class="ptitle">Acurácia do Forecast</div><div class="pdesc">MAPE mensal + evolução da acurácia</div></div>
+      <div class="pcard"><div class="pnum">7</div><div class="ptitle">Diagnóstico</div><div class="pdesc">Alertas visuais · desvios · causa raiz · LLM narrativo</div></div>
+      <div class="pcard" style="background:var(--blue);border-color:var(--blue)">
+        <div style="color:white;font-size:28px;margin-bottom:6px">📐</div>
+        <div style="font-size:11px;font-weight:700;color:white">20+ medidas DAX</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.75);margin-top:4px">RLS · USERELATIONSHIP · RANKX · TOTALYTD</div>
+      </div>
+    </div>
+    <div class="hbox" style="font-size:12px">
+      <strong>Fluxo de navegação:</strong> Pág 1 "estamos bem?" → Pág 2 "quem não está bem?" → Págs 3–5 "onde está o desvio?" → Págs 6–7 "qual é a causa?"
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     SLIDE 10 — MAPE / FORECAST
+════════════════════════════════════════ -->
+<section class="slide" id="s10">
+  <div class="sh">
+    <div class="sh-label">Acurácia do Forecast</div>
+    <div class="sh-title">MAPE como KPI de processo: medimos o erro para melhorar o planejamento</div>
+  </div>
+  <div class="sb">
+    <div class="col3" style="margin-bottom:16px">
+      <div class="box">
+        <div class="box-title">O que é o MAPE?</div>
+        <div style="font-size:13px;color:var(--text-light);line-height:1.6">
+          <strong style="color:var(--text)">Mean Absolute Percentage Error</strong><br>
+          Erro percentual médio absoluto entre o forecast e o realizado.
+          <div class="mape-scale" style="margin-top:10px">
+            <div class="ms ex">&lt;10%<br>Excelente</div>
+            <div class="ms go">10–20%<br>Boa</div>
+            <div class="ms fa">20–50%<br>Razoável</div>
+            <div class="ms po">&gt;50%<br>Baixa</div>
+          </div>
+        </div>
+      </div>
+      <div class="box">
+        <div class="box-title">Como calculamos?</div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:12px;font-size:12px;font-family:monospace;line-height:1.7">
+          MAPE =<br>
+          AVERAGEX(<br>
+          &nbsp;&nbsp;Meses × Vendedores,<br>
+          &nbsp;&nbsp;ABS(Real − Meta)<br>
+          &nbsp;&nbsp;/ ABS(Real)<br>
+          )
+        </div>
+        <div style="font-size:11px;color:var(--text-light);margin-top:8px">Real = Faturamento · Meta = Forecast</div>
+      </div>
+      <div class="box">
+        <div class="box-title">Por que isso importa?</div>
+        <div class="li" style="font-size:12px"><span class="li-ico">📌</span><span>MAPE &gt; 25% = o processo de planejamento precisa de revisão</span></div>
+        <div class="li" style="font-size:12px"><span class="li-ico">📌</span><span>Não é problema do vendedor — é do <em>modelo</em> de metas</span></div>
+        <div class="li" style="font-size:12px"><span class="li-ico">📌</span><span>Medir é o primeiro passo para melhorar</span></div>
+        <div class="li" style="font-size:12px"><span class="li-ico">🎯</span><strong>Meta do projeto: MAPE &lt; 15%</strong></div>
+      </div>
+    </div>
+    <div class="bar-wrap">
+      <div style="font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Acurácia simulada por vendedor (referência)</div>
+      <div class="bar-row"><span class="bar-label">Ronaldo</span><div class="bar-track"><div class="bar-fill" style="width:88%;background:var(--green)">88%</div></div></div>
+      <div class="bar-row"><span class="bar-label">Paola</span><div class="bar-track"><div class="bar-fill" style="width:82%;background:var(--green)">82%</div></div></div>
+      <div class="bar-row"><span class="bar-label">Neymar</span><div class="bar-track"><div class="bar-fill" style="width:74%;background:var(--yellow)">74%</div></div></div>
+      <div class="bar-row"><span class="bar-label">Rodrigo</span><div class="bar-track"><div class="bar-fill" style="width:61%;background:var(--red)">61%</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     SLIDE 11 — RLS
+════════════════════════════════════════ -->
+<section class="slide" id="s11">
+  <div class="sh">
+    <div class="sh-label">Segurança e Governança</div>
+    <div class="sh-title">Cada gerente vê apenas o seu time — sem configuração manual, sem filtro extra</div>
+  </div>
+  <div class="sb">
+    <div class="col2" style="align-items:start">
+      <div>
+        <div class="rls-tree">
+          <div class="rls-top">🏢 Diretoria / Admin — vê TUDO</div>
+          <div class="rls-line"></div>
+          <div class="rls-managers">
+            <div class="rls-mgr">
+              <div class="rls-m">Guardiola</div>
+              <div class="rls-line"></div>
+              <div class="rls-sellers"><div class="rls-s">Ronaldo</div><div class="rls-s">Rodrigo</div></div>
+            </div>
+            <div class="rls-mgr">
+              <div class="rls-m">Marta</div>
+              <div class="rls-line"></div>
+              <div class="rls-sellers"><div class="rls-s">Paola</div><div class="rls-s">Marilia</div></div>
+            </div>
+            <div class="rls-mgr">
+              <div class="rls-m">Zagallo</div>
+              <div class="rls-line"></div>
+              <div class="rls-sellers"><div class="rls-s">Neymar</div><div class="rls-s">+ time</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="hbox" style="font-size:13px;margin-bottom:14px">
+          <strong>Filtro DAX em dVendedor</strong> → propaga automaticamente para fVendas e fMetas pelos relacionamentos ativos. Nenhum filtro manual na fato.
+        </div>
+        <table class="dt">
+          <thead><tr><th>Role</th><th>Filtro DAX</th><th>Acesso</th></tr></thead>
+          <tbody>
+            <tr><td><span class="tag bl">Gerente_Guardiola</span></td><td><code>[Gerente] = "Guardiola"</code></td><td>Ronaldo, Rodrigo</td></tr>
+            <tr><td><span class="tag bl">Gerente_Marta</span></td><td><code>[Gerente] = "Marta"</code></td><td>Paola, Marilia</td></tr>
+            <tr><td><span class="tag bl">Gerente_Zagallo</span></td><td><code>[Gerente] = "Zagallo"</code></td><td>Time Zagallo</td></tr>
+            <tr><td><span class="tag gr">Admin</span></td><td><em>(sem filtro)</em></td><td>Tudo</td></tr>
+          </tbody>
+        </table>
+        <div class="hbox gr" style="font-size:12px;margin-top:12px">Confiança é o principal driver de adoção de dashboards. O RLS garante que o gestor abre e vê exatamente o seu contexto.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     SLIDE 12 — POWER AUTOMATE
+════════════════════════════════════════ -->
+<section class="slide" id="s12">
+  <div class="sh">
+    <div class="sh-label">Automação de Alertas</div>
+    <div class="sh-title">5 fluxos automáticos garantem visibilidade antes de abrir o dashboard</div>
+  </div>
+  <div class="sb">
+    <div class="col5" style="margin-bottom:18px">
+      <div class="fcard"><div class="fco">🔄</div><div class="ft">SEG · 06H</div><div class="fn">Refresh Automático</div><div class="fd">ETL Python + refresh Power BI Dataset</div><div class="fch">E-mail status</div></div>
+      <div class="fcard"><div class="fco">⚠️</div><div class="ft">SEG · 08H</div><div class="fn">Alerta de Baixo Atingimento</div><div class="fd">Vendedores &lt; 70% da meta com desvio em R$</div><div class="fch">E-mail gerente</div></div>
+      <div class="fcard"><div class="fco">📊</div><div class="ft">SEX · 17H</div><div class="fn">Resumo Semanal</div><div class="fd">KPIs da semana + MTD + Top 3 vendedores</div><div class="fch">E-mail gerentes</div></div>
+      <div class="fcard"><div class="fco">🚨</div><div class="ft">DIA 20 · 08H</div><div class="fn">Meta em Risco</div><div class="fd">Projeção &lt; 90% → 3 níveis de severidade</div><div class="fch">E-mail diretoria</div></div>
+      <div class="fcard"><div class="fco">🏆</div><div class="ft">REAL-TIME</div><div class="fn">Celebração de Meta</div><div class="fd">Gatilho Power BI quando atingimento &gt; 100%</div><div class="fch">Teams + E-mail</div></div>
+    </div>
+    <div class="col2">
+      <div class="hbox rd" style="font-size:12px"><strong>Sem automação:</strong> gerente descobre problema na reunião semanal (tarde demais). Risco percebido no dia 28, sem margem de ação.</div>
+      <div class="hbox gr" style="font-size:12px"><strong>Com automação:</strong> alerta na segunda de manhã — ainda há tempo para agir. Risco detectado no dia 20, com 11 dias de margem.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     SLIDE 13 — RESULTADOS ESPERADOS
+════════════════════════════════════════ -->
+<section class="slide" id="s13">
+  <div class="sh">
+    <div class="sh-label">Resultados</div>
+    <div class="sh-title">Decisão mais rápida, previsibilidade maior e zero retrabalho no fechamento</div>
+  </div>
+  <div class="sb">
+    <table class="dt">
+      <thead><tr><th>Antes</th><th>Depois</th><th>Impacto</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="res-before">Fechamento: 2 dias de trabalho manual</td>
+          <td class="res-after">Dashboard atualizado automaticamente toda segunda</td>
+          <td class="res-impact">~2 dias/mês economizados</td>
+        </tr>
+        <tr>
+          <td class="res-before">Risco detectado no dia 28 — sem margem</td>
+          <td class="res-after">Alerta automático no dia 20 com projeção e ação sugerida</td>
+          <td class="res-impact">8–11 dias de antecipação</td>
+        </tr>
+        <tr>
+          <td class="res-before">Forecast sem métrica de acurácia</td>
+          <td class="res-after">MAPE mensal monitorado por vendedor no dashboard</td>
+          <td class="res-impact">Processo de planejamento mensurável</td>
+        </tr>
+        <tr>
+          <td class="res-before">Gerentes sem visão do time em tempo real</td>
+          <td class="res-after">RLS + alertas automáticos toda segunda às 08h</td>
+          <td class="res-impact">Visibilidade proativa diária</td>
+        </tr>
+        <tr>
+          <td class="res-before">Dados em 6 Excels — cada área com seu número</td>
+          <td class="res-after">DW unificado com 20K transações e fonte única de verdade</td>
+          <td class="res-impact">Governança de métricas</td>
+        </tr>
+        <tr>
+          <td class="res-before">KPI calculado diferente por cada área</td>
+          <td class="res-after">20+ medidas DAX centralizadas, versionadas e documentadas</td>
+          <td class="res-impact">Consistência analítica</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     SLIDE 14 — PRÓXIMOS PASSOS
+════════════════════════════════════════ -->
+<section class="slide" id="s14">
+  <div class="sh">
+    <div class="sh-label">Roadmap</div>
+    <div class="sh-title">3 fases de evolução: da automação à IA aplicada ao planejamento</div>
+  </div>
+  <div class="sb">
+    <div class="col3" style="margin-bottom:14px">
+      <div class="phase done">
+        <div class="phase-lbl">✅ Fase 1 — Fundação (concluída)</div>
+        <div class="phase-item"><span class="phase-icon">✅</span>Pipeline ETL Python (5 módulos + 37 testes)</div>
+        <div class="phase-item"><span class="phase-icon">✅</span>SQL Server DW — star schema completo</div>
+        <div class="phase-item"><span class="phase-icon">✅</span>Dashboard Power BI + 20 medidas DAX</div>
+        <div class="phase-item"><span class="phase-icon">✅</span>RLS por gerente (Guardiola, Marta, Zagallo)</div>
+        <div class="phase-item"><span class="phase-icon">✅</span>5 fluxos Power Automate</div>
+      </div>
+      <div class="phase now">
+        <div class="phase-lbl">🔄 Fase 2 — Aprofundamento</div>
+        <div class="phase-item"><span class="phase-icon">🔄</span>MAPE como KPI recorrente de planning</div>
+        <div class="phase-item"><span class="phase-icon">🔄</span>Página 7: Diagnóstico e causa raiz</div>
+        <div class="phase-item"><span class="phase-icon">🔄</span>Análise de comissão variável</div>
+        <div class="phase-item"><span class="phase-icon">🔄</span>Forecast MTD projetado no dashboard</div>
+      </div>
+      <div class="phase fut">
+        <div class="phase-lbl">🚀 Fase 3 — IA e Predição</div>
+        <div class="phase-item"><span class="phase-icon">🚀</span>Forecast com Prophet / XGBoost</div>
+        <div class="phase-item"><span class="phase-icon">🚀</span>Simulação de metas ("e se X%?")</div>
+        <div class="phase-item"><span class="phase-icon">🚀</span>Forecast por segmento e unidade</div>
+        <div class="phase-item"><span class="phase-icon">🚀</span>Integração com CRM</div>
+        <div class="phase-item"><span class="phase-icon">🚀</span><strong>LLM narrativo automático</strong></div>
+      </div>
+    </div>
+    <div class="llm-callout">
+      💬 <strong>Próxima fronteira — LLM Narrativo:</strong> Python lê o DW → chama API LLM → gera diagnóstico em linguagem natural no dashboard.
+      <span style="color:#86EFAC">"O faturamento caiu 12% em março devido à redução de 30% nas vendas do time Zagallo, concentradas na categoria Eletrônicos."</span>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     JAVASCRIPT — NAVIGATION ENGINE
+════════════════════════════════════════ -->
+<script>
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let cur = 0;
+
+// Build dots
+const dotsEl = document.getElementById('dots');
+slides.forEach((_, i) => {
+  const d = document.createElement('div');
+  d.className = 'dot';
+  d.onclick = () => go(i);
+  dotsEl.appendChild(d);
+});
+
+function isDark(idx) {
+  return idx !== 0; // only capa has dark background
+}
+
+function go(idx) {
+  if (idx < 0 || idx >= total) return;
+  slides[cur].classList.remove('active');
+  cur = idx;
+  slides[cur].classList.add('active');
+  update();
+}
+
+function update() {
+  // progress bar
+  document.getElementById('prog').style.width = ((cur + 1) / total * 100) + '%';
+
+  // counter
+  const c = document.getElementById('counter');
+  c.textContent = (cur + 1) + ' / ' + total;
+  c.className = 'counter' + (isDark(cur) ? ' dark' : '');
+
+  // dots
+  document.querySelectorAll('.dot').forEach((d, i) => {
+    d.className = 'dot' + (isDark(cur) ? ' dk' : '') + (i === cur ? ' active' : '');
+  });
+
+  // arrows
+  ['prev','next'].forEach(cls => {
+    const el = document.querySelector('.arr.' + cls);
+    el.className = 'arr ' + cls + (isDark(cur) ? ' dk' : '');
+  });
+
+  // kbd hint
+  const kbd = document.getElementById('kbd');
+  kbd.className = 'kbd' + (isDark(cur) ? ' dk' : '');
+}
+
+// Init
+go(0);
+
+// Keyboard
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') go(cur + 1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') go(cur - 1);
+  if (e.key === 'Home') go(0);
+  if (e.key === 'End') go(total - 1);
+  if (e.key === 'f' || e.key === 'F') {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+    else document.exitFullscreen();
+  }
+});
+
+document.getElementById('prev').onclick = () => go(cur - 1);
+document.getElementById('next').onclick = () => go(cur + 1);
+
+// Touch swipe
+let tx = 0;
+document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; });
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - tx;
+  if (Math.abs(dx) > 50) go(dx < 0 ? cur + 1 : cur - 1);
+});
+</script>
+</body>
+</html>

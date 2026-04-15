@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<!--
+  email_html_base.html — Template base para os e-mails do Power Automate
+  Commercial Planning Control Tower
+
+  COMO USAR:
+    Copie este template para cada fluxo e substitua os blocos de conteúdo
+    dinamicamente usando variáveis do Power Automate.
+
+  VARIÁVEIS DE SUBSTITUIÇÃO (Power Automate):
+    {{TITULO}}         → título do alerta (ex: "Alerta de Baixo Atingimento")
+    {{SUBTITULO}}      → subtítulo / período (ex: "Janeiro/2021")
+    {{COR_HEADER}}     → cor hex do header (padrão #0078D4, erro #D83B01, sucesso #107C10)
+    {{CONTEUDO}}       → bloco HTML dinâmico (tabelas, KPIs, listas)
+    {{URL_DASHBOARD}}  → URL do relatório no Power BI Service
+    {{DATA_GERACAO}}   → data/hora de geração (usar formatDateTime do Power Automate)
+
+  [REUTILIZAÇÃO]:
+    Este template é agnóstico ao conteúdo.
+    Troque {{COR_HEADER}} conforme o tipo de alerta:
+      Azul   #0078D4 → informativo / resumo
+      Verde  #107C10 → sucesso / celebração
+      Amarelo #E6A817 → atenção / warning
+      Vermelho #D83B01 → crítico / erro / risco
+-->
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{TITULO}}</title>
+  <style>
+    /* Reset básico para compatibilidade com Outlook */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, Arial, sans-serif;
+      font-size: 13px;
+      color: #333333;
+      background-color: #F0F0F0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Container externo — centraliza o e-mail */
+    .email-wrapper {
+      max-width: 680px;
+      margin: 20px auto;
+      background: #FFFFFF;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+
+    /* Header colorido */
+    .email-header {
+      background-color: {{COR_HEADER}};
+      color: #FFFFFF;
+      padding: 24px 32px;
+    }
+    .email-header h1 {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0 0 6px 0;
+    }
+    .email-header .subtitulo {
+      font-size: 13px;
+      opacity: 0.85;
+      margin: 0;
+    }
+
+    /* Corpo principal */
+    .email-body {
+      padding: 24px 32px;
+    }
+
+    /* Tabela de dados */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 13px;
+    }
+    .data-table th {
+      background-color: #F4F4F4;
+      color: #555555;
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 2px solid #E0E0E0;
+    }
+    .data-table td {
+      padding: 9px 12px;
+      border-bottom: 1px solid #F0F0F0;
+      vertical-align: middle;
+    }
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+    .data-table tr:hover td {
+      background-color: #FAFAFA;
+    }
+
+    /* Cards de KPI */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 16px 0;
+    }
+    .kpi-card {
+      background: #F8F8F8;
+      border-radius: 6px;
+      padding: 16px 12px;
+      text-align: center;
+    }
+    .kpi-card .kpi-valor {
+      font-size: 22px;
+      font-weight: 700;
+      color: {{COR_HEADER}};
+      display: block;
+      margin-bottom: 4px;
+    }
+    .kpi-card .kpi-label {
+      font-size: 11px;
+      color: #888888;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    /* Caixas de alerta / informação */
+    .alert-box {
+      border-left: 4px solid {{COR_HEADER}};
+      background-color: #F8F8F8;
+      padding: 14px 16px;
+      border-radius: 0 4px 4px 0;
+      margin: 16px 0;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    /* Seção de ações recomendadas */
+    .acoes-box {
+      background: #E8F5E9;
+      border-left: 4px solid #107C10;
+      padding: 14px 16px;
+      border-radius: 0 4px 4px 0;
+      margin: 16px 0;
+    }
+    .acoes-box ul {
+      margin: 8px 0 0 16px;
+      padding: 0;
+    }
+    .acoes-box li {
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+
+    /* Badges / rótulos coloridos inline */
+    .badge-verde    { background:#107C10; color:white; border-radius:3px; padding:2px 8px; font-size:11px; }
+    .badge-amarelo  { background:#E6A817; color:white; border-radius:3px; padding:2px 8px; font-size:11px; }
+    .badge-vermelho { background:#D83B01; color:white; border-radius:3px; padding:2px 8px; font-size:11px; }
+
+    /* Cores semafóricas para texto */
+    .cor-verde    { color: #107C10; font-weight: bold; }
+    .cor-amarelo  { color: #E6A817; font-weight: bold; }
+    .cor-vermelho { color: #D83B01; font-weight: bold; }
+    .cor-azul     { color: #0078D4; font-weight: bold; }
+
+    /* Separador */
+    .divider {
+      border: none;
+      border-top: 1px solid #EEEEEE;
+      margin: 20px 0;
+    }
+
+    /* Título de seção dentro do e-mail */
+    .secao-titulo {
+      font-size: 13px;
+      font-weight: 600;
+      color: {{COR_HEADER}};
+      margin: 20px 0 8px 0;
+      padding-bottom: 4px;
+      border-bottom: 1px solid #E8E8E8;
+    }
+
+    /* Footer */
+    .email-footer {
+      background: #F8F8F8;
+      padding: 16px 32px;
+      font-size: 11px;
+      color: #999999;
+      border-top: 1px solid #EEEEEE;
+      line-height: 1.6;
+    }
+    .email-footer a {
+      color: #0078D4;
+      text-decoration: none;
+    }
+    .email-footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+<div class="email-wrapper">
+
+  <!-- HEADER -->
+  <div class="email-header">
+    <h1>{{TITULO}}</h1>
+    <p class="subtitulo">{{SUBTITULO}}</p>
+  </div>
+
+  <!-- CORPO PRINCIPAL -->
+  <div class="email-body">
+
+    <!--
+      SUBSTITUIR ESTE BLOCO pelo conteúdo dinâmico de cada fluxo.
+      Exemplos de uso:
+
+      FLUXO 1 — Alerta de baixo atingimento:
+        <div class="alert-box">Vendedores com atingimento abaixo de 70%...</div>
+        <table class="data-table">...</table>
+
+      FLUXO 2 — Resumo semanal:
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <span class="kpi-valor">R$ 142.350</span>
+            <span class="kpi-label">Faturamento da Semana</span>
+          </div>
+        </div>
+        <table class="data-table">...</table>
+
+      FLUXO 3 — Meta em risco:
+        <div class="alert-box">Projeção de 83,2%...</div>
+        <div class="acoes-box"><ul><li>Ação 1...</li></ul></div>
+
+      FLUXO 4 — Celebração:
+        <div style="text-align:center; padding:20px"><span style="font-size:48px">🏆</span></div>
+        <table class="data-table">...</table>
+
+      FLUXO 5 — Status do refresh:
+        <div class="alert-box">Dataset atualizado com sucesso...</div>
+    -->
+    {{CONTEUDO}}
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="email-footer">
+    Este e-mail foi gerado automaticamente em {{DATA_GERACAO}} pelo
+    <strong>Commercial Planning Control Tower</strong>.<br>
+    <a href="{{URL_DASHBOARD}}">Acesse o dashboard completo</a> para análise detalhada e drill-down.<br>
+    Para dúvidas ou cancelamento, contate o administrador do sistema.
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,40 @@
+# =============================================================================
+# requirements-dev.txt — Dependências de desenvolvimento e testes
+# Commercial Planning Control Tower
+# =============================================================================
+#
+# INSTALAÇÃO (apenas em ambiente local/dev):
+#   pip install -r requirements-dev.txt
+#
+# Inclui tudo do requirements.txt + ferramentas de qualidade e teste.
+# =============================================================================
+
+# Inclui todas as dependências de produção
+-r requirements.txt
+
+# --- Testes automatizados -----------------------------------------------------
+pytest==8.2.0
+# Framework de testes. Usado para rodar todos os testes de validate.py,
+# extract.py e transform.py com um único comando: pytest tests/
+# Gera relatório de aprovação/falha por teste.
+
+pytest-cov==5.0.0
+# Plugin de cobertura de código. Mostra quais linhas do ETL foram testadas.
+# Uso: pytest --cov=src tests/
+# Meta de cobertura recomendada para projetos de dados: >= 80%.
+
+# --- Qualidade e formatação de código -----------------------------------------
+black==24.4.2
+# Formatador automático de código Python. Aplica estilo PEP8 de forma
+# determinística — elimina debates de estilo em equipe.
+# Uso: black src/ tests/
+
+flake8==7.0.0
+# Linter de código. Detecta erros de sintaxe, imports não usados e
+# violações de estilo que o black não cobre.
+# Uso: flake8 src/ tests/
+
+# --- Ambiente e notebooks (opcional) ------------------------------------------
+ipykernel==6.29.4
+# Kernel Jupyter. Útil para exploração de dados e validação manual
+# dos DataFrames durante o desenvolvimento. Não vai para produção.
