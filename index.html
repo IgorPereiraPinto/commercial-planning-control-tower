@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Commercial Planning Control Tower — Igor Pereira Pinto</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --blue:#1D3C6D;--blue-dark:#122745;--blue-light:#EDF3FB;
+  --green:#375623;--green-light:#F1F6EB;
+  --yellow:#BF8F00;--yellow-light:#FFF8E1;
+  --text:#142033;--text-light:#5F6C7B;
+  --border:#D9E1EC;--bg:#F4F7FB;
+}
+body{
+  font-family:"Aptos","Trebuchet MS","Segoe UI",sans-serif;
+  min-height:100vh;
+  background:
+    radial-gradient(circle at top left, rgba(29,60,109,.42), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(55,86,35,.22), transparent 24%),
+    linear-gradient(140deg, #08111f 0%, #11223c 52%, #152f54 100%);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:40px 24px;
+  color:#fff;
+}
+
+/* ─── HEADER ─── */
+.header{text-align:center;margin-bottom:52px;max-width:720px}
+.eyebrow{
+  font-size:11px;letter-spacing:3px;text-transform:uppercase;
+  opacity:.55;margin-bottom:16px;
+}
+.title{
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:42px;font-weight:700;letter-spacing:-1px;
+  line-height:1.12;margin-bottom:16px;
+}
+.title span{
+  background:linear-gradient(90deg,#BF8F00,#60A5FA,#86EFAC);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.subtitle{font-size:16px;opacity:.72;font-weight:300;line-height:1.6;max-width:580px;margin:0 auto 28px}
+.author{
+  display:inline-flex;align-items:center;gap:10px;
+  background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.15);
+  border-radius:999px;padding:8px 18px;font-size:13px;
+  backdrop-filter:blur(12px);
+}
+.author-dot{width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,#BF8F00,#60A5FA)}
+
+/* ─── BADGES ─── */
+.badges{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:52px}
+.badge{
+  background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.14);
+  padding:5px 13px;border-radius:20px;font-size:11px;font-weight:500;
+  backdrop-filter:blur(8px);
+}
+
+/* ─── CARDS ─── */
+.cards{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:24px;
+  max-width:1060px;width:100%;
+}
+@media(max-width:800px){.cards{grid-template-columns:1fr}}
+
+.card{
+  background:rgba(255,255,255,.95);
+  border-radius:20px;
+  overflow:hidden;
+  box-shadow:0 24px 60px rgba(7,18,38,.30);
+  display:flex;flex-direction:column;
+  transition:transform .25s,box-shadow .25s;
+  cursor:pointer;
+  text-decoration:none;
+  color:inherit;
+  position:relative;
+}
+.card:hover{transform:translateY(-6px);box-shadow:0 36px 80px rgba(7,18,38,.40)}
+
+.card-accent{height:5px;width:100%}
+.card-accent.db{background:linear-gradient(90deg,#1D3C6D,#0E7490,#375623)}
+.card-accent.pf{background:linear-gradient(90deg,#375623,#1D3C6D,#BF8F00)}
+.card-accent.pc{background:linear-gradient(90deg,#BF8F00,#1D3C6D,#375623)}
+
+.card-body{padding:26px 26px 20px;flex:1;display:flex;flex-direction:column}
+
+.card-num{
+  font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  color:var(--text-light);margin-bottom:10px;
+}
+.card-ico{font-size:36px;margin-bottom:14px;line-height:1}
+.card-title{
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:18px;font-weight:700;line-height:1.25;
+  color:var(--text);margin-bottom:8px;
+}
+.card-desc{font-size:13px;color:var(--text-light);line-height:1.55;flex:1;margin-bottom:18px}
+
+.card-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px}
+.tag{
+  display:inline-block;padding:3px 10px;border-radius:12px;
+  font-size:10px;font-weight:600;
+}
+.tag.bl{background:var(--blue-light);color:var(--blue)}
+.tag.gr{background:var(--green-light);color:var(--green)}
+.tag.or{background:var(--yellow-light);color:#92400E}
+
+.card-cta{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 26px;background:var(--bg);
+  border-top:1px solid var(--border);
+  font-size:13px;font-weight:600;color:var(--blue);
+}
+.cta-arr{font-size:16px;transition:transform .2s}
+.card:hover .cta-arr{transform:translateX(4px)}
+
+/* ─── FOOTER ─── */
+.footer{
+  margin-top:52px;text-align:center;
+  font-size:11px;opacity:.4;letter-spacing:.5px;
+}
+.footer a{color:inherit;text-decoration:none;opacity:.8}
+.footer a:hover{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="eyebrow">Portfólio Analítico</div>
+  <h1 class="title">Commercial Planning<br><span>Control Tower</span></h1>
+  <p class="subtitle">Pipeline ETL ponta a ponta, star schema Kimball, dashboards executivos e automações — do Excel bruto ao alerta automático no Teams</p>
+  <div class="author">
+    <div class="author-dot"></div>
+    Igor Pereira Pinto — Analista de Dados & BI Sênior
+  </div>
+</div>
+
+<div class="badges">
+  <span class="badge">Python · pandas</span>
+  <span class="badge">SQL Server · Star Schema</span>
+  <span class="badge">Power BI · DAX</span>
+  <span class="badge">Power Automate</span>
+  <span class="badge">20.004 transações</span>
+  <span class="badge">47 testes automatizados</span>
+  <span class="badge">5 fluxos de automação</span>
+</div>
+
+<div class="cards">
+
+  <!-- 01 — DASHBOARD -->
+  <a class="card" href="apresentacao/dashboard_forecast_budget.html" target="_blank">
+    <div class="card-accent db"></div>
+    <div class="card-body">
+      <div class="card-num">01 — Dashboard</div>
+      <div class="card-ico">📊</div>
+      <div class="card-title">Forecast vs Budget Dashboard</div>
+      <div class="card-desc">Dashboard interativo com KPIs de atingimento YTD, três cenários de forecast (pessimista, base, otimista), semáforo por vendedor e análise de MAPE.</div>
+      <div class="card-tags">
+        <span class="tag bl">Chart.js</span>
+        <span class="tag bl">HTML · CSS · JS</span>
+        <span class="tag gr">Dados reais 2021</span>
+        <span class="tag or">Forecast 3 cenários</span>
+      </div>
+    </div>
+    <div class="card-cta">Abrir dashboard <span class="cta-arr">→</span></div>
+  </a>
+
+  <!-- 02 — APRESENTAÇÃO FORECAST -->
+  <a class="card" href="apresentacao/apresentacao_forecast_budget.html" target="_blank">
+    <div class="card-accent pf"></div>
+    <div class="card-body">
+      <div class="card-num">02 — Apresentação</div>
+      <div class="card-ico">📈</div>
+      <div class="card-title">Forecast & Budget — Apresentação Executiva</div>
+      <div class="card-desc">10 slides executivos cobrindo problema, perguntas de negócio, insights de desvio, 3 cenários de forecast, semáforo, recomendações e melhores práticas de S&OP.</div>
+      <div class="card-tags">
+        <span class="tag bl">10 slides</span>
+        <span class="tag gr">Navegação por teclado</span>
+        <span class="tag or">Insights executivos</span>
+      </div>
+    </div>
+    <div class="card-cta">Abrir apresentação <span class="cta-arr">→</span></div>
+  </a>
+
+  <!-- 03 — APRESENTAÇÃO COMERCIAL -->
+  <a class="card" href="apresentacao/apresentacao_comercial.html" target="_blank">
+    <div class="card-accent pc"></div>
+    <div class="card-body">
+      <div class="card-num">03 — Projeto Completo</div>
+      <div class="card-ico">🏗</div>
+      <div class="card-title">Control Tower — Projeto Completo</div>
+      <div class="card-desc">9 slides cobrindo toda a arquitetura do projeto: pipeline ETL, star schema Kimball, Power BI com RLS, 5 fluxos Power Automate e roadmap com ML e LLM narrativo.</div>
+      <div class="card-tags">
+        <span class="tag bl">9 slides</span>
+        <span class="tag gr">Arquitetura completa</span>
+        <span class="tag bl">ETL · DW · Power BI</span>
+        <span class="tag or">Roadmap ML + LLM</span>
+      </div>
+    </div>
+    <div class="card-cta">Abrir apresentação <span class="cta-arr">→</span></div>
+  </a>
+
+</div>
+
+<div class="footer">
+  <a href="https://github.com/IgorPereiraPinto/commercial-planning-control-tower" target="_blank">
+    github.com/IgorPereiraPinto/commercial-planning-control-tower
+  </a>
+  &nbsp;·&nbsp; São Paulo, Brasil
+</div>
+
+</body>
+</html>

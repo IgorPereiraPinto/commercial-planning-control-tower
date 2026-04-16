@@ -240,3 +240,19 @@ Guia completo: [powerautomate/GUIA_POWER_AUTOMATE.md](powerautomate/GUIA_POWER_A
 - **fVendas:** ~20.004 transações · Jan/2018 – Abr/2021
 - **fMetas:** 528 registros · 11 vendedores × 12 meses × 4 anos
 - **Dimensões:** 8 tabelas (Produtos, Vendedor, Clientes, Cidade, Unidades, Status, Pagamento, Calendário)
+
+---
+
+## Competências e atribuições atendidas
+
+O projeto cobre diretamente as seguintes atribuições de analítica avançada e planejamento orientado por dados:
+
+| Atribuição | Como o projeto atende |
+| ---------- | --------------------- |
+| **Aplicar técnicas de IA/LLM e análise de dados para geração de insights estratégicos** | 3 cenários de forecast via run rate; pipeline ML-ready (star schema pronto para Prophet/XGBoost); MAPE como métrica de qualidade do planejamento; insights automáticos de tendência, risco de budget e aceleração por vendedor |
+| **Benchmark de melhores práticas internas e externas** | Comparação histórica 2018–2021 como benchmark interno; referências de S&OP (MAPE < 10% excelente, revisão trimestral de forecast, semáforo 70/90% como régua comercial padrão de mercado) |
+| **Identificar e integrar soluções analíticas às esteiras, validando valor para o negócio** | Pipeline 7 etapas (Extract → Validate RAW → Transform → Validate STAGING → Load DW); 5 fluxos Power Automate integrados à operação; valor validado: detecção de desvio 30–45 dias antes vs processo manual |
+| **Mineração e análise de dados para geração de insights e melhorias** | ~20.004 transações processadas + 528 metas; decomposição de desvio (volume × preço × mix); descoberta não óbvia: efeito Janeiro mascarando deterioração real em 2021 (140% → 48% em 4 meses) |
+| **Desenvolver análises para apoiar estratégias de jornada, personalização e recuperação** | Semáforo individual por vendedor; aceleração necessária calculada por vendedor (não apenas gap agregado); mapa de risco por nível de atingimento para priorizar intervenção |
+| **Atuar com áreas de negócio na geração de análises orientadas por dados** | Dashboard executivo Power BI com RLS por gerente; apresentação executiva HTML (10 slides, auto-navegável); alertas automáticos via Power Automate para o time comercial |
+| **Analisar indicadores de qualidade para direcionar melhorias de processo** | 11 testes automatizados de qualidade de dados (4 RAW + 7 STAGING, com bloqueio de pipeline em falha); MAPE como KPI de processo de planejamento; validação de integridade referencial antes de qualquer carga no DW |
