@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Commercial Planning Control Tower</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --blue:#0078D4;--blue-dark:#005A9E;--blue-light:#EFF6FF;
+  --green:#107C10;--green-light:#F0FFF4;
+  --red:#D83B01;--red-light:#FEF2F2;
+  --yellow:#E6A817;--yellow-light:#FFFBEB;
+  --purple:#5B2D8E;--purple-light:#F5F0FF;
+  --text:#1F2937;--text-light:#6B7280;
+  --border:#E5E7EB;--bg:#F9FAFB;--white:#fff;
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#111;color:var(--text);overflow:hidden;height:100vh;width:100vw}
+
+/* ─── SLIDE ENGINE ─── */
+.slide{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .35s ease;background:var(--white);display:flex;flex-direction:column}
+.slide.active{opacity:1;pointer-events:all}
+
+/* ─── CHROME ─── */
+#prog{position:fixed;top:0;left:0;height:3px;background:var(--blue);z-index:200;transition:width .3s}
+.counter{position:fixed;bottom:18px;right:22px;font-size:11px;font-weight:600;letter-spacing:.5px;z-index:200;color:rgba(255,255,255,.55)}
+.counter.dark{color:rgba(0,0,0,.3)}
+.dots{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:5px;z-index:200}
+.dot{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.3);cursor:pointer;transition:all .25s}
+.dot.active{width:18px;background:rgba(255,255,255,.9)}
+.dot.dk{background:rgba(0,0,0,.18)}
+.dot.dk.active{background:var(--blue)}
+.arr{position:fixed;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.5);width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;z-index:200;transition:all .2s}
+.arr:hover{background:rgba(255,255,255,.2);color:#fff}
+.arr.prev{left:14px} .arr.next{right:14px}
+.arr.dk{background:rgba(0,0,0,.06);color:rgba(0,0,0,.3)}
+.arr.dk:hover{background:rgba(0,0,0,.12);color:rgba(0,0,0,.7)}
+.kbd{position:fixed;bottom:18px;left:22px;font-size:10px;color:rgba(255,255,255,.3);z-index:200}
+.kbd.dk{color:rgba(0,0,0,.2)}
+
+/* ─── SHARED COMPONENTS ─── */
+.sh{padding:26px 52px 18px;border-bottom:1px solid var(--border)}
+.sh-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue);margin-bottom:5px}
+.sh-title{font-size:26px;font-weight:800;color:var(--text);line-height:1.2}
+.sb{flex:1;padding:20px 52px;display:flex;flex-direction:column;justify-content:center;overflow:hidden}
+
+.accent{width:36px;height:4px;background:var(--blue);border-radius:2px;margin-bottom:10px}
+
+.kpi-row{display:grid;gap:14px;margin-bottom:18px}
+.k4{grid-template-columns:repeat(4,1fr)}
+.k3{grid-template-columns:repeat(3,1fr)}
+.k2{grid-template-columns:repeat(2,1fr)}
+.kcard{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:18px;text-align:center}
+.kcard.bl{border-top:3px solid var(--blue)} .kcard.gr{border-top:3px solid var(--green)}
+.kcard.or{border-top:3px solid var(--yellow)} .kcard.rd{border-top:3px solid var(--red)}
+.kcard.pu{border-top:3px solid var(--purple)}
+.kv{font-size:30px;font-weight:800;line-height:1;margin-bottom:5px}
+.kv.bl{color:var(--blue)} .kv.gr{color:var(--green)} .kv.or{color:var(--yellow)}
+.kv.rd{color:var(--red)} .kv.pu{color:var(--purple)}
+.kl{font-size:12px;color:var(--text-light);font-weight:500}
+.ks{font-size:11px;color:var(--text-light);margin-top:3px}
+
+.col2{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.col3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+.col5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+
+.box{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:20px}
+.box-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+
+.hbox{border-left:4px solid var(--blue);background:var(--blue-light);border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:14px;font-size:13px;line-height:1.5}
+.hbox.gr{border-left-color:var(--green);background:var(--green-light)}
+.hbox.or{border-left-color:var(--yellow);background:var(--yellow-light)}
+.hbox.rd{border-left-color:var(--red);background:var(--red-light)}
+
+.li{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;line-height:1.4}
+.li:last-child{border-bottom:none}
+.li-ico{font-size:15px;flex-shrink:0;margin-top:1px}
+
+table.dt{width:100%;border-collapse:collapse;font-size:12px}
+table.dt th{background:var(--bg);padding:9px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-light);border-bottom:2px solid var(--border)}
+table.dt td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+table.dt tr:last-child td{border-bottom:none}
+
+.tag{display:inline-block;padding:2px 9px;border-radius:12px;font-size:10px;font-weight:600}
+.tag.bl{background:var(--blue-light);color:var(--blue)}
+.tag.gr{background:var(--green-light);color:var(--green)}
+.tag.or{background:var(--yellow-light);color:#92400E}
+.tag.rd{background:var(--red-light);color:var(--red)}
+
+/* ─── SLIDE 1 — CAPA ─── */
+#s1{background:linear-gradient(135deg,#001F4D 0%,#0050A0 55%,#0097CC 100%);color:#fff;justify-content:center;align-items:center;text-align:center}
+.cap-eye{font-size:11px;letter-spacing:3px;text-transform:uppercase;opacity:.65;margin-bottom:18px}
+.cap-t{font-size:54px;font-weight:900;letter-spacing:-2px;line-height:1;margin-bottom:14px}
+.cap-s{font-size:17px;opacity:.8;font-weight:300;max-width:580px;line-height:1.55;margin-bottom:44px}
+.cap-stack{display:flex;gap:7px;align-items:center;justify-content:center;flex-wrap:wrap}
+.sbadge{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);padding:5px 13px;border-radius:20px;font-size:11px;font-weight:500}
+.sarr{opacity:.45;font-size:13px}
+.cap-meta{position:absolute;bottom:24px;right:36px;text-align:right;font-size:11px;opacity:.55}
+
+/* ─── SLIDE 5 — IA ─── */
+.ai-flow{display:flex;align-items:center;gap:14px;justify-content:center;margin:20px 0}
+.ai-nd{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px 18px;text-align:center;min-width:130px}
+.ai-nd.human{background:linear-gradient(135deg,var(--blue),var(--blue-dark));border:none;color:#fff}
+.ai-nd.out{background:linear-gradient(135deg,var(--green),#085708);border:none;color:#fff}
+.ai-ico{font-size:26px;margin-bottom:5px}
+.ai-name{font-size:12px;font-weight:700}
+.ai-desc{font-size:10px;margin-top:2px;opacity:.7}
+.ai-arr{font-size:18px;color:var(--blue);flex-shrink:0}
+
+/* ─── SLIDE 6 — ARCH ─── */
+.arch{display:flex;align-items:stretch;gap:0;margin:18px 0}
+.astep{flex:1;text-align:center;padding:18px 10px;background:var(--bg);border:1px solid var(--border);border-radius:10px}
+.astep-ico{font-size:30px;margin-bottom:7px}
+.astep-name{font-size:12px;font-weight:700;color:var(--blue);margin-bottom:3px}
+.astep-tech{font-size:10px;color:var(--text-light);line-height:1.4}
+.aarr{font-size:20px;color:var(--blue);padding:0 8px;display:flex;align-items:center;flex-shrink:0}
+
+/* ─── SLIDE 7 — STAR SCHEMA ─── */
+.star-wrap{display:grid;grid-template-columns:1fr 2fr 1fr;gap:16px;align-items:center}
+.dims-left{display:flex;flex-direction:column;gap:8px}
+.dims-right{display:flex;flex-direction:column;gap:8px}
+.dim{background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:8px 12px;font-size:11px;font-weight:600;text-align:center}
+.dim.fact{background:var(--blue-light);border-color:#BFDBFE;color:var(--blue)}
+.fact-box{background:var(--blue);color:#fff;border-radius:10px;padding:20px;text-align:center;font-weight:700;font-size:15px}
+.fact-subs{font-size:11px;opacity:.8;margin-top:5px;font-weight:400}
+
+/* ─── SLIDE 8 — QUALITY ─── */
+.tgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.titem{display:flex;align-items:flex-start;gap:9px;background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:11px 13px}
+.tck{color:var(--green);font-size:15px;flex-shrink:0}
+.tn{font-size:12px;font-weight:600;color:var(--text)}
+.td2{font-size:11px;color:var(--text-light);line-height:1.3}
+
+/* ─── SLIDE 9 — DASHBOARD ─── */
+.pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.pcard{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:13px;text-align:center}
+.pnum{background:var(--blue);color:#fff;width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-bottom:7px}
+.ptitle{font-size:11px;font-weight:700;margin-bottom:4px}
+.pdesc{font-size:10px;color:var(--text-light);line-height:1.35}
+
+/* ─── SLIDE 10 — MAPE ─── */
+.mape-scale{display:flex;border-radius:7px;overflow:hidden;margin-top:10px}
+.ms{flex:1;padding:8px;text-align:center;font-size:10px;font-weight:700}
+.ms.ex{background:#D1FAE5;color:#065F46} .ms.go{background:#BBF7D0;color:#065F46}
+.ms.fa{background:#FEF3C7;color:#92400E} .ms.po{background:#FEE2E2;color:#991B1B}
+.bar-wrap{margin-top:14px}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:11px}
+.bar-label{width:80px;text-align:right;color:var(--text-light)}
+.bar-track{flex:1;background:var(--bg);border-radius:4px;height:16px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:8px;font-size:10px;font-weight:700;color:#fff}
+
+/* ─── SLIDE 11 — RLS ─── */
+.rls-tree{display:flex;flex-direction:column;align-items:center;gap:10px}
+.rls-top{background:var(--blue);color:#fff;padding:8px 24px;border-radius:20px;font-size:13px;font-weight:700}
+.rls-managers{display:flex;gap:60px;position:relative}
+.rls-mgr{display:flex;flex-direction:column;align-items:center;gap:6px}
+.rls-m{background:var(--blue-dark);color:#fff;padding:6px 18px;border-radius:16px;font-size:12px;font-weight:600}
+.rls-sellers{display:flex;gap:6px}
+.rls-s{background:var(--blue-light);color:var(--blue);border:1px solid #BFDBFE;padding:4px 12px;border-radius:12px;font-size:11px;font-weight:500}
+.rls-line{width:1px;height:12px;background:var(--border)}
+
+/* ─── SLIDE 12 — FLOWS ─── */
+.fcard{background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:14px 10px;text-align:center}
+.fco{font-size:26px;margin-bottom:6px}
+.ft{font-size:10px;font-weight:700;color:var(--blue);letter-spacing:.5px;margin-bottom:4px}
+.fn{font-size:11px;font-weight:700;margin-bottom:5px;line-height:1.25}
+.fd{font-size:10px;color:var(--text-light);line-height:1.3}
+.fch{font-size:10px;background:var(--blue-light);color:var(--blue);border-radius:4px;padding:2px 6px;margin-top:5px;display:inline-block}
+
+/* ─── SLIDE 13 — RESULTS ─── */
+.res-before{color:var(--red);font-size:13px}
+.res-after{color:var(--green);font-weight:600;font-size:13px}
+.res-impact{font-weight:800;color:var(--blue);font-size:12px}
+
+/* ─── SLIDE 14 — ROADMAP ─── */
+.phase{border-radius:10px;padding:18px}
+.phase.done{background:var(--green-light);border:1px solid #BBF7D0}
+.phase.now{background:var(--blue-light);border:1px solid #BFDBFE}
+.phase.fut{background:var(--bg);border:1px solid var(--border)}
+.phase-lbl{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px}
+.phase.done .phase-lbl{color:var(--green)} .phase.now .phase-lbl{color:var(--blue)}
+.phase.fut .phase-lbl{color:var(--text-light)}
+.phase-item{display:flex;gap:8px;padding:4px 0;font-size:12px;line-height:1.4}
+.llm-callout{background:linear-gradient(135deg,#1F1F1F,#333);color:#fff;border-radius:10px;padding:14px 18px;margin-top:14px;font-size:12px;line-height:1.5}
+.llm-callout strong{color:#60A5FA}
+
+/* Professional redesign overrides */
+:root{
+  --blue:#1D3C6D;
+  --blue-dark:#122745;
+  --blue-light:#EDF3FB;
+  --green:#375623;
+  --green-light:#F1F6EB;
+  --red:#E32726;
+  --red-light:#FEF0EF;
+  --yellow:#BF8F00;
+  --yellow-light:#FFF8E1;
+  --purple:#5F5AA2;
+  --purple-light:#F1F0FC;
+  --text:#142033;
+  --text-light:#5F6C7B;
+  --border:#D9E1EC;
+  --bg:#F4F7FB;
+  --white:#FFFFFF;
+  --teal:#0E7490;
+  --shadow-lg:0 30px 80px rgba(7,18,38,.22);
+  --shadow-md:0 16px 36px rgba(17,36,67,.10);
+}
+
+body{
+  font-family:"Aptos","Trebuchet MS","Segoe UI",sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(29,60,109,.42), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(55,86,35,.22), transparent 24%),
+    linear-gradient(140deg, #08111f 0%, #11223c 52%, #152f54 100%);
+  color:var(--text);
+}
+
+body::before,
+body::after{
+  content:"";
+  position:fixed;
+  z-index:0;
+  border-radius:999px;
+  filter:blur(12px);
+  opacity:.55;
+  pointer-events:none;
+}
+
+body::before{
+  width:340px;
+  height:340px;
+  top:-90px;
+  right:9vw;
+  background:radial-gradient(circle, rgba(191,143,0,.36), transparent 68%);
+}
+
+body::after{
+  width:420px;
+  height:420px;
+  left:-120px;
+  bottom:-160px;
+  background:radial-gradient(circle, rgba(55,86,35,.26), transparent 68%);
+}
+
+.slide{
+  inset:16px 18px 28px;
+  border-radius:28px;
+  overflow:hidden;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.96) 0%, rgba(247,250,253,.985) 100%);
+  box-shadow:var(--shadow-lg);
+}
+
+.slide::before{
+  content:"";
+  position:absolute;
+  inset:0 auto 0 0;
+  width:8px;
+  background:linear-gradient(180deg, var(--yellow) 0%, var(--blue) 58%, var(--green) 100%);
+  opacity:.96;
+}
+
+.slide::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(circle at top right, rgba(29,60,109,.06), transparent 28%),
+    radial-gradient(circle at bottom left, rgba(55,86,35,.05), transparent 24%);
+  pointer-events:none;
+}
+
+#prog{
+  top:10px;
+  left:22px;
+  height:4px;
+  border-radius:999px;
+  background:linear-gradient(90deg, var(--yellow), var(--blue), var(--green));
+  box-shadow:0 0 18px rgba(191,143,0,.28);
+}
+
+.counter,
+.kbd,
+.dots,
+.arr{
+  z-index:220;
+}
+
+.counter{
+  right:28px;
+  bottom:24px;
+  padding:9px 12px;
+  border-radius:999px;
+  background:rgba(255,255,255,.12);
+  backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.14);
+  color:rgba(255,255,255,.78);
+  font-size:10px;
+  letter-spacing:1.2px;
+}
+
+.counter.dark{
+  background:rgba(12,23,40,.68);
+  border-color:rgba(255,255,255,.08);
+  color:rgba(255,255,255,.82);
+}
+
+.dots{
+  bottom:24px;
+  gap:7px;
+  padding:10px 14px;
+  border-radius:999px;
+  background:rgba(255,255,255,.10);
+  backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.12);
+}
+
+.dot{
+  width:8px;
+  height:8px;
+  border-radius:999px;
+  background:rgba(255,255,255,.36);
+}
+
+.dot.active{
+  width:24px;
+  background:linear-gradient(90deg, #fff, #dbeafe);
+}
+
+.dot.dk{
+  background:rgba(18,39,69,.18);
+}
+
+.dot.dk.active{
+  background:linear-gradient(90deg, var(--yellow), var(--blue));
+}
+
+.arr{
+  width:50px;
+  height:50px;
+  border-radius:16px;
+  background:rgba(255,255,255,.10);
+  backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.14);
+  color:#fff;
+  font-size:19px;
+}
+
+.arr:hover{
+  background:rgba(255,255,255,.18);
+  transform:translateY(-50%) scale(1.04);
+}
+
+.arr.prev{left:22px}
+.arr.next{right:22px}
+
+.arr.dk{
+  background:rgba(12,23,40,.72);
+  border-color:rgba(255,255,255,.06);
+  color:rgba(255,255,255,.78);
+}
+
+.arr.dk:hover{
+  background:rgba(12,23,40,.88);
+  color:#fff;
+}
+
+.kbd{
+  left:28px;
+  bottom:24px;
+  padding:9px 12px;
+  border-radius:999px;
+  background:rgba(255,255,255,.10);
+  backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.12);
+  color:rgba(255,255,255,.62);
+}
+
+.kbd.dk{
+  background:rgba(12,23,40,.68);
+  border-color:rgba(255,255,255,.08);
+  color:rgba(255,255,255,.66);
+}
+
+.sh{
+  position:relative;
+  padding:34px 56px 22px 64px;
+  border-bottom:1px solid rgba(20,32,51,.08);
+  background:linear-gradient(180deg, rgba(255,255,255,.76), rgba(255,255,255,.48));
+}
+
+.sh::after{
+  content:"";
+  position:absolute;
+  left:64px;
+  bottom:0;
+  width:120px;
+  height:3px;
+  background:linear-gradient(90deg, var(--yellow), var(--blue));
+  border-radius:999px;
+}
+
+.sh-label{
+  font-size:11px;
+  letter-spacing:2.4px;
+  color:var(--blue);
+  margin-bottom:8px;
+}
+
+.sh-title{
+  max-width:980px;
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:36px;
+  letter-spacing:-.8px;
+  line-height:1.14;
+  color:#11223c;
+}
+
+.sb{
+  padding:22px 56px 28px 64px;
+  position:relative;
+  z-index:1;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-start;
+  flex:1;
+  gap:16px;
+  overflow:hidden;
+}
+
+.accent{
+  width:52px;
+  height:5px;
+  border-radius:999px;
+  background:linear-gradient(90deg, var(--yellow), var(--blue));
+}
+
+.kpi-row{gap:16px}
+
+.kcard,
+.box,
+.titem,
+.pcard,
+.fcard,
+.phase{
+  position:relative;
+  border-radius:20px;
+  border:1px solid rgba(29,60,109,.10);
+  background:linear-gradient(180deg, rgba(255,255,255,.96), rgba(244,247,251,.96));
+  box-shadow:var(--shadow-md);
+}
+
+.kcard{
+  padding:26px 18px;
+}
+
+.kcard.bl,.kcard.gr,.kcard.or,.kcard.rd,.kcard.pu{
+  border-top:none;
+}
+
+.kcard.bl::before,.kcard.gr::before,.kcard.or::before,.kcard.rd::before,.kcard.pu::before,
+.box::before,.phase::before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:4px;
+  border-radius:20px 20px 0 0;
+}
+
+.kcard.bl::before{background:linear-gradient(90deg, var(--yellow), var(--blue))}
+.kcard.gr::before{background:linear-gradient(90deg, #86b36a, var(--green))}
+.kcard.or::before{background:linear-gradient(90deg, #f5d26c, var(--yellow))}
+.kcard.rd::before{background:linear-gradient(90deg, #f2a39e, var(--red))}
+.kcard.pu::before{background:linear-gradient(90deg, #c3bff1, var(--purple))}
+
+.kv{
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:42px;
+  letter-spacing:-1px;
+}
+
+.kl{
+  font-size:13px;
+  color:#243347;
+  text-transform:uppercase;
+  letter-spacing:.8px;
+}
+
+.ks{font-size:12px}
+
+.box{
+  padding:24px 24px 20px;
+}
+
+.box::before{
+  background:linear-gradient(90deg, rgba(191,143,0,.95), rgba(29,60,109,.88));
+}
+
+.box-title{
+  margin-bottom:16px;
+  font-size:11px;
+  letter-spacing:1.1px;
+}
+
+.hbox{
+  border-left:none;
+  border-radius:18px;
+  padding:16px 20px;
+  font-size:14px;
+  line-height:1.6;
+  background:linear-gradient(135deg, rgba(29,60,109,.08), rgba(29,60,109,.03));
+  box-shadow:inset 0 0 0 1px rgba(29,60,109,.08);
+}
+
+.hbox.gr{
+  background:linear-gradient(135deg, rgba(55,86,35,.11), rgba(55,86,35,.04));
+  box-shadow:inset 0 0 0 1px rgba(55,86,35,.12);
+}
+
+.hbox.or{
+  background:linear-gradient(135deg, rgba(191,143,0,.12), rgba(191,143,0,.04));
+  box-shadow:inset 0 0 0 1px rgba(191,143,0,.14);
+}
+
+.hbox.rd{
+  background:linear-gradient(135deg, rgba(227,39,38,.10), rgba(227,39,38,.04));
+  box-shadow:inset 0 0 0 1px rgba(227,39,38,.12);
+}
+
+.li{
+  gap:12px;
+  padding:11px 0;
+  border-bottom:1px solid rgba(20,32,51,.08);
+  font-size:14px;
+}
+
+.li-ico{
+  width:20px;
+  text-align:center;
+}
+
+table.dt{
+  border-collapse:separate;
+  border-spacing:0;
+  overflow:hidden;
+  border-radius:18px;
+  box-shadow:var(--shadow-md);
+}
+
+table.dt th{
+  background:linear-gradient(180deg, #f4f7fb, #eef3f8);
+  border-bottom:1px solid rgba(29,60,109,.12);
+  color:#31435b;
+}
+
+table.dt td{
+  background:rgba(255,255,255,.88);
+  border-bottom:1px solid rgba(20,32,51,.07);
+}
+
+table.dt tr:hover td{
+  background:#f8fbff;
+}
+
+.tag{
+  padding:5px 10px;
+  border-radius:999px;
+  letter-spacing:.3px;
+}
+
+#s1{
+  background:
+    radial-gradient(circle at top left, rgba(255,255,255,.13), transparent 22%),
+    radial-gradient(circle at bottom right, rgba(191,143,0,.18), transparent 24%),
+    linear-gradient(135deg, #0B1830 0%, #163560 44%, #1D3C6D 72%, #2B5E93 100%);
+}
+
+#s1::before{
+  width:100%;
+  height:8px;
+  inset:0 0 auto 0;
+  background:linear-gradient(90deg, var(--yellow), #d7e4f7 48%, var(--green));
+}
+
+#s1::after{
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255,255,255,.12), transparent 20%),
+    radial-gradient(circle at 80% 78%, rgba(191,143,0,.12), transparent 22%),
+    linear-gradient(180deg, transparent, rgba(5,10,20,.18));
+}
+
+.cap-eye{
+  font-size:12px;
+  letter-spacing:4px;
+  opacity:.72;
+}
+
+.cap-t{
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:68px;
+  letter-spacing:-2.6px;
+  line-height:.95;
+  text-shadow:0 12px 28px rgba(0,0,0,.22);
+}
+
+.cap-s{
+  font-size:19px;
+  max-width:720px;
+  opacity:.86;
+}
+
+.cap-stack{
+  gap:10px;
+  max-width:900px;
+}
+
+.sbadge{
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.16);
+  padding:9px 14px;
+  border-radius:999px;
+  font-size:11px;
+  letter-spacing:.4px;
+  backdrop-filter:blur(8px);
+}
+
+.sarr{
+  opacity:.55;
+  font-size:14px;
+}
+
+.cap-meta{
+  right:42px;
+  bottom:30px;
+  padding:10px 14px;
+  border-radius:16px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.10);
+}
+
+#s2::after,
+#s3::after,
+#s4::after,
+#s8::after,
+#s9::after,
+#s13::after{
+  background:
+    radial-gradient(circle at top right, rgba(29,60,109,.08), transparent 30%),
+    linear-gradient(180deg, transparent, rgba(29,60,109,.025));
+}
+
+#s5::after,
+#s6::after,
+#s7::after{
+  background:
+    radial-gradient(circle at top right, rgba(191,143,0,.10), transparent 26%),
+    radial-gradient(circle at bottom left, rgba(29,60,109,.07), transparent 24%);
+}
+
+#s10::after,
+#s11::after,
+#s12::after,
+#s14::after{
+  background:
+    radial-gradient(circle at top right, rgba(55,86,35,.08), transparent 28%),
+    radial-gradient(circle at bottom left, rgba(29,60,109,.06), transparent 22%);
+}
+
+.ai-flow{gap:16px}
+
+.ai-nd{
+  min-width:150px;
+  border-radius:18px;
+  box-shadow:var(--shadow-md);
+}
+
+.ai-nd.human{
+  background:linear-gradient(135deg, var(--blue), #274f84);
+}
+
+.ai-nd.out{
+  background:linear-gradient(135deg, var(--green), #4f7436);
+}
+
+.ai-arr{
+  color:var(--yellow);
+  font-weight:700;
+}
+
+.arch{
+  gap:12px;
+}
+
+.astep{
+  padding:22px 12px;
+  border-radius:18px;
+}
+
+.astep-name{
+  color:#11223c;
+  text-transform:uppercase;
+  letter-spacing:.8px;
+}
+
+.aarr{
+  color:var(--yellow);
+  font-size:24px;
+}
+
+.dim{
+  border-radius:16px;
+  padding:10px 12px;
+  background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(242,246,251,.94));
+  box-shadow:var(--shadow-md);
+}
+
+.dim.fact{
+  background:linear-gradient(180deg, #eef4fd, #e4eefb);
+  border-color:#cddcf0;
+}
+
+.fact-box{
+  border-radius:24px;
+  padding:26px 24px;
+  background:linear-gradient(135deg, var(--blue-dark), var(--blue));
+  box-shadow:0 24px 50px rgba(18,39,69,.26);
+}
+
+.tgrid{gap:12px}
+
+.titem{
+  padding:14px 16px;
+}
+
+.tck{
+  color:var(--green);
+  font-size:16px;
+}
+
+.pgrid{gap:14px}
+
+.pcard{
+  padding:20px 16px;
+}
+
+.ptitle{font-size:13px}
+.pdesc{font-size:12px;line-height:1.45}
+
+.pnum{
+  width:32px;
+  height:32px;
+  font-size:13px;
+  margin-bottom:10px;
+  background:linear-gradient(135deg, var(--yellow), var(--blue));
+  box-shadow:0 10px 22px rgba(29,60,109,.18);
+}
+
+.mape-scale{
+  border-radius:14px;
+  box-shadow:var(--shadow-md);
+}
+
+.bar-track{
+  background:#e9eef5;
+  height:18px;
+}
+
+.rls-top,
+.rls-m{
+  box-shadow:var(--shadow-md);
+}
+
+.rls-s{
+  border-radius:999px;
+  background:#f5f8fc;
+}
+
+.fcard{
+  padding:20px 14px;
+}
+
+.fco{font-size:30px}
+.fn{font-size:13px}
+.fd{font-size:11px;line-height:1.4}
+
+.ft{
+  color:#31435b;
+}
+
+.phase{
+  padding:26px 20px;
+}
+
+.phase-item{font-size:13px}
+
+.phase.done::before{background:linear-gradient(90deg, #8bbb6d, var(--green))}
+.phase.now::before{background:linear-gradient(90deg, var(--yellow), var(--blue))}
+.phase.fut::before{background:linear-gradient(90deg, #c5d2e3, #8aa3c1)}
+
+.llm-callout{
+  border-radius:20px;
+  background:linear-gradient(135deg, #0e1728, #1c3151);
+  box-shadow:0 20px 42px rgba(10,20,38,.24);
+}
+
+@media (max-width: 1200px){
+  .slide{inset:10px 10px 18px}
+  .sh{padding:28px 38px 18px 46px}
+  .sh::after{left:46px}
+  .sh-title{font-size:28px}
+  .sb{padding:20px 38px 36px 46px}
+  .cap-t{font-size:56px}
+}
+</style>
+</head>
+<body>
+
+<div id="prog"></div>
+<div class="dots" id="dots"></div>
+<div class="counter" id="counter"></div>
+<div class="kbd" id="kbd">← → navegar &nbsp;·&nbsp; F tela cheia</div>
+<button class="arr prev" id="prev">&#8592;</button>
+<button class="arr next" id="next">&#8594;</button>
+
+<!-- ════════════════════════════════════════
+     SLIDE 1 — CAPA
+════════════════════════════════════════ -->
+<section class="slide" id="s1">
+  <div class="cap-eye">Case de Planejamento Comercial · Forecast &amp; Budget</div>
+  <div class="cap-t">Commercial Planning<br>Control Tower</div>
+  <div class="cap-s">Estratégia → Execução → Monitoramento → Decisão<br>em uma plataforma analítica integrada de ponta a ponta</div>
+  <div class="cap-stack">
+    <span class="sbadge">📊 Excel</span><span class="sarr">→</span>
+    <span class="sbadge">🐍 Python ETL</span><span class="sarr">→</span>
+    <span class="sbadge">🗄 SQL Server DW</span><span class="sarr">→</span>
+    <span class="sbadge">📊 Power BI + DAX</span><span class="sarr">→</span>
+    <span class="sbadge">⚡ Power Automate</span>
+  </div>
+  <div style="display:flex;gap:32px;justify-content:center;margin-top:28px;font-size:13px;opacity:.7">
+    <span>~20.004 transações</span><span>·</span>
+    <span>4 anos histórico</span><span>·</span>
+    <span>11 vendedores</span><span>·</span>
+    <span>47 testes automatizados</span><span>·</span>
+    <span>5 fluxos Power Automate</span>
+  </div>
+  <div class="cap-meta">Igor Pereira Pinto · Analista de Dados/BI Sênior · Abril 2026</div>
+</section>
+
+<!-- ════════════════════════════════════════
+     SLIDE 2 — DESAFIO + ESCALA
+════════════════════════════════════════ -->
+<section class="slide" id="s2">
+  <div class="sh">
+    <div class="sh-label">O Desafio</div>
+    <div class="sh-title">Dados fragmentados em 6 Excels geravam decisão tardia, forecast impreciso e retrabalho recorrente</div>
+  </div>
+  <div class="sb">
+    <div class="kpi-row k4">
+      <div class="kcard bl"><div class="kv bl">20.004</div><div class="kl">Transações de Vendas</div><div class="ks">Jan/2018 — Abr/2021</div></div>
+      <div class="kcard gr"><div class="kv gr">528</div><div class="kl">Registros de Meta</div><div class="ks">11 vendedores × 12 meses × 4 anos</div></div>
+      <div class="kcard or"><div class="kv or">11</div><div class="kl">Vendedores</div><div class="ks">3 gerentes · 3 times regionais</div></div>
+      <div class="kcard rd"><div class="kv rd">6</div><div class="kl">Arquivos Excel</div><div class="ks">sem integração · cada área com seu número</div></div>
+    </div>
+    <div class="col2">
+      <div class="box">
+        <div class="box-title" style="color:var(--red)">❌ Situação anterior — dores identificadas</div>
+        <div class="li"><span class="li-ico">❌</span><span>Forecast manual sem métrica de acurácia — erro acima de 30% em picos</span></div>
+        <div class="li"><span class="li-ico">❌</span><span>Meta vs realizado calculado diferente por cada área — reunião virava debate sobre qual planilha estava certa</span></div>
+        <div class="li"><span class="li-ico">❌</span><span>Gerentes sem visibilidade do time em tempo real</span></div>
+        <div class="li"><span class="li-ico">❌</span><span>Fechamento mensal = 2 dias de trabalho manual recorrente</span></div>
+        <div class="li"><span class="li-ico">❌</span><span>Pedidos cancelados inflavam o faturamento reportado</span></div>
+        <div class="li"><span class="li-ico">❌</span><span>Riscos detectados depois que era tarde para agir (dia 28, sem margem)</span></div>
+      </div>
+      <div class="box">
+        <div class="box-title">📁 Fontes de dados e seus desafios de ingestão</div>
+        <table class="dt">
+          <thead><tr><th>Arquivo</th><th>Volume</th><th>Desafio técnico</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Vendas.xlsx</strong></td><td>~20.004 linhas</td><td>Cabeçalho na linha 5 · pedidos cancelados misturados · dtype str</td></tr>
+            <tr><td><strong>Dimensões.xlsx</strong></td><td>~800 linhas / 7 abas</td><td>7 dimensões em abas distintas de um único arquivo</td></tr>
+            <tr><td><strong>Meta 2018–2021</strong></td><td>4 × 132 = 528 linhas</td><td>Formato wide (meses como colunas) — requer UNPIVOT para long</td></tr>
+          </tbody>
+        </table>
+        <div class="hbox rd" style="margin-top:12px;font-size:13px">
+          <strong>Decisão com 15–30 dias de atraso</strong> e sem projeção do ano — o budget estava comprometido antes de qualquer alerta.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     SLIDE 3 — ESTRATÉGIA ANALÍTICA + IA
+════════════════════════════════════════ -->
+<section class="slide" id="s3">
+  <div class="sh">
+    <div class="sh-label">Estratégia Analítica</div>
+    <div class="sh-title">Três hipóteses de negócio guiam o modelo — construído com orquestração humana sobre IA</div>
+  </div>
+  <div class="sb">
+    <div class="col3">
+      <div class="box">
+        <div style="font-size:32px;margin-bottom:8px">📊</div>
+        <div style="font-size:14px;font-weight:800;margin-bottom:8px;color:var(--text)">H1 — Concentração (Pareto)</div>
+        <div class="hbox" style="font-size:13px;margin-bottom:10px">"20% dos vendedores geram ~80% da receita"</div>
+        <div class="li"><span class="li-ico">→</span><span>Priorizar retenção dos top performers</span></div>
+        <div class="li"><span class="li-ico">→</span><span>Identificar potencial da cauda longa</span></div>
+        <div style="margin-top:10px"><span class="tag bl">Pareto + RANKX no dashboard</span></div>
+      </div>
+      <div class="box">
+        <div style="font-size:32px;margin-bottom:8px">📈</div>
+        <div style="font-size:14px;font-weight:800;margin-bottom:8px;color:var(--text)">H2 — Volatilidade do Forecast</div>
+        <div class="hbox or" style="font-size:13px;margin-bottom:10px">"Erro elevado em picos sazonais — metas flat não capturam variação"</div>
+        <div class="li"><span class="li-ico">→</span><span>MAPE &gt; 20% sinaliza revisão do modelo de metas</span></div>
+        <div class="li"><span class="li-ico">→</span><span>Processo de planejamento precisa de ajuste por período</span></div>
+        <div style="margin-top:10px"><span class="tag or">MAPE mensal no dashboard</span></div>
+      </div>
+      <div class="box">
+        <div style="font-size:32px;margin-bottom:8px">📅</div>
+        <div style="font-size:14px;font-weight:800;margin-bottom:8px;color:var(--text)">H3 — Sazonalidade</div>
+        <div class="hbox gr" style="font-size:13px;margin-bottom:10px">"Vendas concentradas em meses específicos — Q1 e Q4 têm comportamentos opostos"</div>
+        <div class="li"><span class="li-ico">→</span><span>Metas devem refletir sazonalidade histórica, não flat</span></div>
+        <div class="li"><span class="li-ico">→</span><span>YoY revela padrão e desvio estrutural</span></div>
+        <div style="margin-top:10px"><span class="tag gr">dCalendario + YoY + MTD</span></div>
+      </div>
+    </div>
+    <div class="col2">
+      <div class="box" style="background:linear-gradient(135deg,rgba(29,60,109,.06),rgba(29,60,109,.02))">
+        <div class="box-title">🤖 Como foi construído — IA com orquestração humana</div>
+        <div class="ai-flow" style="margin:6px 0 10px">
+          <div class="ai-nd"><div class="ai-ico" style="font-size:20px">🤖</div><div class="ai-name">Claude</div><div class="ai-desc">Arquitetura · Código · DAX</div></div>
+          <div class="ai-arr">+</div>
+          <div class="ai-nd"><div class="ai-ico" style="font-size:20px">🤖</div><div class="ai-name">ChatGPT</div><div class="ai-desc">Segunda opinião · Gaps</div></div>
+          <div class="ai-arr">→</div>
+          <div class="ai-nd human"><div class="ai-ico" style="font-size:20px">👤</div><div class="ai-name">Igor</div><div class="ai-desc">Decide · Valida · Dirige</div></div>
+          <div class="ai-arr">→</div>
+          <div class="ai-nd out"><div class="ai-ico" style="font-size:20px">✅</div><div class="ai-name">46 arquivos</div><div class="ai-desc">Qualidade senior</div></div>
+        </div>
+        <div class="hbox" style="font-size:12px"><strong>Humano no comando:</strong> a IA gerou código, SQL e DAX; o analista definiu o problema, validou cada entrega e decidiu quais padrões adotar.</div>
+      </div>
+      <div class="box">
+        <div class="box-title">⚖️ Divisão de responsabilidades</div>
+        <table class="dt">
+          <thead><tr><th>Papel da IA</th><th>Papel do Analista</th></tr></thead>
+          <tbody>
+            <tr><td>Gerar código, SQL, DAX, fluxos</td><td>Definir o problema de negócio</td></tr>
+            <tr><td>Manter padrões entre 46 arquivos</td><td>Validar cada entrega vs realidade</td></tr>
+            <tr><td>Propor arquitetura e hipóteses</td><td><strong>Decidir</strong> o que adotar</td></tr>
+            <tr><td>Multi-LLM: Claude + ChatGPT</td><td>Selecionar as 9 melhores contribuições</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     SLIDE 4 — ARQUITETURA
+════════════════════════════════════════ -->
+<section class="slide" id="s4">
+  <div class="sh">
+    <div class="sh-label">Arquitetura Ponta a Ponta</div>
+    <div class="sh-title">7 etapas de pipeline com dupla validação: do Excel bruto ao alerta automático no Teams</div>
+  </div>
+  <div class="sb">
+    <div class="arch">
+      <div class="astep"><div class="astep-ico">📊</div><div class="astep-name">Excel (Fontes)</div><div class="astep-tech">openpyxl · pandas<br>dtype=str · skiprows<br>Vendas + Dimensões + Metas</div></div>
+      <div class="aarr">→</div>
+      <div class="astep" style="background:var(--blue-light);border-color:#BFDBFE"><div class="astep-ico">🐍</div><div class="astep-name" style="color:var(--blue)">Python ETL</div><div class="astep-tech">7 etapas · Extract<br>Validate RAW (4 testes)<br>Transform · Validate STG (7)<br>Load Raw · Staging · DW</div></div>
+      <div class="aarr">→</div>
+      <div class="astep"><div class="astep-ico">🗄</div><div class="astep-name">SQL Server</div><div class="astep-tech">raw → staging → dw<br>Star Schema Kimball<br>13 índices · PERSISTED cols</div></div>
+      <div class="aarr">→</div>
+      <div class="astep"><div class="astep-ico">📊</div><div class="astep-name">Power BI</div><div class="astep-tech">7 páginas analíticas<br>20+ medidas DAX<br>RLS · MAPE · Pareto · YTD</div></div>
+      <div class="aarr">→</div>
+      <div class="astep"><div class="astep-ico">⚡</div><div class="astep-name">Power Automate</div><div class="astep-tech">5 fluxos automáticos<br>E-mail · Teams · Refresh<br>Alertas por severidade</div></div>
+    </div>
+    <div class="col3">
+      <div class="hbox" style="font-size:13px">
+        <strong>🥉 Bronze (raw)</strong><br>
+        Dado bruto preservado e imutável. Nunca modificado após a carga — base para auditoria e reprocessamento seguro.
+      </div>
+      <div class="hbox or" style="font-size:13px">
+        <strong>🥈 Silver (staging)</strong><br>
+        Limpeza, tipagem e normalização. Metas UNPIVOTADAS de formato wide → long. Deduplicação declarada.
+      </div>
+      <div class="hbox gr" style="font-size:13px">
+        <strong>🥇 Gold (dw)</strong><br>
+        Star schema Kimball. Colunas PERSISTED pré-calculadas (Margem Bruta, Resultado Líquido). Pronto para Power BI.
+      </div>
+    </div>
+    <div class="col2">
+      <div class="hbox rd" style="font-size:13px"><strong>Falha crítica = pipeline para.</strong> Nenhum dado inválido chega ao DW. O dado raw nunca é sobrescrito — reprocessamento sempre possível.</div>
+      <div class="hbox" style="font-size:13px"><strong>--dry-run:</strong> valida todas as 11 etapas sem gravar nenhum registro. Seguro para testar em ambiente de produção.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     SLIDE 5 — ENGENHARIA DE DADOS
+════════════════════════════════════════ -->
+<section class="slide" id="s5">
+  <div class="sh">
+    <div class="sh-label">Engenharia de Dados</div>
+    <div class="sh-title">Star schema Kimball com 2 fatos e 8 dimensões + 47 testes que garantem zero dado inválido no DW</div>
+  </div>
+  <div class="sb">
+    <div class="col2">
+      <div>
+        <div class="box-title" style="margin-bottom:12px">🗄 Modelo Dimensional — Star Schema</div>
+        <div class="star-wrap" style="gap:10px">
+          <div class="dims-left" style="gap:6px">
+            <div class="dim" style="padding:8px 10px">dCalendario<div style="font-size:9px;color:var(--text-light);margin-top:2px">2.192 datas · 25 atributos</div></div>
+            <div class="dim" style="padding:8px 10px">dProdutos<div style="font-size:9px;color:var(--text-light);margin-top:2px">499 produtos · Marca→Categoria</div></div>
+            <div class="dim" style="padding:8px 10px">dVendedor<div style="font-size:9px;color:var(--text-light);margin-top:2px">11 vendedores · Gerente (RLS)</div></div>
+            <div class="dim" style="padding:8px 10px">dClientes + dCidade<div style="font-size:9px;color:var(--text-light);margin-top:2px">Hierarquia geográfica UF</div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+            <div class="fact-box" style="padding:14px 12px;font-size:13px">
+              fVendas — Fato Principal
+              <div class="fact-subs">~20.004 linhas · produto × pedido × data</div>
+              <div style="margin-top:8px;font-size:10px;background:rgba(255,255,255,.2);border-radius:5px;padding:5px;text-align:left">
+                PERSISTED: <strong>Margem Bruta</strong> = Fat − Custo<br>
+                PERSISTED: <strong>Resultado Líq.</strong> = Fat − Custo − Desp − Imp − Com
+              </div>
+            </div>
+            <div class="dim fact" style="padding:8px 12px;font-size:12px">
+              fMetas — Fato Budget
+              <div style="font-size:9px;margin-top:2px">528 linhas · relação INATIVA → USERELATIONSHIP</div>
+            </div>
+          </div>
+          <div class="dims-right" style="gap:6px">
+            <div class="dim" style="padding:8px 10px">dUnidades<div style="font-size:9px;color:var(--text-light);margin-top:2px">11 unidades · Filial / Matriz</div></div>
+            <div class="dim" style="padding:8px 10px">dStatus<div style="font-size:9px;color:var(--text-light);margin-top:2px">Conta Para Faturamento BIT</div></div>
+            <div class="dim" style="padding:8px 10px">dPagamento<div style="font-size:9px;color:var(--text-light);margin-top:2px">À Vista · Parcelado · Digital</div></div>
+            <div class="dim" style="padding:8px 10px;background:var(--blue-light);border-color:#BFDBFE;color:var(--blue)">13 índices nonclustered<div style="font-size:9px;margin-top:2px">INCLUDE para queries Power BI</div></div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="box-title">🧪 Qualidade de Dados — 47 Testes Automatizados</div>
+        <div class="kpi-row k2">
+          <div class="kcard gr"><div class="kv gr">47</div><div class="kl">Testes pytest</div><div class="ks">unit + integration</div></div>
+          <div class="kcard bl"><div class="kv bl">11</div><div class="kl">Validações pipeline</div><div class="ks">4 RAW + 7 STAGING</div></div>
+        </div>
+        <div class="tgrid">
+          <div class="titem"><span class="tck">✅</span><div><div class="tn">Nulos em chaves primárias</div><div class="td2">Id Produto, Vendedor, Cliente ≠ NULL</div></div></div>
+          <div class="titem"><span class="tck">✅</span><div><div class="tn">Integridade referencial</div><div class="td2">Zero FKs órfãs em todas as dimensões</div></div></div>
+          <div class="titem"><span class="tck">✅</span><div><div class="tn">Duplicidade de transações</div><div class="td2">Num Venda + Id Produto = chave única</div></div></div>
+          <div class="titem"><span class="tck">✅</span><div><div class="tn">Cobertura de metas</div><div class="td2">Todos os meses 2018–2021 com meta</div></div></div>
+          <div class="titem"><span class="tck">✅</span><div><div class="tn">Valores negativos</div><div class="td2">Faturamento nunca &lt; zero</div></div></div>
+          <div class="titem"><span class="tck">✅</span><div><div class="tn">Consistência temporal</div><div class="td2">Data Envio ≥ Data Venda em 100%</div></div></div>
+        </div>
+        <div class="hbox gr" style="font-size:13px"><strong>Logging completo:</strong> cada execução gera <code>logs/etl.log</code> com timestamp, status e rastreabilidade por etapa.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     SLIDE 6 — PLATAFORMA ANALÍTICA
+════════════════════════════════════════ -->
+<section class="slide" id="s6">
+  <div class="sh">
+    <div class="sh-label">Plataforma Analítica</div>
+    <div class="sh-title">7 páginas do resumo executivo ao diagnóstico + MAPE como KPI de qualidade do planejamento</div>
+  </div>
+  <div class="sb">
+    <div class="col2">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="box-title">📊 Dashboard Power BI — fluxo de perguntas</div>
+        <div class="pgrid" style="grid-template-columns:repeat(4,1fr)">
+          <div class="pcard"><div class="pnum">1</div><div class="ptitle">Executive Summary</div><div class="pdesc">KPIs globais · semáforo · tendência YTD</div></div>
+          <div class="pcard"><div class="pnum">2</div><div class="ptitle">Meta vs Realizado</div><div class="pdesc">YTD · MTD · Atingimento % por vendedor</div></div>
+          <div class="pcard"><div class="pnum">3</div><div class="ptitle">Análise de Produtos</div><div class="pdesc">Top 10 · Pareto · Treemap por categoria</div></div>
+          <div class="pcard"><div class="pnum">4</div><div class="ptitle">Análise de Margens</div><div class="pdesc">Waterfall: Fat → MB → Resultado Líquido</div></div>
+          <div class="pcard"><div class="pnum">5</div><div class="ptitle">Análise Geográfica</div><div class="pdesc">Mapa + ranking de faturamento por UF</div></div>
+          <div class="pcard"><div class="pnum">6</div><div class="ptitle">Acurácia do Forecast</div><div class="pdesc">MAPE mensal + evolução da acurácia</div></div>
+          <div class="pcard"><div class="pnum">7</div><div class="ptitle">Diagnóstico</div><div class="pdesc">Alertas · desvios · causa raiz · LLM narrativo</div></div>
+          <div class="pcard" style="background:var(--blue);border-color:var(--blue)">
+            <div style="color:white;font-size:22px;margin-bottom:5px">📐</div>
+            <div style="font-size:12px;font-weight:700;color:white">20+ medidas DAX</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.8);margin-top:4px">RANKX · TOTALYTD<br>USERELATIONSHIP</div>
+          </div>
+        </div>
+        <div class="hbox" style="font-size:13px">
+          <strong>Fluxo de navegação:</strong> Pág 1 "estamos bem?" → Pág 2 "quem não está?" → Págs 3–5 "onde está o desvio?" → Págs 6–7 "qual é a causa?"
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="box-title">📉 MAPE — Acurácia do Forecast como KPI de Processo</div>
+        <div class="box">
+          <div style="font-size:13px;color:var(--text-light);margin-bottom:10px">
+            <strong style="color:var(--text)">Mean Absolute Percentage Error</strong> — erro percentual médio absoluto entre forecast e realizado, calculado por vendedor × mês.
+          </div>
+          <div class="mape-scale">
+            <div class="ms ex">&lt;10%<br>Excelente</div>
+            <div class="ms go">10–20%<br>Boa</div>
+            <div class="ms fa">20–50%<br>Razoável</div>
+            <div class="ms po">&gt;50%<br>Baixa</div>
+          </div>
+        </div>
+        <div class="bar-wrap">
+          <div style="font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Acurácia por vendedor — referência simulada</div>
+          <div class="bar-row"><span class="bar-label">Ronaldo</span><div class="bar-track"><div class="bar-fill" style="width:88%;background:var(--green)">88%</div></div></div>
+          <div class="bar-row"><span class="bar-label">Paola</span><div class="bar-track"><div class="bar-fill" style="width:82%;background:var(--green)">82%</div></div></div>
+          <div class="bar-row"><span class="bar-label">Neymar</span><div class="bar-track"><div class="bar-fill" style="width:74%;background:var(--yellow)">74%</div></div></div>
+          <div class="bar-row"><span class="bar-label">Rodrigo</span><div class="bar-track"><div class="bar-fill" style="width:61%;background:var(--red)">61%</div></div></div>
+        </div>
+        <div class="hbox or" style="font-size:13px"><strong>MAPE &gt; 25% = processo de planejamento precisa de revisão</strong> — não é falha do vendedor, é do modelo de metas. Medir é o primeiro passo para melhorar.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     SLIDE 7 — GOVERNANÇA + AUTOMAÇÃO
+════════════════════════════════════════ -->
+<section class="slide" id="s7">
+  <div class="sh">
+    <div class="sh-label">Governança &amp; Automação</div>
+    <div class="sh-title">RLS garante que cada gerente vê apenas o seu time + 5 fluxos entregam insights antes de abrir o dashboard</div>
+  </div>
+  <div class="sb">
+    <div class="col2">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="box-title">🔒 Row-Level Security — filtro automático por gerente</div>
+        <div class="box">
+          <div class="rls-tree">
+            <div class="rls-top">🏢 Diretoria / Admin — vê TUDO</div>
+            <div class="rls-line"></div>
+            <div class="rls-managers">
+              <div class="rls-mgr">
+                <div class="rls-m">Guardiola</div>
+                <div class="rls-line"></div>
+                <div class="rls-sellers"><div class="rls-s">Ronaldo</div><div class="rls-s">Rodrigo</div></div>
+              </div>
+              <div class="rls-mgr">
+                <div class="rls-m">Marta</div>
+                <div class="rls-line"></div>
+                <div class="rls-sellers"><div class="rls-s">Paola</div><div class="rls-s">Marilia</div></div>
+              </div>
+              <div class="rls-mgr">
+                <div class="rls-m">Zagallo</div>
+                <div class="rls-line"></div>
+                <div class="rls-sellers"><div class="rls-s">Neymar</div><div class="rls-s">+ time</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <table class="dt">
+          <thead><tr><th>Role</th><th>Filtro DAX</th><th>Acesso</th></tr></thead>
+          <tbody>
+            <tr><td><span class="tag bl">Gerente_Guardiola</span></td><td><code>[Gerente] = "Guardiola"</code></td><td>Ronaldo, Rodrigo</td></tr>
+            <tr><td><span class="tag bl">Gerente_Marta</span></td><td><code>[Gerente] = "Marta"</code></td><td>Paola, Marilia</td></tr>
+            <tr><td><span class="tag bl">Gerente_Zagallo</span></td><td><code>[Gerente] = "Zagallo"</code></td><td>Time Zagallo</td></tr>
+            <tr><td><span class="tag gr">Admin</span></td><td><em>(sem filtro)</em></td><td>Visão total</td></tr>
+          </tbody>
+        </table>
+        <div class="hbox gr" style="font-size:13px"><strong>Filtro aplicado em dVendedor</strong> → propaga para fVendas e fMetas automaticamente. Confiança = driver #1 de adoção de dashboard.</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="box-title">⚡ Power Automate — 5 fluxos de inteligência proativa</div>
+        <div class="col5" style="grid-template-columns:1fr 1fr;gap:10px;display:grid">
+          <div class="fcard"><div class="fco">🔄</div><div class="ft">SEG · 06H</div><div class="fn">Refresh Automático</div><div class="fd">ETL Python + dataset Power BI</div><div class="fch">E-mail status</div></div>
+          <div class="fcard"><div class="fco">⚠️</div><div class="ft">SEG · 08H</div><div class="fn">Alerta Baixo Atingimento</div><div class="fd">Vendedores &lt; 70% da meta + desvio R$</div><div class="fch">E-mail gerente</div></div>
+          <div class="fcard"><div class="fco">📊</div><div class="ft">SEX · 17H</div><div class="fn">Resumo Semanal</div><div class="fd">KPIs semana + MTD + Top 3</div><div class="fch">E-mail gerentes</div></div>
+          <div class="fcard"><div class="fco">🚨</div><div class="ft">DIA 20 · 08H</div><div class="fn">Meta em Risco</div><div class="fd">Projeção &lt; 90% → 3 níveis severidade</div><div class="fch">E-mail diretoria</div></div>
+          <div class="fcard" style="grid-column:span 2"><div class="fco">🏆</div><div class="ft">REAL-TIME</div><div class="fn">Celebração de Meta Superada</div><div class="fd">Gatilho Power BI quando atingimento &gt; 100%</div><div class="fch">Teams + E-mail</div></div>
+        </div>
+        <div class="col2">
+          <div class="hbox rd" style="font-size:13px"><strong>Sem automação:</strong> risco detectado no dia 28 — sem margem de ação.</div>
+          <div class="hbox gr" style="font-size:13px"><strong>Com automação:</strong> alerta no dia 20 — 11 dias de margem para agir.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     SLIDE 8 — IMPACTO + COMPETÊNCIAS
+════════════════════════════════════════ -->
+<section class="slide" id="s8">
+  <div class="sh">
+    <div class="sh-label">Impacto &amp; Competências</div>
+    <div class="sh-title">Decisão mais rápida, zero retrabalho no fechamento e todas as atribuições analíticas cobertas</div>
+  </div>
+  <div class="sb">
+    <div class="col2">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="box-title">📈 Antes × Depois — impacto mensurável</div>
+        <table class="dt">
+          <thead><tr><th>Antes</th><th>Depois</th><th>Impacto</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="res-before">Fechamento: 2 dias manual</td>
+              <td class="res-after">Dashboard atualizado automaticamente toda segunda</td>
+              <td class="res-impact">~2 dias/mês</td>
+            </tr>
+            <tr>
+              <td class="res-before">Risco no dia 28 — sem margem</td>
+              <td class="res-after">Alerta automático dia 20 com projeção e ação</td>
+              <td class="res-impact">8–11 dias de antecipação</td>
+            </tr>
+            <tr>
+              <td class="res-before">Forecast sem acurácia</td>
+              <td class="res-after">MAPE mensal por vendedor no dashboard</td>
+              <td class="res-impact">Planejamento mensurável</td>
+            </tr>
+            <tr>
+              <td class="res-before">6 Excels — cada área com seu número</td>
+              <td class="res-after">DW unificado — fonte única de verdade</td>
+              <td class="res-impact">Governança de métricas</td>
+            </tr>
+            <tr>
+              <td class="res-before">KPI calculado diferente por cada área</td>
+              <td class="res-after">20+ medidas DAX centralizadas e versionadas</td>
+              <td class="res-impact">Consistência analítica</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="kpi-row k3">
+          <div class="kcard gr"><div class="kv gr">47</div><div class="kl">Testes automatizados</div></div>
+          <div class="kcard bl"><div class="kv bl">5</div><div class="kl">Fluxos Power Automate</div></div>
+          <div class="kcard or"><div class="kv or">8</div><div class="kl">Dias de antecipação</div></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="box-title">🎯 Atribuições analíticas cobertas pelo projeto</div>
+        <div class="li"><span class="li-ico">✅</span><span><strong>IA/LLM + análise de dados</strong> — 3 cenários de forecast, pipeline ML-ready, MAPE como KPI de processo</span></div>
+        <div class="li"><span class="li-ico">✅</span><span><strong>Benchmark de melhores práticas</strong> — S&amp;OP, MAPE &lt; 10%, semáforo 70/90%, YoY histórico 2018–2021</span></div>
+        <div class="li"><span class="li-ico">✅</span><span><strong>Soluções analíticas integradas às esteiras</strong> — pipeline 7 etapas + 5 fluxos Power Automate + Power BI</span></div>
+        <div class="li"><span class="li-ico">✅</span><span><strong>Mineração de dados e insights</strong> — 20.004 transações + descoberta: efeito Janeiro mascarando queda real em 2021</span></div>
+        <div class="li"><span class="li-ico">✅</span><span><strong>Análises de jornada e personalização</strong> — semáforo individual + aceleração necessária por vendedor</span></div>
+        <div class="li"><span class="li-ico">✅</span><span><strong>Análise com áreas de negócio</strong> — dashboard Power BI com RLS + apresentação executiva 10 slides + alertas automáticos</span></div>
+        <div class="li"><span class="li-ico">✅</span><span><strong>Qualidade para melhorias de processo</strong> — 47 testes automatizados + MAPE como KPI de qualidade do planejamento</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     SLIDE 9 — ROADMAP
+════════════════════════════════════════ -->
+<section class="slide" id="s9">
+  <div class="sh">
+    <div class="sh-label">Roadmap</div>
+    <div class="sh-title">3 fases de evolução — fundação entregue, aprofundamento em curso, IA e predição como próxima fronteira</div>
+  </div>
+  <div class="sb">
+    <div class="col3">
+      <div class="phase done">
+        <div class="phase-lbl">✅ Fase 1 — Fundação (concluída)</div>
+        <div class="phase-item">✅ Pipeline ETL Python — 7 etapas + 47 testes automatizados</div>
+        <div class="phase-item">✅ SQL Server DW — star schema Kimball completo</div>
+        <div class="phase-item">✅ Dashboard Power BI — 7 páginas + 20+ medidas DAX</div>
+        <div class="phase-item">✅ RLS por gerente (Guardiola, Marta, Zagallo)</div>
+        <div class="phase-item">✅ 5 fluxos Power Automate (alertas + refresh)</div>
+        <div class="phase-item">✅ Apresentação executiva HTML + DAX Forecast</div>
+      </div>
+      <div class="phase now">
+        <div class="phase-lbl">🔄 Fase 2 — Aprofundamento Analítico</div>
+        <div class="phase-item">🔄 MAPE como KPI recorrente de processo de planning</div>
+        <div class="phase-item">🔄 Pág 7: Diagnóstico automatizado + causa raiz</div>
+        <div class="phase-item">🔄 Análise de comissão variável por meta atingida</div>
+        <div class="phase-item">🔄 Forecast MTD projetado no dashboard Power BI</div>
+        <div class="phase-item">🔄 Segmentação de clientes por valor e frequência</div>
+      </div>
+      <div class="phase fut">
+        <div class="phase-lbl">🚀 Fase 3 — IA e Predição</div>
+        <div class="phase-item">🚀 Forecast com Prophet ou XGBoost por vendedor</div>
+        <div class="phase-item">🚀 Simulação de metas — cenário "e se atingimento X%?"</div>
+        <div class="phase-item">🚀 Forecast por segmento, unidade e produto</div>
+        <div class="phase-item">🚀 Integração com CRM para pipeline de oportunidades</div>
+        <div class="phase-item">🚀 <strong>LLM narrativo automático integrado ao dashboard</strong></div>
+      </div>
+    </div>
+    <div class="llm-callout">
+      💬 <strong>Próxima fronteira — LLM Narrativo:</strong> Python lê o DW → chama API Claude/GPT → gera diagnóstico em linguagem natural diretamente no dashboard Power BI.<br>
+      <span style="color:#86EFAC">"O faturamento caiu 12% em março devido à redução de 30% nas vendas do time Zagallo, concentradas na categoria Eletrônicos — ação recomendada: revisão de carteira e campanha de recuperação."</span>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     JAVASCRIPT — NAVIGATION ENGINE
+════════════════════════════════════════ -->
+<script>
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let cur = 0;
+
+// Build dots
+const dotsEl = document.getElementById('dots');
+slides.forEach((_, i) => {
+  const d = document.createElement('div');
+  d.className = 'dot';
+  d.onclick = () => go(i);
+  dotsEl.appendChild(d);
+});
+
+function isDark(idx) {
+  return idx !== 0; // only capa has dark background
+}
+
+function go(idx) {
+  if (idx < 0 || idx >= total) return;
+  slides[cur].classList.remove('active');
+  cur = idx;
+  slides[cur].classList.add('active');
+  update();
+}
+
+function update() {
+  // progress bar
+  document.getElementById('prog').style.width = ((cur + 1) / total * 100) + '%';
+
+  // counter
+  const c = document.getElementById('counter');
+  c.textContent = (cur + 1) + ' / ' + total;
+  c.className = 'counter' + (isDark(cur) ? ' dark' : '');
+
+  // dots
+  document.querySelectorAll('.dot').forEach((d, i) => {
+    d.className = 'dot' + (isDark(cur) ? ' dk' : '') + (i === cur ? ' active' : '');
+  });
+
+  // arrows
+  ['prev','next'].forEach(cls => {
+    const el = document.querySelector('.arr.' + cls);
+    el.className = 'arr ' + cls + (isDark(cur) ? ' dk' : '');
+  });
+
+  // kbd hint
+  const kbd = document.getElementById('kbd');
+  kbd.className = 'kbd' + (isDark(cur) ? ' dk' : '');
+}
+
+// Init
+go(0);
+
+// Keyboard
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') go(cur + 1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') go(cur - 1);
+  if (e.key === 'Home') go(0);
+  if (e.key === 'End') go(total - 1);
+  if (e.key === 'f' || e.key === 'F') {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+    else document.exitFullscreen();
+  }
+});
+
+document.getElementById('prev').onclick = () => go(cur - 1);
+document.getElementById('next').onclick = () => go(cur + 1);
+
+// Touch swipe
+let tx = 0;
+document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; });
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - tx;
+  if (Math.abs(dx) > 50) go(dx < 0 ? cur + 1 : cur - 1);
+});
+</script>
+</body>
+</html>

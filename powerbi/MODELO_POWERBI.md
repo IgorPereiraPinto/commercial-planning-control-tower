@@ -1,5 +1,5 @@
 # Power BI — Modelo, Conexão e Configuração
-## Commercial Planning Control Tower
+## Planejamento Comercial
 
 ---
 
@@ -264,7 +264,7 @@ _Medidas/
 
 ## 6. Tabela de Medidas (Estrutura Recomendada)
 
-Consulte o arquivo `powerbi/medidas_dax/medidas_completas.dax` para o código
+Consulte o arquivo `powerbi/dax/medidas_completas.dax` para o código
 completo de todas as medidas organizadas por pasta.
 
 ### Resumo das medidas e suas funções DAX chave
@@ -442,5 +442,5 @@ Use esta lista para garantir que o modelo está 100% configurado antes de criar 
 
 ---
 
-*Arquivo gerado como parte do Commercial Planning Control Tower.*
-*Próximos entregáveis: `medidas_dax/medidas_completas.dax` e `rls/rls_roles_completo.md`*
+*Arquivo gerado como parte do Planejamento Comercial.*
+*Próximos entregáveis: `dax/medidas_completas.dax` e `rls/rls_roles_completo.md`*

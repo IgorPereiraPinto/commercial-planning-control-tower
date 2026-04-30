@@ -15,9 +15,9 @@
 #   - Segue o princípio Bronze (raw) da arquitetura Medallion.
 #
 # FONTES LIDAS:
-#   1. Dimensões/Dimensões.xlsx  → 7 abas (dProdutos, dVendedor, etc.)
-#   2. Extrações/Vendas.xlsx     → aba fVendas (20.004 linhas, header na linha 5)
-#   3. Metas/Meta YYYY.xlsx      → um arquivo por ano (2018–2021)
+#   1. data/raw/Dimensoes.xlsx   → 7 abas (dProdutos, dVendedor, etc.)
+#   2. data/raw/Vendas.xlsx      → aba fVendas (20.004 linhas, header na linha 5)
+#   3. data/raw/Meta_YYYY.xlsx   → um arquivo por ano (2018–2021)
 #
 # [REUTILIZAÇÃO]:
 #   - Ajuste os paths no .env (sem mexer neste arquivo).
@@ -216,9 +216,9 @@ def extract_metas() -> dict[int, pd.DataFrame]:
 
     for ano in METAS_ANOS:
         # Monta o caminho do arquivo para o ano corrente
-        # Padrão esperado: Metas/Meta 2018.xlsx, Metas/Meta 2019.xlsx, etc.
+        # Padrão esperado: data/raw/Meta_2018.xlsx, data/raw/Meta_2019.xlsx, etc.
         # [REUTILIZAÇÃO]: Ajuste o padrão do nome do arquivo se necessário
-        caminho_meta: Path = PATH_METAS_DIR / f"Meta {ano}.xlsx"
+        caminho_meta: Path = PATH_METAS_DIR / f"Meta_{ano}.xlsx"
         _validar_arquivo_existe(caminho_meta, f"Meta {ano}")
 
         df = pd.read_excel(

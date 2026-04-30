@@ -1,0 +1,627 @@
+// =============================================================================
+// medidas_forecast_budget.dax — Medidas DAX: Forecast vs Budget
+// Planejamento Comercial
+// =============================================================================
+//
+// OBJETIVO:
+//   Conjunto dedicado de medidas para o painel "Forecast vs Budget".
+//   Reproduz no Power BI todos os KPIs e projeções do dashboard HTML
+//   planejamento_comercial.html.
+//
+// PRÉ-REQUISITOS:
+//   1. Medidas de medidas_completas.dax já criadas no modelo
+//   2. dCalendario marcada como Tabela de Data
+//   3. Relacionamento INATIVO: fMetas[Data Meta] → dCalendario[Data]
+//   4. Relacionamento ATIVO:   fVendas[Data]    → dCalendario[Data]
+//
+// CENÁRIOS DE FORECAST:
+//   ┌──────────────┬────────────────────────────────────────────────────────┐
+//   │ Pessimista   │ Run rate do ÚLTIMO mês com realizado × meses restantes │
+//   │ Base         │ Run rate médio YTD × meses restantes                   │
+//   │ Otimista     │ Run rate médio YTD × 1,15 × meses restantes            │
+//   └──────────────┴────────────────────────────────────────────────────────┘
+//
+// SEMÁFORO DE ATINGIMENTO:
+//   Verde  ≥ 90%   Amarelo  70–89%   Vermelho < 70%
+//
+// COMO USAR:
+//   Crie as medidas neste arquivo na tabela [_Medidas] do modelo.
+//   Display Folder sugerido: "Forecast & Budget"
+// =============================================================================
+
+
+// =============================================================================
+// PASTA: Forecast & Budget / 01 - YTD
+// Acumulados do ano para Realizado e Meta, restritos ao período com dados.
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// Meses com Realizado
+// Conta quantos meses no ano selecionado têm faturamento > 0.
+// Usado como denominador para o run rate médio e identificar até onde
+// chegam os dados do realizado.
+// Display Folder: Forecast & Budget / 01 - YTD
+// Formato: #,##0
+// ---------------------------------------------------------------------------
+Meses com Realizado =
+VAR AnoSel = SELECTEDVALUE( 'dw dCalendario'[Ano], YEAR( TODAY() ) )
+RETURN
+COUNTROWS(
+    FILTER(
+        SUMMARIZE(
+            CALCULATETABLE(
+                'dw dCalendario',
+                'dw dCalendario'[Ano] = AnoSel
+            ),
+            'dw dCalendario'[Mes]
+        ),
+        CALCULATE( [Faturamento] ) > 0
+    )
+)
+
+
+// ---------------------------------------------------------------------------
+// Realizado YTD
+// Faturamento acumulado no ano até o último mês com dados.
+// Equivalente ao Faturamento YTD filtrado pelo último mês disponível.
+// Display Folder: Forecast & Budget / 01 - YTD
+// Formato: R$ #,##0.00
+// ---------------------------------------------------------------------------
+Realizado YTD =
+VAR AnoSel     = SELECTEDVALUE( 'dw dCalendario'[Ano], YEAR( TODAY() ) )
+VAR UltimoMes  = [Meses com Realizado]
+RETURN
+CALCULATE(
+    [Faturamento],
+    'dw dCalendario'[Ano] = AnoSel,
+    'dw dCalendario'[Mes] <= UltimoMes
+)
+
+
+// ---------------------------------------------------------------------------
+// Budget YTD
+// Meta acumulada no ano até o mesmo mês do último realizado disponível.
+// Garante comparação justa: meses 1–N do realizado vs meses 1–N da meta.
+// Display Folder: Forecast & Budget / 01 - YTD
+// Formato: R$ #,##0.00
+// ---------------------------------------------------------------------------
+Budget YTD =
+VAR AnoSel     = SELECTEDVALUE( 'dw dCalendario'[Ano], YEAR( TODAY() ) )
+VAR UltimoMes  = [Meses com Realizado]
+RETURN
+CALCULATE(
+    [Meta],
+    'dw dCalendario'[Ano] = AnoSel,
+    'dw dCalendario'[Mes] <= UltimoMes,
+    USERELATIONSHIP( 'dw fMetas'[Data Meta], 'dw dCalendario'[Data] )
+)
+
+
+// ---------------------------------------------------------------------------
+// Atingimento YTD %
+// Percentual do realizado YTD sobre o budget YTD.
+// Ex: 91,6% = realizou 91,6% da meta acumulada até o mês atual.
+// Display Folder: Forecast & Budget / 01 - YTD
+// Formato: #,##0.0%
+// ---------------------------------------------------------------------------
+Atingimento YTD % =
+DIVIDE(
+    [Realizado YTD],
+    [Budget YTD]
+)
+
+
+// ---------------------------------------------------------------------------
+// Gap YTD R$
+// Diferença absoluta entre Realizado YTD e Budget YTD.
+// Negativo = abaixo da meta; Positivo = acima.
+// Display Folder: Forecast & Budget / 01 - YTD
+// Formato: R$ #,##0.00
+// ---------------------------------------------------------------------------
+Gap YTD R$ =
+[Realizado YTD] - [Budget YTD]
+
+
+// ---------------------------------------------------------------------------
+// Budget Anual Total
+// Meta total do ano inteiro (todos os 12 meses), sem restrição de mês.
+// Referência para os cenários de forecast anual.
+// Display Folder: Forecast & Budget / 01 - YTD
+// Formato: R$ #,##0.00
+// ---------------------------------------------------------------------------
+Budget Anual Total =
+VAR AnoSel = SELECTEDVALUE( 'dw dCalendario'[Ano], YEAR( TODAY() ) )
+RETURN
+CALCULATE(
+    [Meta],
+    'dw dCalendario'[Ano] = AnoSel,
+    USERELATIONSHIP( 'dw fMetas'[Data Meta], 'dw dCalendario'[Data] )
+)
+
+
+// =============================================================================
+// PASTA: Forecast & Budget / 02 - Run Rate
+// Velocidade de venda observada para projeção futura.
+// Run Rate Médio = Realizado YTD / Meses com Realizado
+// Run Rate Último Mês = Faturamento do último mês com dados
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// Run Rate Medio Mensal
+// Média mensal do faturamento com base nos meses já realizados.
+// Cenário base: mantém essa velocidade nos meses restantes.
+// Display Folder: Forecast & Budget / 02 - Run Rate
+// Formato: R$ #,##0.00
+// ---------------------------------------------------------------------------
+Run Rate Medio Mensal =
+DIVIDE(
+    [Realizado YTD],
+    [Meses com Realizado]
+)
+
+
+// ---------------------------------------------------------------------------
+// Run Rate Ultimo Mes
+// Faturamento do mês mais recente com realizado no ano selecionado.
+// Cenário pessimista: mantém a velocidade atual (menor do que a média).
+// Display Folder: Forecast & Budget / 02 - Run Rate
+// Formato: R$ #,##0.00
+// ---------------------------------------------------------------------------
+Run Rate Ultimo Mes =
+VAR AnoSel    = SELECTEDVALUE( 'dw dCalendario'[Ano], YEAR( TODAY() ) )
+VAR UltimoMes = [Meses com Realizado]
+RETURN
+CALCULATE(
+    [Faturamento],
+    'dw dCalendario'[Ano]  = AnoSel,
+    'dw dCalendario'[Mes]  = UltimoMes
+)
+
+
+// ---------------------------------------------------------------------------
+// Meses Restantes
+// Quantidade de meses do ano que ainda não tiveram realizado.
+// Fórmula: 12 - Meses com Realizado
+// Display Folder: Forecast & Budget / 02 - Run Rate
+// Formato: #,##0
+// ---------------------------------------------------------------------------
+Meses Restantes =
+12 - [Meses com Realizado]
+
+
+// =============================================================================
+// PASTA: Forecast & Budget / 03 - Cenários de Forecast
+// Três cenários de projeção anual. Todos partem do realizado YTD e
+// projetam os meses restantes com velocidades distintas.
+//
+// LEITURA EXECUTIVA:
+//   Pessimista → pior caso: vendas caem para o ritmo do último mês
+//   Base       → manutenção do ritmo médio observado no ano
+//   Otimista   → aceleração de 15% sobre o ritmo médio
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// Forecast Pessimista
+// Realizado YTD + (Run Rate do último mês × meses restantes)
+// Hipótese: a desaceleração do último mês se mantém até dezembro.
+// Display Folder: Forecast & Budget / 03 - Cenários
+// Formato: R$ #,##0.00
+// ---------------------------------------------------------------------------
+Forecast Pessimista =
+[Realizado YTD] + ( [Run Rate Ultimo Mes] * [Meses Restantes] )
+
+
+// ---------------------------------------------------------------------------
+// Forecast Base
+// Realizado YTD + (Run Rate médio × meses restantes)
+// Hipótese: mantém o ritmo médio do período já observado.
+// Display Folder: Forecast & Budget / 03 - Cenários
+// Formato: R$ #,##0.00
+// ---------------------------------------------------------------------------
+Forecast Base =
+[Realizado YTD] + ( [Run Rate Medio Mensal] * [Meses Restantes] )
+
+
+// ---------------------------------------------------------------------------
+// Forecast Otimista
+// Realizado YTD + (Run Rate médio × 1,15 × meses restantes)
+// Hipótese: plano de aceleração de 15% sobre o ritmo atual.
+// Display Folder: Forecast & Budget / 03 - Cenários
+// Formato: R$ #,##0.00
+// ---------------------------------------------------------------------------
+Forecast Otimista =
+[Realizado YTD] + ( [Run Rate Medio Mensal] * 1.15 * [Meses Restantes] )
+
+
+// ---------------------------------------------------------------------------
+// Forecast Pessimista % Budget
+// Percentual do cenário pessimista sobre o budget anual.
+// Abaixo de 100% = risco de não atingir o budget no ano.
+// Display Folder: Forecast & Budget / 03 - Cenários
+// Formato: #,##0.0%
+// ---------------------------------------------------------------------------
+Forecast Pessimista % Budget =
+DIVIDE(
+    [Forecast Pessimista],
+    [Budget Anual Total]
+)
+
+
+// ---------------------------------------------------------------------------
+// Forecast Base % Budget
+// Percentual do cenário base sobre o budget anual.
+// Display Folder: Forecast & Budget / 03 - Cenários
+// Formato: #,##0.0%
+// ---------------------------------------------------------------------------
+Forecast Base % Budget =
+DIVIDE(
+    [Forecast Base],
+    [Budget Anual Total]
+)
+
+
+// ---------------------------------------------------------------------------
+// Forecast Otimista % Budget
+// Percentual do cenário otimista sobre o budget anual.
+// Display Folder: Forecast & Budget / 03 - Cenários
+// Formato: #,##0.0%
+// ---------------------------------------------------------------------------
+Forecast Otimista % Budget =
+DIVIDE(
+    [Forecast Otimista],
+    [Budget Anual Total]
+)
+
+
+// =============================================================================
+// PASTA: Forecast & Budget / 04 - Aceleração Necessária
+// Quanto cada vendedor (ou a equipe) precisa vender por mês
+// nos meses restantes para fechar o ano na meta.
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// Aceleracao Necessaria Mensal
+// Faturamento mensal necessário nos meses restantes para atingir o budget anual.
+// Fórmula: (Budget Anual Total - Realizado YTD) / Meses Restantes
+//
+// Leitura: se positivo, a equipe ainda pode bater o budget acelerando.
+//          Se maior que 2× o run rate médio, o budget anual está em risco real.
+// Display Folder: Forecast & Budget / 04 - Aceleração
+// Formato: R$ #,##0.00
+// ---------------------------------------------------------------------------
+Aceleracao Necessaria Mensal =
+DIVIDE(
+    [Budget Anual Total] - [Realizado YTD],
+    [Meses Restantes]
+)
+
+
+// ---------------------------------------------------------------------------
+// Fator de Aceleracao
+// Quantas vezes o run rate médio atual seria necessário para fechar o budget.
+// Fórmula: Aceleração Necessária / Run Rate Médio
+// Ex: 1,30× = precisa vender 30% a mais do que tem vendido em média.
+// Display Folder: Forecast & Budget / 04 - Aceleração
+// Formato: #,##0.0x (configure manualmente como "0.0x" ou use texto)
+// ---------------------------------------------------------------------------
+Fator de Aceleracao =
+DIVIDE(
+    [Aceleracao Necessaria Mensal],
+    [Run Rate Medio Mensal]
+)
+
+
+// ---------------------------------------------------------------------------
+// Classificacao Risco Budget
+// Classifica se o budget anual está em risco com base no fator de aceleração.
+// Uso recomendado: formatação condicional em tabela de vendedores.
+// Display Folder: Forecast & Budget / 04 - Aceleração
+// Formato: Texto
+// ---------------------------------------------------------------------------
+Classificacao Risco Budget =
+VAR Fator = [Fator de Aceleracao]
+RETURN
+    SWITCH(
+        TRUE(),
+        ISBLANK( Fator ),   "Sem dados",
+        Fator <= 1.00,      "No Ritmo",         // Não precisa acelerar
+        Fator <= 1.20,      "Aceleração Leve",  // +20% viável com foco
+        Fator <= 1.50,      "Aceleração Alta",  // +50% requer ação imediata
+                            "Budget em Risco"   // Acima de 1,5× o run rate
+    )
+
+
+// =============================================================================
+// PASTA: Forecast & Budget / 05 - Semáforo de Vendedores
+// Indicadores para monitorar a situação individual de cada vendedor
+// em relação ao budget.
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// Semaforo Vendedor
+// Classifica o vendedor por atingimento YTD: Verde / Amarelo / Vermelho.
+// Régua padrão do setor:
+//   Verde    ≥ 90% (saudável, próximo ou acima da meta)
+//   Amarelo  70–89% (atenção, intervenção pode ser necessária)
+//   Vermelho < 70% (risco, requer plano de ação)
+// Display Folder: Forecast & Budget / 05 - Semáforo
+// Formato: Texto
+// ---------------------------------------------------------------------------
+Semaforo Vendedor =
+VAR Ating = [Atingimento YTD %]
+RETURN
+    SWITCH(
+        TRUE(),
+        ISBLANK( Ating ),   "Sem dados",
+        Ating >= 0.90,      "Verde",
+        Ating >= 0.70,      "Amarelo",
+                            "Vermelho"
+    )
+
+
+// ---------------------------------------------------------------------------
+// Cor Semaforo
+// Código hexadecimal da cor do semáforo para formatação condicional.
+// Use em: Formatação Condicional → Cor do plano de fundo → Campo → esta medida.
+// Display Folder: Forecast & Budget / 05 - Semáforo
+// Formato: Texto
+// ---------------------------------------------------------------------------
+Cor Semaforo =
+VAR Ating = [Atingimento YTD %]
+RETURN
+    SWITCH(
+        TRUE(),
+        ISBLANK( Ating ),   "#4B5563",  // Cinza — sem dados
+        Ating >= 0.90,      "#065F46",  // Verde escuro
+        Ating >= 0.70,      "#92400E",  // Amarelo/laranja escuro
+                            "#7F1D1D"   // Vermelho escuro
+    )
+
+
+// ---------------------------------------------------------------------------
+// Vendedores Verde
+// Conta vendedores com atingimento YTD ≥ 90%.
+// Uso: cartão KPI "Vendedores no Verde"
+// Display Folder: Forecast & Budget / 05 - Semáforo
+// Formato: #,##0
+// ---------------------------------------------------------------------------
+Vendedores Verde =
+COUNTROWS(
+    FILTER(
+        VALUES( 'dw dVendedor'[Vendedor] ),
+        [Atingimento YTD %] >= 0.90
+    )
+)
+
+
+// ---------------------------------------------------------------------------
+// Vendedores Amarelo
+// Conta vendedores com atingimento YTD entre 70% e 89%.
+// Display Folder: Forecast & Budget / 05 - Semáforo
+// Formato: #,##0
+// ---------------------------------------------------------------------------
+Vendedores Amarelo =
+COUNTROWS(
+    FILTER(
+        VALUES( 'dw dVendedor'[Vendedor] ),
+        [Atingimento YTD %] >= 0.70
+            && [Atingimento YTD %] < 0.90
+    )
+)
+
+
+// ---------------------------------------------------------------------------
+// Vendedores Vermelho
+// Conta vendedores com atingimento YTD < 70%.
+// Este é o grupo de risco que precisa de plano de ação imediato.
+// Display Folder: Forecast & Budget / 05 - Semáforo
+// Formato: #,##0
+// ---------------------------------------------------------------------------
+Vendedores Vermelho =
+COUNTROWS(
+    FILTER(
+        VALUES( 'dw dVendedor'[Vendedor] ),
+        [Atingimento YTD %] < 0.70
+            && NOT ISBLANK( [Atingimento YTD %] )
+    )
+)
+
+
+// ---------------------------------------------------------------------------
+// Top Vendedor
+// Nome do vendedor com maior faturamento YTD no ano/filtro atual.
+// Uso: cartão KPI "Destaque do Período"
+// Display Folder: Forecast & Budget / 05 - Semáforo
+// Formato: Texto
+// ---------------------------------------------------------------------------
+Top Vendedor =
+VAR TabelaRank =
+    ADDCOLUMNS(
+        VALUES( 'dw dVendedor'[Vendedor] ),
+        "@Fat", [Realizado YTD]
+    )
+VAR TopVendedor =
+    TOPN( 1, TabelaRank, [@Fat], DESC )
+RETURN
+    MAXX( TopVendedor, 'dw dVendedor'[Vendedor] )
+
+
+// =============================================================================
+// PASTA: Forecast & Budget / 06 - Tendência
+// Medidas de tendência para identificar aceleração ou desaceleração do resultado.
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// Variacao Atingimento Ultimo Mes vs Media
+// Diferença entre o atingimento do último mês e o atingimento médio YTD.
+// Negativo = desaceleração; Positivo = aceleração.
+// Ex: -43% = o último mês ficou 43 p.p. abaixo da média dos meses anteriores.
+// Display Folder: Forecast & Budget / 06 - Tendência
+// Formato: +#,##0.0 p.p.;-#,##0.0 p.p.;0,0 p.p. (configure manualmente)
+// ---------------------------------------------------------------------------
+Variacao Atingimento Ultimo Mes vs Media =
+VAR AnoSel       = SELECTEDVALUE( 'dw dCalendario'[Ano], YEAR( TODAY() ) )
+VAR UltimoMes    = [Meses com Realizado]
+VAR AtingUltMes  =
+    CALCULATE(
+        [Atingimento Meta %],
+        'dw dCalendario'[Ano] = AnoSel,
+        'dw dCalendario'[Mes] = UltimoMes
+    )
+VAR AtingMediaYTD =
+    AVERAGEX(
+        FILTER(
+            SUMMARIZE(
+                CALCULATETABLE( 'dw dCalendario', 'dw dCalendario'[Ano] = AnoSel ),
+                'dw dCalendario'[Mes]
+            ),
+            CALCULATE( [Faturamento] ) > 0
+        ),
+        CALCULATE( [Atingimento Meta %] )
+    )
+RETURN
+    IF(
+        ISBLANK( AtingUltMes ) || ISBLANK( AtingMediaYTD ),
+        BLANK(),
+        AtingUltMes - AtingMediaYTD
+    )
+
+
+// ---------------------------------------------------------------------------
+// Tendencia Sinal
+// Sinaliza visualmente se a equipe está acelerando ou desacelerando.
+// Uso: ícone ou rótulo em cartão de KPI.
+// Display Folder: Forecast & Budget / 06 - Tendência
+// Formato: Texto
+// ---------------------------------------------------------------------------
+Tendencia Sinal =
+VAR Variacao = [Variacao Atingimento Ultimo Mes vs Media]
+RETURN
+    SWITCH(
+        TRUE(),
+        ISBLANK( Variacao ),   "—",
+        Variacao > 0.05,       "↑ Acelerando",
+        Variacao < -0.05,      "↓ Desacelerando",
+                               "→ Estável"
+    )
+
+
+// =============================================================================
+// PASTA: Forecast & Budget / 07 - Margem no Contexto do Budget
+// Margem bruta no período YTD e projeção de margem para o ano.
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// Margem Bruta YTD R$
+// Soma da margem bruta realizada no ano até o último mês com dados.
+// Display Folder: Forecast & Budget / 07 - Margem
+// Formato: R$ #,##0.00
+// ---------------------------------------------------------------------------
+Margem Bruta YTD R$ =
+VAR AnoSel    = SELECTEDVALUE( 'dw dCalendario'[Ano], YEAR( TODAY() ) )
+VAR UltimoMes = [Meses com Realizado]
+RETURN
+CALCULATE(
+    [Margem Bruta R$],
+    'dw dCalendario'[Ano] = AnoSel,
+    'dw dCalendario'[Mes] <= UltimoMes
+)
+
+
+// ---------------------------------------------------------------------------
+// Margem Bruta YTD %
+// Percentual de margem sobre o realizado YTD.
+// Display Folder: Forecast & Budget / 07 - Margem
+// Formato: #,##0.0%
+// ---------------------------------------------------------------------------
+Margem Bruta YTD % =
+DIVIDE(
+    [Margem Bruta YTD R$],
+    [Realizado YTD]
+)
+
+
+// ---------------------------------------------------------------------------
+// Margem Projetada Ano (Cenario Base)
+// Projeta a margem anual assumindo que o percentual YTD se mantém
+// sobre o Forecast Base.
+// Leitura: se o ritmo atual continuar, qual será a margem total no ano.
+// Display Folder: Forecast & Budget / 07 - Margem
+// Formato: R$ #,##0.00
+// ---------------------------------------------------------------------------
+Margem Projetada Ano =
+DIVIDE(
+    [Margem Bruta YTD R$],
+    [Realizado YTD]
+) * [Forecast Base]
+
+
+// =============================================================================
+// PASTA: Forecast & Budget / 08 - Textos Executivos
+// Medidas que retornam texto formatado para cartões, títulos dinâmicos
+// e tooltips executivos.
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// Titulo Situacao Ano
+// Texto dinâmico que descreve a situação do ano em uma linha.
+// Uso: subtítulo do painel ou cartão de situação.
+// Display Folder: Forecast & Budget / 08 - Textos
+// Formato: Texto
+// ---------------------------------------------------------------------------
+Titulo Situacao Ano =
+VAR Ating     = [Atingimento YTD %]
+VAR Variacao  = [Variacao Atingimento Ultimo Mes vs Media]
+VAR AnoSel    = SELECTEDVALUE( 'dw dCalendario'[Ano], YEAR( TODAY() ) )
+VAR MesesReal = [Meses com Realizado]
+RETURN
+    "Situação " & AnoSel & " (" & MesesReal & " meses): "
+    & FORMAT( Ating, "#,##0.0%" ) & " do budget"
+    & IF(
+        NOT ISBLANK( Variacao ),
+        " | Tendência: " & [Tendencia Sinal],
+        ""
+    )
+
+
+// ---------------------------------------------------------------------------
+// Label Forecast Cenario
+// Texto resumido dos três cenários de forecast para exibição em cartão único.
+// Display Folder: Forecast & Budget / 08 - Textos
+// Formato: Texto
+// ---------------------------------------------------------------------------
+Label Forecast Cenarios =
+VAR Pess = FORMAT( [Forecast Pessimista % Budget], "#,##0.0%" )
+VAR Base = FORMAT( [Forecast Base % Budget], "#,##0.0%" )
+VAR Otim = FORMAT( [Forecast Otimista % Budget], "#,##0.0%" )
+RETURN
+    "Pessimista: " & Pess
+    & "  |  Base: " & Base
+    & "  |  Otimista: " & Otim
+
+
+// =============================================================================
+// FIM DO ARQUIVO
+// =============================================================================
+//
+// CHECKLIST DE VALIDAÇÃO PÓS-CRIAÇÃO:
+//
+//  1. Matrix básica: Vendedor × Ano
+//     Colunas: Realizado YTD, Budget YTD, Atingimento YTD %, Gap YTD R$
+//     → Validar que 2021 retorna: ~176,8M real / ~193,1M meta / ~91,6%
+//
+//  2. Cenários de Forecast (cartões, filtro: Ano = 2021)
+//     → Pessimista: ~R$ 395M (79,1% do budget)
+//     → Base:       ~R$ 530M (106,2% do budget)
+//     → Otimista:   ~R$ 579M (116,0% do budget)
+//
+//  3. Semáforo: tabela de vendedores com Semaforo Vendedor
+//     → 2021: todos os 11 vendedores em Vermelho (abaixo de 70% no período)
+//
+//  4. Aceleração: cartão com Fator de Aceleracao
+//     → 2021 (4 meses realizados): fator alto, indicando risco de budget
+//
+//  5. Tendência: Variacao Atingimento Ultimo Mes vs Media
+//     → 2021: negativo (~-43 p.p.) → "↓ Desacelerando"
+//
+// =============================================================================

@@ -1,0 +1,1989 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forecast vs Budget — Apresentação Executiva</title>
+<style>
+  :root {
+    --bg:        #0d1117;
+    --surface:   #161b22;
+    --border:    #30363d;
+    --text:      #e6edf3;
+    --muted:     #8b949e;
+    --accent:    #58a6ff;
+    --green:     #3fb950;
+    --yellow:    #d29922;
+    --red:       #f85149;
+    --orange:    #e3791a;
+    --purple:    #bc8cff;
+    --slide-w:   960px;
+    --slide-h:   540px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #090d14;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 24px 16px 48px;
+  }
+
+  /* ── Controles de navegação ── */
+  .nav-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 20px;
+    width: var(--slide-w);
+  }
+  .nav-bar .nav-btn {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background .15s, border-color .15s;
+  }
+  .nav-bar .nav-btn:hover { background: #21262d; border-color: var(--accent); }
+  .nav-bar .nav-btn:disabled { opacity: 0.35; cursor: default; }
+  .nav-bar .counter {
+    font-size: 13px;
+    color: var(--muted);
+    margin-left: auto;
+  }
+  .nav-bar .slide-title-nav {
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 600;
+    flex: 1;
+    text-align: center;
+  }
+
+  /* ── Slide container ── */
+  .slide-wrapper {
+    width: var(--slide-w);
+    min-height: var(--slide-h);
+    display: none;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  .slide-wrapper.active { display: flex; }
+
+  /* ── Header comum ── */
+  .slide-header {
+    background: linear-gradient(135deg, #161b22 0%, #0d1117 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 24px 36px 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .slide-header .badge {
+    background: var(--accent);
+    color: #0d1117;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    margin-top: 4px;
+  }
+  .slide-header .badge.green  { background: var(--green); }
+  .slide-header .badge.yellow { background: var(--yellow); }
+  .slide-header .badge.red    { background: var(--red); }
+  .slide-header .badge.purple { background: var(--purple); }
+  .slide-header .badge.orange { background: var(--orange); }
+  .slide-header .title-block  { flex: 1; }
+  .slide-header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.25;
+  }
+  .slide-header .subtitle {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .slide-header .slide-num {
+    font-size: 12px;
+    color: var(--border);
+    margin-top: 2px;
+    align-self: flex-end;
+    white-space: nowrap;
+  }
+
+  /* ── Slide body ── */
+  .slide-body {
+    flex: 1;
+    padding: 28px 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  /* ── Componentes ── */
+  .two-col { display: flex; gap: 20px; }
+  .two-col > * { flex: 1; }
+  .three-col { display: flex; gap: 16px; }
+  .three-col > * { flex: 1; }
+
+  .card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+  }
+  .card .card-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 6px;
+  }
+  .card .card-value {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+  }
+  .card .card-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 5px;
+  }
+  .card.green  { border-left: 3px solid var(--green);  }
+  .card.yellow { border-left: 3px solid var(--yellow); }
+  .card.red    { border-left: 3px solid var(--red);    }
+  .card.blue   { border-left: 3px solid var(--accent); }
+  .card.purple { border-left: 3px solid var(--purple); }
+
+  .kpi-row { display: flex; gap: 14px; }
+  .kpi-row .card { flex: 1; padding: 14px 16px; }
+  .kpi-row .card .card-value { font-size: 20px; }
+
+  /* ── Texto estruturado ── */
+  .section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 8px;
+  }
+
+  ul.points {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  ul.points li {
+    font-size: 14px;
+    color: var(--text);
+    padding-left: 20px;
+    position: relative;
+    line-height: 1.5;
+  }
+  ul.points li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-size: 12px;
+    top: 2px;
+  }
+  ul.points li strong { color: var(--accent); }
+  ul.points li.warn::before  { color: var(--red); content: '⚠'; font-size: 11px; top: 3px; }
+  ul.points li.good::before  { color: var(--green); content: '✓'; font-size: 11px; top: 3px; }
+  ul.points li.insight::before { color: var(--purple); content: '◆'; font-size: 10px; top: 4px; }
+  ul.points li.action::before  { color: var(--orange); content: '→'; }
+
+  /* ── Tabela ── */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .data-table th {
+    background: #0d1117;
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .data-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #21262d;
+    color: var(--text);
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .tag.green  { background: rgba(63,185,80,.15); color: var(--green); }
+  .tag.yellow { background: rgba(210,153,34,.15); color: var(--yellow); }
+  .tag.red    { background: rgba(248,81,73,.15);  color: var(--red); }
+  .tag.blue   { background: rgba(88,166,255,.15); color: var(--accent); }
+
+  /* ── Barras simples ── */
+  .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .bar-row .bar-label { font-size: 12px; color: var(--muted); width: 100px; text-align: right; flex-shrink: 0; }
+  .bar-row .bar-track { flex: 1; height: 14px; background: #21262d; border-radius: 4px; overflow: hidden; }
+  .bar-row .bar-fill  { height: 100%; border-radius: 4px; transition: width .5s ease; }
+  .bar-row .bar-pct   { font-size: 12px; color: var(--text); width: 46px; text-align: right; flex-shrink: 0; }
+
+  /* ── Scenario boxes ── */
+  .scenario-row { display: flex; gap: 16px; }
+  .scenario-box {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+  .scenario-box .sc-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 8px; }
+  .scenario-box .sc-value { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .scenario-box .sc-pct   { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+  .scenario-box .sc-desc  { font-size: 11px; color: var(--muted); line-height: 1.4; }
+  .scenario-box.red-box    { border-color: var(--red);    }
+  .scenario-box.yellow-box { border-color: var(--yellow); }
+  .scenario-box.green-box  { border-color: var(--green);  }
+
+  /* ── Quote / destaque ── */
+  .highlight-box {
+    background: linear-gradient(135deg, rgba(88,166,255,.08), rgba(188,140,255,.06));
+    border: 1px solid rgba(88,166,255,.25);
+    border-radius: 8px;
+    padding: 14px 20px;
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .highlight-box strong { color: var(--accent); }
+
+  /* ── Thumbnail de índice ── */
+  .index-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .index-item {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    cursor: pointer;
+    transition: border-color .15s;
+  }
+  .index-item:hover { border-color: var(--accent); }
+  .index-item .idx-num { font-size: 11px; color: var(--accent); font-weight: 700; margin-bottom: 4px; }
+  .index-item .idx-title { font-size: 12px; color: var(--text); font-weight: 600; line-height: 1.3; }
+  .index-item .idx-desc  { font-size: 11px; color: var(--muted); margin-top: 3px; line-height: 1.3; }
+
+  /* ── Footer ── */
+  .slide-footer {
+    border-top: 1px solid var(--border);
+    padding: 10px 36px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg);
+  }
+  .slide-footer .footer-left  { font-size: 11px; color: var(--muted); }
+  .slide-footer .footer-right { font-size: 11px; color: var(--border); }
+
+  /* ── Atalhos de teclado ── */
+  .kbd-hint { font-size: 11px; color: var(--muted); margin-left: auto; }
+  kbd {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-size: 10px;
+    font-family: monospace;
+    color: var(--muted);
+  }
+
+  /* Professional redesign overrides */
+  :root {
+    --bg:        #F4F7FB;
+    --surface:   #FFFFFF;
+    --border:    #D9E1EC;
+    --text:      #142033;
+    --muted:     #5F6C7B;
+    --accent:    #1D3C6D;
+    --green:     #375623;
+    --yellow:    #BF8F00;
+    --red:       #E32726;
+    --orange:    #C86A14;
+    --purple:    #5F5AA2;
+    --slide-w:   min(1480px, 96vw);
+    --slide-h:   calc(100vh - 132px);
+    --shadow-lg: 0 30px 80px rgba(7,18,38,.22);
+    --shadow-md: 0 16px 36px rgba(17,36,67,.10);
+  }
+
+  body {
+    font-family: "Aptos","Trebuchet MS","Segoe UI",sans-serif;
+    background:
+      radial-gradient(circle at top left, rgba(29,60,109,.42), transparent 30%),
+      radial-gradient(circle at bottom right, rgba(55,86,35,.18), transparent 24%),
+      linear-gradient(140deg, #08111f 0%, #11223c 52%, #152f54 100%);
+    padding: 12px 12px 28px;
+  }
+
+  body::before,
+  body::after {
+    content: "";
+    position: fixed;
+    z-index: 0;
+    border-radius: 999px;
+    filter: blur(12px);
+    opacity: .55;
+    pointer-events: none;
+  }
+
+  body::before {
+    width: 320px;
+    height: 320px;
+    top: -80px;
+    right: 10vw;
+    background: radial-gradient(circle, rgba(191,143,0,.34), transparent 68%);
+  }
+
+  body::after {
+    width: 420px;
+    height: 420px;
+    left: -120px;
+    bottom: -180px;
+    background: radial-gradient(circle, rgba(55,86,35,.24), transparent 68%);
+  }
+
+  .nav-bar,
+  .slide-wrapper {
+    position: relative;
+    z-index: 1;
+  }
+
+  .nav-bar {
+    background: rgba(255,255,255,.10);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: 18px;
+    padding: 10px 18px;
+    box-shadow: var(--shadow-md);
+    margin-bottom: 14px;
+  }
+
+  .nav-bar .nav-btn {
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.08);
+    color: #fff;
+    border-radius: 12px;
+    padding: 8px 16px;
+    font-weight: 600;
+  }
+
+  .nav-bar .nav-btn:hover {
+    background: rgba(255,255,255,.16);
+    border-color: rgba(255,255,255,.18);
+  }
+
+  .nav-bar .counter {
+    color: rgba(255,255,255,.75);
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+
+  .nav-bar .slide-title-nav {
+    color: #EFF6FF;
+    font-weight: 700;
+    letter-spacing: .2px;
+  }
+
+  .kbd-hint,
+  kbd {
+    color: rgba(255,255,255,.75);
+    border-color: rgba(255,255,255,.14);
+    background: rgba(255,255,255,.08);
+  }
+
+  .slide-wrapper {
+    border: none;
+    border-radius: 28px;
+    background: linear-gradient(180deg, rgba(255,255,255,.97), rgba(247,250,253,.985));
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    min-height: var(--slide-h);
+  }
+
+  .slide-wrapper::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 8px;
+    background: linear-gradient(180deg, var(--yellow) 0%, var(--accent) 58%, var(--green) 100%);
+  }
+
+  .slide-wrapper::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at top right, rgba(29,60,109,.06), transparent 28%),
+      radial-gradient(circle at bottom left, rgba(55,86,35,.05), transparent 24%);
+    pointer-events: none;
+  }
+
+  .slide-header {
+    position: relative;
+    background: linear-gradient(180deg, rgba(255,255,255,.80), rgba(255,255,255,.52));
+    border-bottom: 1px solid rgba(20,32,51,.08);
+    padding: 34px 48px 24px 56px;
+  }
+
+  .slide-header::after {
+    content: "";
+    position: absolute;
+    left: 56px;
+    bottom: 0;
+    width: 120px;
+    height: 3px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--yellow), var(--accent));
+  }
+
+  .slide-header .badge {
+    background: linear-gradient(135deg, var(--yellow), #d9b43f);
+    color: #142033;
+    border-radius: 999px;
+    padding: 6px 12px;
+    letter-spacing: .9px;
+  }
+
+  .slide-header .badge.green  { background: linear-gradient(135deg, #8bbb6d, var(--green)); color: #fff; }
+  .slide-header .badge.yellow { background: linear-gradient(135deg, #eed37d, var(--yellow)); color: #142033; }
+  .slide-header .badge.red    { background: linear-gradient(135deg, #f0a19a, var(--red)); color: #fff; }
+  .slide-header .badge.purple { background: linear-gradient(135deg, #c3bff1, var(--purple)); color: #fff; }
+  .slide-header .badge.orange { background: linear-gradient(135deg, #efb26f, var(--orange)); color: #fff; }
+
+  .slide-header h1 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 34px;
+    color: #11223c;
+    letter-spacing: -.5px;
+  }
+
+  .slide-header .subtitle {
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .slide-header .slide-num {
+    color: #8da0b5;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .slide-body {
+    padding: 30px 48px 34px 56px;
+    position: relative;
+    z-index: 1;
+    gap: 20px;
+  }
+
+  .card,
+  .index-item,
+  .highlight-box {
+    position: relative;
+    background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(244,247,251,.96));
+    border: 1px solid rgba(29,60,109,.10);
+    border-radius: 20px;
+    box-shadow: var(--shadow-md);
+  }
+
+  .card {
+    padding: 20px 22px;
+  }
+
+  .card::before,
+  .index-item::before,
+  .highlight-box::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    border-radius: 20px 20px 0 0;
+    background: linear-gradient(90deg, rgba(191,143,0,.95), rgba(29,60,109,.88));
+  }
+
+  .card.green::before  { background: linear-gradient(90deg, #8bbb6d, var(--green)); }
+  .card.yellow::before { background: linear-gradient(90deg, #f0d781, var(--yellow)); }
+  .card.red::before    { background: linear-gradient(90deg, #f0a19a, var(--red)); }
+  .card.blue::before   { background: linear-gradient(90deg, var(--yellow), var(--accent)); }
+  .card.purple::before { background: linear-gradient(90deg, #c3bff1, var(--purple)); }
+
+  .card.green,
+  .card.yellow,
+  .card.red,
+  .card.blue,
+  .card.purple {
+    border-left: 1px solid rgba(29,60,109,.10);
+  }
+
+  .card .card-label {
+    color: #31435b;
+    font-size: 11px;
+    letter-spacing: 1px;
+    font-weight: 700;
+  }
+
+  .card .card-value {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 34px;
+    color: var(--text);
+    letter-spacing: -.8px;
+  }
+
+  .kpi-row {
+    gap: 18px;
+  }
+
+  .kpi-row .card {
+    padding: 18px 20px;
+  }
+
+  .kpi-row .card .card-value {
+    font-size: 28px;
+  }
+
+  .card .card-sub,
+  .index-item .idx-desc,
+  .slide-footer .footer-left {
+    color: var(--muted);
+  }
+
+  .index-item:hover { border-color: rgba(29,60,109,.22); }
+  .index-item .idx-num,
+  .highlight-box strong { color: var(--accent); }
+  .index-item .idx-title { color: var(--text); }
+
+  .section-title {
+    color: #31435b;
+    font-size: 11px;
+    letter-spacing: 1.2px;
+    font-weight: 700;
+  }
+
+  ul.points li { color: var(--text); line-height: 1.55; }
+  ul.points li strong { color: var(--accent); }
+
+  .data-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
+    border-radius: 18px;
+    box-shadow: var(--shadow-md);
+  }
+
+  .data-table th {
+    background: linear-gradient(180deg, #f4f7fb, #eef3f8);
+    color: #31435b;
+    border-bottom: 1px solid rgba(29,60,109,.12);
+  }
+
+  .data-table td {
+    background: rgba(255,255,255,.88);
+    border-bottom: 1px solid rgba(20,32,51,.07);
+    color: var(--text);
+  }
+
+  .data-table tr:hover td { background: #f8fbff; }
+
+  .slide-footer {
+    border-top: 1px solid rgba(20,32,51,.08);
+    background: rgba(247,250,253,.72);
+    position: relative;
+    z-index: 1;
+  }
+
+  .slide-footer .footer-right { color: #8da0b5; }
+
+  #slide-1 .slide-header {
+    background:
+      radial-gradient(circle at top left, rgba(255,255,255,.10), transparent 20%),
+      linear-gradient(135deg, #0B1830 0%, #163560 44%, #1D3C6D 72%, #2B5E93 100%);
+    border-bottom: none;
+    padding-top: 44px;
+    padding-bottom: 32px;
+  }
+
+  #slide-1 .slide-header::after {
+    background: linear-gradient(90deg, var(--yellow), #d7e4f7 48%, var(--green));
+  }
+
+  #slide-1 .slide-header h1,
+  #slide-1 .slide-header .subtitle,
+  #slide-1 .slide-header .slide-num {
+    color: #fff;
+  }
+
+  #slide-1 .slide-header .subtitle { opacity: .82; }
+
+  #slide-1 .slide-header h1 {
+    font-size: 52px;
+    line-height: .98;
+    max-width: 980px;
+    letter-spacing: -1.4px;
+  }
+
+  #slide-1 .slide-header .subtitle {
+    font-size: 17px;
+    max-width: 840px;
+  }
+
+  #slide-1 .slide-header .badge {
+    background: rgba(255,255,255,.12);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,.14);
+    backdrop-filter: blur(8px);
+  }
+
+  #slide-1 .slide-body {
+    justify-content: flex-start !important;
+    gap: 22px;
+  }
+
+  #slide-1 .highlight-box {
+    padding: 18px 22px;
+  }
+
+  #slide-1 .index-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  #slide-1 .index-item {
+    min-height: 100px;
+    padding: 14px 14px 12px;
+  }
+
+  #slide-1 .slide-footer {
+    margin-top: auto;
+  }
+
+  #slide-6 .slide-header h1 {
+    font-size: 48px;
+    letter-spacing: -1.2px;
+  }
+
+  #slide-6 .slide-header .subtitle {
+    font-size: 18px;
+  }
+
+  #slide-6 .slide-body {
+    justify-content: flex-start;
+    gap: 20px;
+    padding-top: 26px;
+    padding-bottom: 24px;
+  }
+
+  #slide-6 .scenario-row {
+    gap: 18px;
+  }
+
+  #slide-6 .scenario-box {
+    min-height: 168px;
+    padding: 16px 18px;
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(244,247,251,.96));
+    box-shadow: var(--shadow-md);
+  }
+
+  #slide-6 .scenario-box .sc-label {
+    font-size: 12px;
+    letter-spacing: 1px;
+    font-weight: 700;
+  }
+
+  #slide-6 .scenario-box .sc-value {
+    font-size: 42px;
+    font-family: Georgia, "Times New Roman", serif;
+    letter-spacing: -1px;
+    margin-bottom: 6px;
+  }
+
+  #slide-6 .scenario-box .sc-pct {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  #slide-6 .scenario-box .sc-desc {
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  #slide-6 .highlight-box {
+    padding: 18px 20px;
+    font-size: 17px;
+    line-height: 1.6;
+  }
+
+  #slide-6 .kpi-row {
+    align-items: stretch;
+  }
+
+  #slide-6 .kpi-row .card {
+    min-height: 128px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  #slide-6 .kpi-row .card .card-label {
+    font-size: 12px;
+  }
+
+  #slide-6 .kpi-row .card .card-value {
+    font-size: 30px;
+  }
+
+  #slide-6 .slide-footer {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  /* Symmetry and density refinements */
+  :root {
+    --slide-w: min(1640px, 98vw);
+    --slide-h: min(760px, calc(100vh - 118px));
+  }
+
+  body {
+    padding: 10px 10px 20px;
+  }
+
+  .nav-bar {
+    margin-bottom: 12px;
+  }
+
+  .slide-header {
+    padding: 28px 40px 18px 48px;
+  }
+
+  .slide-header::after {
+    left: 48px;
+  }
+
+  .slide-header h1 {
+    font-size: 38px;
+    line-height: 1.05;
+  }
+
+  .slide-header .subtitle {
+    font-size: 15px;
+  }
+
+  .slide-body {
+    padding: 22px 40px 20px 48px;
+    gap: 16px;
+    justify-content: space-between;
+  }
+
+  .slide-body > * {
+    flex-shrink: 0;
+  }
+
+  .two-col,
+  .three-col {
+    align-items: stretch;
+  }
+
+  .two-col {
+    gap: 18px;
+  }
+
+  .three-col {
+    gap: 16px;
+  }
+
+  .two-col > *,
+  .three-col > * {
+    background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(244,247,251,.96));
+    border: 1px solid rgba(29,60,109,.10);
+    border-radius: 20px;
+    box-shadow: var(--shadow-md);
+    padding: 18px 20px;
+  }
+
+  .card {
+    padding: 18px 20px;
+  }
+
+  .card .card-label {
+    font-size: 12px;
+  }
+
+  .card .card-value {
+    font-size: 36px;
+  }
+
+  .kpi-row {
+    gap: 16px;
+  }
+
+  .kpi-row .card {
+    min-height: 100px;
+  }
+
+  .kpi-row .card .card-value {
+    font-size: 30px;
+  }
+
+  .section-title {
+    font-size: 12px;
+    margin-bottom: 10px;
+  }
+
+  ul.points {
+    gap: 10px;
+  }
+
+  ul.points li {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .highlight-box {
+    padding: 18px 20px;
+    font-size: 16px;
+  }
+
+  .slide-footer {
+    padding: 10px 22px;
+  }
+
+  #slide-1 .slide-header {
+    padding-top: 34px;
+    padding-bottom: 20px;
+  }
+
+  #slide-1 .slide-header h1 {
+    font-size: 56px;
+    max-width: 1120px;
+  }
+
+  #slide-1 .slide-body {
+    gap: 14px;
+  }
+
+  #slide-1 .kpi-row .card {
+    min-height: 86px;
+  }
+
+  #slide-1 .kpi-row {
+    margin-top: 2px;
+  }
+
+  #slide-1 .highlight-box {
+    display: grid;
+    grid-template-columns: 1.45fr .95fr;
+    gap: 18px;
+    align-items: stretch;
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+
+  #slide-1 .highlight-box::before {
+    display: none;
+  }
+
+  #slide-1 .cover-story,
+  #slide-1 .cover-side {
+    position: relative;
+    background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(244,247,251,.96));
+    border: 1px solid rgba(29,60,109,.10);
+    border-radius: 22px;
+    box-shadow: var(--shadow-md);
+  }
+
+  #slide-1 .cover-story::before,
+  #slide-1 .cover-side::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    border-radius: 22px 22px 0 0;
+    background: linear-gradient(90deg, var(--yellow), var(--accent));
+  }
+
+  #slide-1 .cover-story {
+    padding: 14px 18px;
+  }
+
+  #slide-1 .cover-eyebrow {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: #31435b;
+    margin-bottom: 6px;
+  }
+
+  #slide-1 .cover-story p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--text);
+  }
+
+  #slide-1 .cover-side {
+    padding: 14px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  #slide-1 .cover-stat {
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(20,32,51,.08);
+  }
+
+  #slide-1 .cover-stat:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  #slide-1 .cover-stat-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #607188;
+    margin-bottom: 4px;
+  }
+
+  #slide-1 .cover-stat-value {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 24px;
+    line-height: 1.05;
+    color: #11223c;
+  }
+
+  #slide-1 .cover-stat-value.small {
+    font-size: 18px;
+  }
+
+  #slide-1 .index-grid {
+    gap: 12px;
+  }
+
+  #slide-1 .index-item {
+    min-height: 100px;
+    padding: 13px 14px 12px;
+    border-radius: 18px;
+  }
+
+  #slide-1 .index-item .idx-num {
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
+
+  #slide-1 .index-item .idx-title {
+    font-size: 16px;
+    line-height: 1.18;
+    margin-bottom: 4px;
+  }
+
+  #slide-1 .index-item .idx-desc {
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  #slide-2 .two-col,
+  #slide-3 .two-col,
+  #slide-7 .two-col,
+  #slide-8 .two-col,
+  #slide-10 .two-col {
+    flex: 1;
+  }
+
+  #slide-3 .slide-body > div:last-child,
+  #slide-4 .slide-body > div:nth-child(3),
+  #slide-9 .slide-body > .highlight-box {
+    background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(244,247,251,.96));
+    border: 1px solid rgba(29,60,109,.10);
+    border-radius: 20px;
+    box-shadow: var(--shadow-md);
+    padding: 18px 20px;
+  }
+
+  #slide-3 .slide-body > div:last-child ul.points {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 22px !important;
+  }
+
+  #slide-4 .bar-row {
+    margin-bottom: 10px;
+  }
+
+  #slide-4 .bar-row .bar-label {
+    width: 64px;
+    font-size: 14px;
+  }
+
+  #slide-4 .bar-row .bar-track {
+    height: 16px;
+    border-radius: 999px;
+  }
+
+  #slide-4 .bar-row .bar-fill {
+    border-radius: 999px;
+  }
+
+  #slide-4 .bar-row .bar-pct {
+    width: 58px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  #slide-5 .kpi-row .card,
+  #slide-8 .kpi-row .card,
+  #slide-10 .kpi-row .card {
+    min-height: 112px;
+  }
+
+  #slide-7 .two-col > *,
+  #slide-8 .two-col > *,
+  #slide-10 .two-col > *,
+  #slide-9 .three-col > * {
+    display: flex;
+    flex-direction: column;
+  }
+
+  @media (max-width: 1400px) {
+    :root {
+      --slide-w: min(96vw, 1480px);
+      --slide-h: min(760px, calc(100vh - 118px));
+    }
+
+    .slide-header {
+      padding: 24px 30px 16px 36px;
+    }
+
+    .slide-header::after {
+      left: 36px;
+    }
+
+    .slide-body {
+      padding: 18px 30px 18px 36px;
+    }
+  }
+
+  /* Global scale and dynamic number tones */
+  :root {
+    --slide-h: min(820px, calc(100vh - 108px));
+  }
+
+  .slide-wrapper {
+    min-height: var(--slide-h);
+  }
+
+  .kpi-row .card {
+    min-height: 116px;
+  }
+
+  .highlight-box {
+    min-height: 96px;
+  }
+
+  #slide-2 .two-col > *,
+  #slide-3 .two-col > *,
+  #slide-7 .two-col > *,
+  #slide-8 .two-col > *,
+  #slide-10 .two-col > * {
+    min-height: 280px;
+  }
+
+  #slide-9 .three-col > * {
+    min-height: 276px;
+  }
+
+  #slide-4 .highlight-box,
+  #slide-6 .highlight-box,
+  #slide-9 .highlight-box {
+    min-height: 112px;
+    display: flex;
+    align-items: center;
+  }
+
+  #slide-3 .slide-body > div:last-child {
+    min-height: 176px;
+  }
+
+  .tone-good { color: var(--green) !important; }
+  .tone-warn { color: var(--yellow) !important; }
+  .tone-bad { color: var(--red) !important; }
+  .tone-accent { color: var(--accent) !important; }
+  .tone-purple { color: var(--purple) !important; }
+
+  /* Slide 6 balance */
+  #slide-6 .slide-body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  #slide-6 .scenario-row {
+    gap: 14px;
+  }
+
+  #slide-6 .scenario-box {
+    min-height: 130px;
+    padding: 14px 16px;
+  }
+
+  #slide-6 .scenario-box .sc-value {
+    font-size: 30px;
+    margin-bottom: 3px;
+  }
+
+  #slide-6 .scenario-box .sc-pct {
+    font-size: 14px;
+    margin-bottom: 7px;
+  }
+
+  #slide-6 .scenario-box .sc-desc {
+    font-size: 11.5px;
+    line-height: 1.38;
+  }
+
+  /* highlight-box: duas colunas — Paradoxo | Recomendação */
+  #slide-6 .highlight-box {
+    padding: 14px 18px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    align-items: stretch;
+  }
+
+  #slide-6 .highlight-box br { display: none; }
+
+  #slide-6 .hb-left {
+    padding-right: 18px;
+    border-right: 1px solid rgba(29,60,109,.12);
+    font-size: 13px;
+    line-height: 1.55;
+    color: #31435b;
+  }
+
+  #slide-6 .hb-right {
+    padding-left: 18px;
+    font-size: 13px;
+    line-height: 1.55;
+    color: #31435b;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  #slide-6 .hb-right .rec-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin-bottom: 2px;
+  }
+
+  /* kpi-row inferior: compacto */
+  #slide-6 .kpi-row {
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  #slide-6 .kpi-row .card {
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  #slide-6 .kpi-row .card .card-label {
+    font-size: 10px;
+    margin-bottom: 4px;
+  }
+
+  #slide-6 .kpi-row .card .card-value {
+    font-size: 20px;
+    margin-bottom: 4px;
+    letter-spacing: -.4px;
+  }
+
+  #slide-6 .kpi-row .card .card-sub {
+    font-size: 11px;
+    line-height: 1.35;
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- BARRA DE NAVEGAÇÃO -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div class="nav-bar">
+  <button class="nav-btn" id="btnPrev" onclick="navigate(-1)">← Anterior</button>
+  <span class="slide-title-nav" id="navTitle">Carregando…</span>
+  <button class="nav-btn" id="btnNext" onclick="navigate(1)">Próximo →</button>
+  <span class="counter" id="navCounter">1 / 10</span>
+  <span class="kbd-hint"><kbd>←</kbd> <kbd>→</kbd></span>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 1 — CAPA -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div class="slide-wrapper active" id="slide-1">
+  <div class="slide-header">
+    <div class="title-block">
+      <h1>Forecast vs Budget<br>Análise de Performance Comercial</h1>
+      <div class="subtitle">Planejamento Comercial · Gestao de Planejamento Comercial · 2021</div>
+    </div>
+    <div class="badge">Executivo</div>
+  </div>
+  <div class="slide-body" style="justify-content:space-between;">
+    <div class="kpi-row">
+      <div class="card yellow">
+        <div class="card-label">Realizado YTD (Jan–Abr)</div>
+        <div class="card-value">R$ 176,8M</div>
+        <div class="card-sub">91,6% do budget YTD</div>
+      </div>
+      <div class="card red">
+        <div class="card-label">Gap vs Budget YTD</div>
+        <div class="card-value">− R$ 16,3M</div>
+        <div class="card-sub">Abaixo da meta acumulada</div>
+      </div>
+      <div class="card blue">
+        <div class="card-label">Budget Anual 2021</div>
+        <div class="card-value">R$ 499,2M</div>
+        <div class="card-sub">Referência do ano</div>
+      </div>
+      <div class="card red">
+        <div class="card-label">Tendência de Atingimento</div>
+        <div class="card-value">↓ 47,9%</div>
+        <div class="card-sub">Abr/21 — queda crítica vs Jan (140%)</div>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <div class="cover-story">
+        <div class="cover-eyebrow">Leitura Executiva</div>
+        <p>
+          A análise cobre <strong>4 anos (2018–2021)</strong>, <strong>11 vendedores</strong>,
+          <strong>~20.000 transações</strong> e <strong>528 metas mensais</strong>.
+          O principal sinal de risco em 2021 foi a deterioração do atingimento de
+          <strong>140% para 48%</strong> em apenas 4 meses, colocando toda a equipe abaixo de 70% do budget acumulado.
+        </p>
+      </div>
+      <div class="cover-side">
+        <div class="cover-stat">
+          <div class="cover-stat-label">Questão Central</div>
+          <div class="cover-stat-value small">Como transformar desvio em decisão antecipada?</div>
+        </div>
+        <div class="cover-stat">
+          <div class="cover-stat-label">Recorte do Estudo</div>
+          <div class="cover-stat-value">2018–2021</div>
+        </div>
+        <div class="cover-stat">
+          <div class="cover-stat-label">Foco da Navegação</div>
+          <div class="cover-stat-value small">Gap → risco → forecast → recomendação</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="index-grid" id="indexGrid"></div>
+  </div>
+  <div class="slide-footer">
+    <span class="footer-left">Planejamento Comercial · Igor Pereira Pinto</span>
+    <span class="footer-right">Slide 1 / 10</span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 2 — PROBLEMA DE NEGÓCIO -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div class="slide-wrapper" id="slide-2">
+  <div class="slide-header">
+    <div class="badge red">Problema</div>
+    <div class="title-block">
+      <h1>O Problema de Negócio</h1>
+      <div class="subtitle">Por que este projeto existe e qual dor ele resolve</div>
+    </div>
+    <span class="slide-num">2 / 10</span>
+  </div>
+  <div class="slide-body">
+    <div class="two-col">
+      <div>
+        <div class="section-title">Contexto</div>
+        <ul class="points">
+          <li>Empresa com equipe de <strong>11 vendedores</strong>, budget anual de <strong>R$ 499M</strong> e metas mensais por vendedor.</li>
+          <li>Gestão de planejamento acompanhava realizado vs meta <strong>de forma manual</strong>, sem visão consolidada e sem alertas de desvio.</li>
+          <li>Decisões de intervenção comercial eram tomadas <strong>tarde demais</strong> — quando o gap já era grande e difícil de recuperar.</li>
+          <li>Sem visibilidade de forecast: não havia projeção do ano com base no ritmo atual.</li>
+        </ul>
+      </div>
+      <div>
+        <div class="section-title">Dores operacionais identificadas</div>
+        <ul class="points">
+          <li class="warn">Sem alerta quando vendedor entrava em <strong>zona de risco</strong> (abaixo de 70%).</li>
+          <li class="warn">Sem distinção entre <strong>desvio pontual</strong> e <strong>tendência de deterioração</strong>.</li>
+          <li class="warn">Forecast feito manualmente em Excel sem padronização ou cenários.</li>
+          <li class="warn">Dados dispersos em <strong>arquivos separados</strong> por ano, sem histórico consolidado.</li>
+          <li class="warn">Margem bruta não era monitorada junto à meta — apenas o faturamento.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <strong>Hipótese central:</strong> a queda de atingimento de <strong>140% em Janeiro para 48% em Abril/2021</strong>
+      indica deterioração progressiva que, detectada mais cedo, poderia ter gerado planos de ação em Fevereiro
+      — e não apenas em Maio, quando o budget já estaria comprometido.
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="footer-left">Problema identificado com base em análise de 4 anos de dados</span>
+    <span class="footer-right">Slide 2 / 10</span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 3 — PERGUNTAS DE NEGÓCIO -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div class="slide-wrapper" id="slide-3">
+  <div class="slide-header">
+    <div class="badge">Perguntas</div>
+    <div class="title-block">
+      <h1>Perguntas de Negócio</h1>
+      <div class="subtitle">O que o gestor de planejamento precisa responder com os dados</div>
+    </div>
+    <span class="slide-num">3 / 10</span>
+  </div>
+  <div class="slide-body">
+    <div class="two-col">
+      <div>
+        <div class="section-title">Visão corrente (YTD)</div>
+        <ul class="points">
+          <li>Quanto a equipe <strong>realizou vs budget</strong> no acumulado do ano?</li>
+          <li>Qual o <strong>gap financeiro</strong> atual e qual sua tendência?</li>
+          <li>Quais vendedores estão <strong>em risco</strong> de não fechar o ano na meta?</li>
+          <li>A <strong>margem bruta</strong> está sendo preservada mesmo com o desvio de volume?</li>
+        </ul>
+      </div>
+      <div>
+        <div class="section-title">Visão prospectiva (Forecast)</div>
+        <ul class="points">
+          <li>Se <strong>mantiver o ritmo atual</strong>, onde o ano vai fechar?</li>
+          <li>Qual cenário representa o <strong>pior caso</strong> e qual o mais provável?</li>
+          <li><strong>Quanto cada vendedor precisa vender</strong> por mês para fechar na meta anual?</li>
+          <li>Existe risco real de <strong>não atingir o budget anual</strong>?</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="section-title">Visão histórica e comparativa</div>
+      <ul class="points" style="display:grid; grid-template-columns: 1fr 1fr; gap:6px 20px;">
+        <li>Como o atingimento de <strong>2021 se compara com 2018–2020</strong>?</li>
+        <li>Quais produtos e canais têm maior <strong>concentração de receita</strong>?</li>
+        <li>O desvio é homogêneo na equipe ou <strong>concentrado em poucos vendedores</strong>?</li>
+        <li>Há <strong>sazonalidade</strong> que explique a queda observada?</li>
+      </ul>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="footer-left">11 perguntas estruturadas que guiaram a construção do dashboard</span>
+    <span class="footer-right">Slide 3 / 10</span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 4 — SITUAÇÃO ATUAL (KPIs) -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div class="slide-wrapper" id="slide-4">
+  <div class="slide-header">
+    <div class="badge yellow">Situação Atual</div>
+    <div class="title-block">
+      <h1>Situação Atual — Jan–Abr 2021</h1>
+      <div class="subtitle">KPIs acumulados no ano com base nos 4 meses de realizado disponíveis</div>
+    </div>
+    <span class="slide-num">4 / 10</span>
+  </div>
+  <div class="slide-body">
+    <div class="kpi-row">
+      <div class="card yellow">
+        <div class="card-label">Realizado YTD</div>
+        <div class="card-value">R$ 176,8M</div>
+        <div class="card-sub">Jan + Fev + Mar + Abr/2021</div>
+      </div>
+      <div class="card blue">
+        <div class="card-label">Budget YTD</div>
+        <div class="card-value">R$ 193,1M</div>
+        <div class="card-sub">Meta acumulada Jan–Abr</div>
+      </div>
+      <div class="card red">
+        <div class="card-label">% Atingimento YTD</div>
+        <div class="card-value" style="color:var(--yellow)">91,6%</div>
+        <div class="card-sub">Abaixo de 100% mas acima de 90%</div>
+      </div>
+      <div class="card red">
+        <div class="card-label">Gap vs Budget</div>
+        <div class="card-value">− R$ 16,3M</div>
+        <div class="card-sub">Distância a recuperar no acumulado</div>
+      </div>
+    </div>
+
+    <div class="section-title">Evolução mensal de atingimento em 2021 — o alerta está aqui</div>
+    <div>
+      <div class="bar-row">
+        <span class="bar-label">Jan</span>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--green)"></div></div>
+        <span class="bar-pct" style="color:var(--green)">140,3%</span>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">Fev</span>
+        <div class="bar-track"><div class="bar-fill" style="width:88%;background:var(--yellow)"></div></div>
+        <span class="bar-pct" style="color:var(--yellow)">123,2%</span>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">Mar</span>
+        <div class="bar-track"><div class="bar-fill" style="width:62%;background:var(--yellow)"></div></div>
+        <span class="bar-pct" style="color:var(--yellow)">87,3%</span>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">Abr</span>
+        <div class="bar-track"><div class="bar-fill" style="width:34%;background:var(--red)"></div></div>
+        <span class="bar-pct" style="color:var(--red)">47,9%</span>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <strong>Leitura crítica:</strong> Janeiro surpreendeu positivamente (+40%). Fevereiro ainda saudável (+23%).
+      Março caiu para abaixo da meta (−13%). Abril entrou em colapso: apenas <strong>47,9%</strong>.
+      Queda de <strong>92 p.p. em 4 meses</strong>. O risco do segundo semestre é real.
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="footer-left">Dados extraídos de Vendas.xlsx + Meta 2021.xlsx via pipeline ETL</span>
+    <span class="footer-right">Slide 4 / 10</span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 5 — SITUAÇÃO POR VENDEDOR -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div class="slide-wrapper" id="slide-5">
+  <div class="slide-header">
+    <div class="badge red">Semáforo</div>
+    <div class="title-block">
+      <h1>Situação por Vendedor — YTD 2021</h1>
+      <div class="subtitle">Atingimento acumulado Jan–Abr por vendedor — todo o time em zona de risco</div>
+    </div>
+    <span class="slide-num">5 / 10</span>
+  </div>
+  <div class="slide-body">
+    <div class="kpi-row" style="margin-bottom:4px;">
+      <div class="card green">
+        <div class="card-label">Verde (≥ 90%)</div>
+        <div class="card-value">0</div>
+        <div class="card-sub">Nenhum vendedor saudável</div>
+      </div>
+      <div class="card yellow">
+        <div class="card-label">Amarelo (70–89%)</div>
+        <div class="card-value">0</div>
+        <div class="card-sub">Nenhum em atenção leve</div>
+      </div>
+      <div class="card red">
+        <div class="card-label">Vermelho (&lt; 70%)</div>
+        <div class="card-value">11</div>
+        <div class="card-sub">Todo o time em risco crítico</div>
+      </div>
+      <div class="card blue">
+        <div class="card-label">Destaque do Período</div>
+        <div class="card-value" style="font-size:17px;">Paola</div>
+        <div class="card-sub">Maior realizado YTD: R$ 23,7M</div>
+      </div>
+    </div>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Rank</th><th>Vendedor</th>
+          <th>Real YTD (R$M)</th><th>Meta YTD (R$M)</th>
+          <th>Atingimento</th><th>Margem</th><th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>Paola</td><td>23,7</td><td>41,7</td><td>56,8%</td><td>16,9M</td><td><span class="tag red">Vermelho</span></td></tr>
+        <tr><td>2</td><td>Neymar</td><td>25,2</td><td>47,5</td><td>53,1%</td><td>18,7M</td><td><span class="tag red">Vermelho</span></td></tr>
+        <tr><td>3</td><td>Marta</td><td>20,5</td><td>42,2</td><td>48,7%</td><td>15,1M</td><td><span class="tag red">Vermelho</span></td></tr>
+        <tr><td>4</td><td>Ronaldo</td><td>19,0</td><td>39,3</td><td>48,4%</td><td>13,2M</td><td><span class="tag red">Vermelho</span></td></tr>
+        <tr><td>5</td><td>Diego</td><td>16,4</td><td>34,5</td><td>47,5%</td><td>12,6M</td><td><span class="tag red">Vermelho</span></td></tr>
+        <tr><td>9</td><td>Gustavo</td><td>9,6</td><td>39,0</td><td>24,6%</td><td>6,3M</td><td><span class="tag red">Vermelho</span></td></tr>
+      </tbody>
+    </table>
+
+    <div class="highlight-box">
+      <strong>Insight crítico:</strong> nenhum dos 11 vendedores atingiu sequer 70% da meta acumulada.
+      Gustavo, com 24,6%, representa o maior risco individual. O problema não é de 1 ou 2 vendedores
+      — é <strong>estrutural na equipe inteira</strong>.
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="footer-left">Semáforo: Verde ≥ 90% · Amarelo 70–89% · Vermelho &lt; 70%</span>
+    <span class="footer-right">Slide 5 / 10</span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 6 — CENÁRIOS DE FORECAST -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div class="slide-wrapper" id="slide-6">
+  <div class="slide-header">
+    <div class="badge purple">Forecast</div>
+    <div class="title-block">
+      <h1>Cenários de Forecast — Ano 2021</h1>
+      <div class="subtitle">Projeção do fechamento anual com base em 3 cenários de velocidade de venda</div>
+    </div>
+    <span class="slide-num">6 / 10</span>
+  </div>
+  <div class="slide-body">
+    <div class="scenario-row">
+      <div class="scenario-box red-box">
+        <div class="sc-label">Pessimista</div>
+        <div class="sc-value" style="color:var(--red)">R$ 395,1M</div>
+        <div class="sc-pct" style="color:var(--red)">79,1% do Budget</div>
+        <div class="sc-desc">Run rate de Abril (R$27,3M/mês) × 8 meses restantes. Representa o risco caso a desaceleração se mantenha.</div>
+      </div>
+      <div class="scenario-box yellow-box">
+        <div class="sc-label">Base (Run Rate Médio)</div>
+        <div class="sc-value" style="color:var(--yellow)">R$ 530,3M</div>
+        <div class="sc-pct" style="color:var(--yellow)">106,2% do Budget</div>
+        <div class="sc-desc">Média YTD (R$44,2M/mês) × 8 meses. Budget seria batido — mas a tendência de queda torna este cenário otimista demais.</div>
+      </div>
+      <div class="scenario-box green-box">
+        <div class="sc-label">Otimista (+15%)</div>
+        <div class="sc-value" style="color:var(--green)">R$ 579,1M</div>
+        <div class="sc-pct" style="color:var(--green)">116,0% do Budget</div>
+        <div class="sc-desc">Média YTD × 1,15 × 8 meses. Requer aceleração consistente de 15% sobre o ritmo médio observado.</div>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <div class="hb-left">
+        <strong>Paradoxo do run rate médio:</strong> o cenário base (106%) parece saudável,
+        mas esconde a desaceleração crítica de Abril. Janeiro excepcional (+40%) distorce a média
+        para cima. A tendência real dos últimos 2 meses aponta para o cenário pessimista.
+      </div>
+      <div class="hb-right">
+        <div class="rec-label">Recomendação</div>
+        Usar o cenário <strong>pessimista como base de contingência</strong> e o base como teto.
+        A decisão precisa ser tomada <strong>antes de Maio</strong> — ainda há 8 meses para agir.
+      </div>
+    </div>
+
+    <div class="kpi-row">
+      <div class="card red">
+        <div class="card-label">Aceleração necessária (budget)</div>
+        <div class="card-value">R$ 40,3M/mês</div>
+        <div class="card-sub">Nos 8 meses restantes para fechar em R$499,2M</div>
+      </div>
+      <div class="card red">
+        <div class="card-label">Fator vs Run Rate atual</div>
+        <div class="card-value">1,48×</div>
+        <div class="card-sub">Precisa vender 48% a mais que o ritmo médio</div>
+      </div>
+      <div class="card blue">
+        <div class="card-label">Meses restantes</div>
+        <div class="card-value">8</div>
+        <div class="card-sub">Maio a Dezembro de 2021</div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="footer-left">Forecast = Realizado YTD + (Run Rate × Meses Restantes)</span>
+    <span class="footer-right">Slide 6 / 10</span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 7 — INSIGHTS ANALÍTICOS -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div class="slide-wrapper" id="slide-7">
+  <div class="slide-header">
+    <div class="badge purple">Insights</div>
+    <div class="title-block">
+      <h1>Insights Gerados pelo Dashboard</h1>
+      <div class="subtitle">O que os dados revelam que não estava visível antes da análise</div>
+    </div>
+    <span class="slide-num">7 / 10</span>
+  </div>
+  <div class="slide-body">
+    <div class="two-col">
+      <div>
+        <div class="section-title">Insights de performance</div>
+        <ul class="points">
+          <li class="insight"><strong>Desvio estrutural, não pontual.</strong> Em 2019 e 2020, o atingimento médio ficou acima de 95%. A queda de 2021 não é sazonalidade — é deterioração estrutural.</li>
+          <li class="insight"><strong>Margem preservada, volume comprometido.</strong> A margem bruta mantém ~73% mesmo com queda de receita, sugerindo que os descontos não são o problema.</li>
+          <li class="insight"><strong>Efeito Janeiro mascara a situação real.</strong> O run rate médio parece saudável por causa do mês excepcional de Janeiro (R$46,9M). Sem Janeiro, o run rate cai 34%.</li>
+          <li class="insight"><strong>Nenhum vendedor acima de 60% em Abril.</strong> O problema não é de vendedores específicos — há fator externo ou de processo impactando toda a equipe.</li>
+        </ul>
+      </div>
+      <div>
+        <div class="section-title">Insights de planejamento</div>
+        <ul class="points">
+          <li class="insight"><strong>Budget definido sem ajuste de sazonalidade.</strong> A distribuição mensal das metas é relativamente uniforme (R$35–67M), enquanto o realizado histórico tem picos em Q1.</li>
+          <li class="insight"><strong>MAPE do forecast como KPI de processo.</strong> A qualidade do planejamento pode ser mensurada — MAPE &gt; 50% indica que o processo de definição de metas precisa revisão.</li>
+          <li class="insight"><strong>Aceleração de 1,48× é improvável sem intervenção.</strong> Recuperar o budget exige vender 48% acima do ritmo médio por 8 meses — cenário que exige ação imediata e não apenas monitoramento.</li>
+          <li class="insight"><strong>Pareto de produto pode revelar a causa raiz.</strong> A concentração de receita em 20% dos produtos é forte indicador de onde buscar volume incremental.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="footer-left">Insights derivados da análise de 4 anos de dados transacionais</span>
+    <span class="footer-right">Slide 7 / 10</span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 8 — IMPACTO E RECOMENDAÇÕES -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div class="slide-wrapper" id="slide-8">
+  <div class="slide-header">
+    <div class="badge orange">Recomendações</div>
+    <div class="title-block">
+      <h1>Impacto e Recomendações</h1>
+      <div class="subtitle">O que fazer com base nos insights identificados</div>
+    </div>
+    <span class="slide-num">8 / 10</span>
+  </div>
+  <div class="slide-body">
+    <div class="two-col">
+      <div>
+        <div class="section-title">Ações imediatas (próximos 30 dias)</div>
+        <ul class="points">
+          <li class="action">Convocar revisão comercial emergencial com todos os vendedores abaixo de 50% YTD (toda a equipe em 2021).</li>
+          <li class="action">Revisar as metas mensais de Maio a Dezembro com base no cenário realista (pessimista), não no budget original.</li>
+          <li class="action">Identificar os <strong>top 5 produtos</strong> com maior contribuição de margem e criar campanha de push específica.</li>
+          <li class="action">Definir meta de aceleração por vendedor para os próximos 2 meses com plano de monitoramento semanal.</li>
+        </ul>
+      </div>
+      <div>
+        <div class="section-title">Ações estruturais (próximos 90 dias)</div>
+        <ul class="points">
+          <li class="action">Implementar <strong>alerta automático</strong> (Power Automate) quando vendedor entrar abaixo de 70% YTD.</li>
+          <li class="action">Revisar processo de construção do budget anual: incluir sazonalidade histórica na distribuição mensal.</li>
+          <li class="action">Criar reunião mensal de revisão do forecast com os 3 cenários (pessimista/base/otimista).</li>
+          <li class="action">Construir visão de <strong>aceleração necessária por vendedor</strong> no Power BI para acompanhamento recorrente.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section-title">Impacto esperado</div>
+    <div class="kpi-row">
+      <div class="card blue">
+        <div class="card-label">Detecção antecipada</div>
+        <div class="card-value" style="font-size:16px;">30–45 dias</div>
+        <div class="card-sub">De ganho de tempo para intervenção vs processo atual</div>
+      </div>
+      <div class="card green">
+        <div class="card-label">Gap recuperável</div>
+        <div class="card-value" style="font-size:16px;">R$ 16–50M</div>
+        <div class="card-sub">Com aceleração moderada nos meses restantes</div>
+      </div>
+      <div class="card green">
+        <div class="card-label">Visibilidade criada</div>
+        <div class="card-value" style="font-size:16px;">100%</div>
+        <div class="card-sub">Da equipe monitorada em tempo real vs 0% antes</div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="footer-left">Priorizar ações de impacto imediato antes de escalar para estruturais</span>
+    <span class="footer-right">Slide 8 / 10</span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 9 — BOAS PRÁTICAS DE PLANEJAMENTO COMERCIAL -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div class="slide-wrapper" id="slide-9">
+  <div class="slide-header">
+    <div class="badge green">Boas Práticas</div>
+    <div class="title-block">
+      <h1>Boas Práticas de Planejamento Comercial</h1>
+      <div class="subtitle">Referências de mercado para um processo de forecast maduro</div>
+    </div>
+    <span class="slide-num">9 / 10</span>
+  </div>
+  <div class="slide-body">
+    <div class="three-col">
+      <div>
+        <div class="section-title">Budget e metas</div>
+        <ul class="points">
+          <li class="good">Distribuir metas com <strong>sazonalidade histórica</strong>, não linearmente.</li>
+          <li class="good">Revisar budget a cada trimestre com base no realizado.</li>
+          <li class="good">Manter metas desafiantes mas atingíveis: &gt;60% da equipe bate a meta em ano normal.</li>
+          <li class="good">Separar meta de <strong>volume, preço e mix</strong> para diagnóstico preciso.</li>
+        </ul>
+      </div>
+      <div>
+        <div class="section-title">Forecast e monitoramento</div>
+        <ul class="points">
+          <li class="good">Revisar forecast <strong>mensalmente</strong> com 3 cenários.</li>
+          <li class="good">Monitorar MAPE do forecast: medir a qualidade do planejamento é tão importante quanto monitorar o resultado.</li>
+          <li class="good">Usar run rate dos últimos 3 meses, não do acumulado do ano.</li>
+          <li class="good">Alertar automaticamente quando o <strong>forecast pessimista</strong> ficar abaixo de 90% do budget.</li>
+        </ul>
+      </div>
+      <div>
+        <div class="section-title">Gestão de vendedores</div>
+        <ul class="points">
+          <li class="good">Semáforo individual com régua clara (verde/amarelo/vermelho).</li>
+          <li class="good">Revisão semanal para vendedores em vermelho.</li>
+          <li class="good">Calcular <strong>aceleração necessária</strong> por vendedor — não apenas o gap acumulado.</li>
+          <li class="good">Monitorar margem junto ao volume — vendedor que fecha negócios com margem zero distorce o resultado.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <strong>Referência de mercado — S&amp;OP (Sales &amp; Operations Planning):</strong>
+      empresas com processos maduros de S&amp;OP reduzem o MAPE do forecast em 30–50%,
+      diminuem o ciclo de resposta a desvios de 6–8 semanas para 2–3 semanas e
+      aumentam o atingimento médio de budget em 8–15 p.p. ao ano.
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="footer-left">Baseado em práticas de S&amp;OP e gestão comercial de alta performance</span>
+    <span class="footer-right">Slide 9 / 10</span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 10 — ARQUITETURA DA SOLUÇÃO -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div class="slide-wrapper" id="slide-10">
+  <div class="slide-header">
+    <div class="badge">Solução</div>
+    <div class="title-block">
+      <h1>Arquitetura da Solução</h1>
+      <div class="subtitle">Como o Planejamento Comercial foi construido - do Excel ao dashboard</div>
+    </div>
+    <span class="slide-num">10 / 10</span>
+  </div>
+  <div class="slide-body">
+    <div class="two-col">
+      <div>
+        <div class="section-title">Pipeline de dados (7 etapas)</div>
+        <ul class="points">
+          <li><strong>[1] Extract</strong> — Leitura de Vendas.xlsx + 4 arquivos de Meta (2018–2021)</li>
+          <li><strong>[2] Validate RAW</strong> — 4 testes de estrutura da fonte</li>
+          <li><strong>[3] Transform</strong> — Limpeza, tipagem, joins e cálculo de margem</li>
+          <li><strong>[4] Validate STAGING</strong> — 7 testes de regras de negócio</li>
+          <li><strong>[5] Load RAW</strong> — Persistência do dado bruto no SQL Server</li>
+          <li><strong>[6] Load Staging</strong> — Carga da camada limpa</li>
+          <li><strong>[7] Load DW</strong> — Star schema Kimball (2 fatos + 8 dimensões)</li>
+        </ul>
+      </div>
+      <div>
+        <div class="section-title">Stack da solução</div>
+        <ul class="points">
+          <li><strong>Python + pandas</strong> — ETL, validação, 47 testes automatizados</li>
+          <li><strong>SQL Server</strong> — DW com colunas PERSISTED para margem e resultado</li>
+          <li><strong>Power BI + DAX</strong> — 20+ medidas, RLS por gerente, 5 páginas analíticas</li>
+          <li><strong>Power Automate</strong> — 5 fluxos: alertas, relatórios automáticos, aprovações</li>
+          <li><strong>HTML + Chart.js</strong> — Dashboard portátil e apresentação executiva</li>
+        </ul>
+
+        <div class="section-title" style="margin-top:14px;">Escala dos dados</div>
+        <div class="kpi-row" style="margin-top:4px;">
+          <div class="card blue" style="padding:10px 12px;">
+            <div class="card-label">Transações</div>
+            <div class="card-value" style="font-size:17px;">~20.004</div>
+          </div>
+          <div class="card blue" style="padding:10px 12px;">
+            <div class="card-label">Metas</div>
+            <div class="card-value" style="font-size:17px;">528</div>
+          </div>
+          <div class="card blue" style="padding:10px 12px;">
+            <div class="card-label">Testes</div>
+            <div class="card-value" style="font-size:17px;">47</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="footer-left">github.com/IgorPereiraPinto/planejamento-comercial</span>
+    <span class="footer-right">Slide 10 / 10</span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- SCRIPTS -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<script>
+const SLIDE_TITLES = [
+  "Capa — Visão Geral",
+  "O Problema de Negócio",
+  "Perguntas de Negócio",
+  "Situação Atual — Jan–Abr 2021",
+  "Situação por Vendedor",
+  "Cenários de Forecast",
+  "Insights Analíticos",
+  "Impacto e Recomendações",
+  "Boas Práticas de Mercado",
+  "Arquitetura da Solução"
+];
+
+const SLIDE_DESCS = [
+  "KPIs principais e índice de navegação",
+  "Dor identificada e hipótese central",
+  "11 perguntas que guiaram a análise",
+  "Evolução mensal e gap acumulado",
+  "Semáforo individual — todo time em risco",
+  "3 cenários: pessimista, base e otimista",
+  "O que os dados revelam de não óbvio",
+  "Ações imediatas e estruturais",
+  "S&OP, MAPE, semáforo e revisão de forecast",
+  "Pipeline 7 etapas e stack tecnológico"
+];
+
+let current = 1;
+const total = 10;
+
+function buildIndex() {
+  const grid = document.getElementById('indexGrid');
+  grid.innerHTML = '';
+  for (let i = 1; i <= total; i++) {
+    const item = document.createElement('div');
+    item.className = 'index-item';
+    item.innerHTML = `
+      <div class="idx-num">SLIDE ${i}</div>
+      <div class="idx-title">${SLIDE_TITLES[i-1]}</div>
+      <div class="idx-desc">${SLIDE_DESCS[i-1]}</div>
+    `;
+    item.onclick = () => goTo(i);
+    grid.appendChild(item);
+  }
+}
+
+function goTo(n) {
+  document.getElementById(`slide-${current}`)?.classList.remove('active');
+  current = Math.max(1, Math.min(total, n));
+  document.getElementById(`slide-${current}`)?.classList.add('active');
+  document.getElementById('navTitle').textContent = SLIDE_TITLES[current - 1];
+  document.getElementById('navCounter').textContent = `${current} / ${total}`;
+  document.getElementById('btnPrev').disabled = current === 1;
+  document.getElementById('btnNext').disabled = current === total;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function navigate(dir) { goTo(current + dir); }
+
+function setTone(el, tone) {
+  el.classList.remove('tone-good', 'tone-warn', 'tone-bad', 'tone-accent', 'tone-purple');
+  if (tone) el.classList.add(tone);
+}
+
+function applyDynamicNumberColors() {
+  document.querySelectorAll('.kpi-row .card .card-value').forEach(el => {
+    const card = el.closest('.card');
+    if (!card) return;
+
+    if (card.classList.contains('green')) return setTone(el, 'tone-good');
+    if (card.classList.contains('yellow')) return setTone(el, 'tone-warn');
+    if (card.classList.contains('red')) return setTone(el, 'tone-bad');
+    if (card.classList.contains('purple')) return setTone(el, 'tone-purple');
+    if (card.classList.contains('blue')) return setTone(el, 'tone-accent');
+
+    const txt = el.textContent.trim();
+    if (txt.includes('−') || txt.includes('-')) return setTone(el, 'tone-bad');
+    if (txt.includes('%')) {
+      const n = parseFloat(txt.replace(',', '.'));
+      if (!Number.isNaN(n)) {
+        if (n >= 100) return setTone(el, 'tone-good');
+        if (n >= 70) return setTone(el, 'tone-warn');
+        return setTone(el, 'tone-bad');
+      }
+    }
+    setTone(el, 'tone-accent');
+  });
+
+  document.querySelectorAll('.scenario-box .sc-value, .scenario-box .sc-pct').forEach(el => {
+    const box = el.closest('.scenario-box');
+    if (!box) return;
+    if (box.classList.contains('green-box')) return setTone(el, 'tone-good');
+    if (box.classList.contains('yellow-box')) return setTone(el, 'tone-warn');
+    if (box.classList.contains('red-box')) return setTone(el, 'tone-bad');
+  });
+
+  document.querySelectorAll('.bar-pct').forEach(el => {
+    const n = parseFloat(el.textContent.replace('%', '').replace(',', '.'));
+    if (Number.isNaN(n)) return;
+    if (n >= 100) return setTone(el, 'tone-good');
+    if (n >= 70) return setTone(el, 'tone-warn');
+    setTone(el, 'tone-bad');
+  });
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown')  navigate(1);
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')    navigate(-1);
+});
+
+buildIndex();
+applyDynamicNumberColors();
+goTo(1);
+</script>
+</body>
+</html>

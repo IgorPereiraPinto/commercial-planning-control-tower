@@ -678,7 +678,7 @@ def validar_anos_metas_raw(metas_raw: dict) -> ValidationResult:
         passou=False,
         mensagem=(
             f"FALHA — {len(ausentes)} ano(s) de meta ausente(s). "
-            f"Verifique os arquivos em Metas/."
+            f"Verifique os arquivos em data/raw/."
         ),
         critico=True,
         detalhes=f"Anos ausentes: {ausentes}. Lidos: {sorted(anos_lidos)}.",

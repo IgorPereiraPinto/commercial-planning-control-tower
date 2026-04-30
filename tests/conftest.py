@@ -110,7 +110,7 @@ def pytest_collection_modifyitems(
     - test_validate.py  → unit (opera apenas sobre fixtures em memória)
 
     Isso permite rodar `pytest tests/ -m unit` para CI sem arquivos Excel.
-    Os testes de extração precisam dos arquivos em Dimensões/, Extrações/ e Metas/.
+    Os testes de extração precisam dos arquivos em data/raw/ (Dimensoes.xlsx, Vendas.xlsx, Meta_YYYY.xlsx).
     """
     for item in items:
         # Normaliza para comparação: usa apenas o nome do arquivo, não o path completo

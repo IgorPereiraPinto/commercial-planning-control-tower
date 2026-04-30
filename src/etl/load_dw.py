@@ -231,8 +231,9 @@ def load_dw(engine: Engine) -> dict[str, int]:
     a cada execução (mesma estratégia do restante do pipeline).
 
     Pré-condições:
-        - Tabelas dw.* devem existir (criadas pelos scripts sql/dw/03 e 04).
-        - dCalendario deve ter sido populado (script 05_populate_dCalendario.sql).
+        - Tabelas dw.* devem existir (criadas pelos scripts
+          sql/sqlserver/03_dw_dimensions.sql e 04_dw_facts.sql).
+        - dCalendario deve ter sido populado (script sql/sqlserver/05_calendario.sql).
         - staging.* deve ter sido carregado com sucesso nesta execução.
 
     Args:
@@ -282,8 +283,8 @@ def load_dw(engine: Engine) -> dict[str, int]:
             logger.error(f"  ERRO ao carregar dw.{nome_tabela}: {e}")
             logger.error(
                 "  O staging permanece íntegro. Verifique se as tabelas dw.* "
-                "existem (scripts sql/dw/03_create_dimensions.sql e "
-                "04_create_facts.sql devem ter sido executados)."
+                "existem (scripts sql/sqlserver/03_dw_dimensions.sql e "
+                "04_dw_facts.sql devem ter sido executados)."
             )
             raise
 

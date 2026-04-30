@@ -46,13 +46,13 @@ except ImportError:
 # Isso evita problemas com \ vs / nos caminhos.
 
 # Caminho do arquivo de dimensões (7 abas: dProdutos, dVendedor, etc.)
-PATH_DIMENSOES: Path = ROOT_DIR / os.getenv("DATA_PATH_DIMENSOES", "Dimensões/Dimensões.xlsx")
+PATH_DIMENSOES: Path = ROOT_DIR / os.getenv("DATA_PATH_DIMENSOES", "data/raw/Dimensoes.xlsx")
 
 # Caminho do arquivo de vendas (fVendas — 20.004 transações)
-PATH_VENDAS: Path = ROOT_DIR / os.getenv("DATA_PATH_VENDAS", "Extrações/Vendas.xlsx")
+PATH_VENDAS: Path = ROOT_DIR / os.getenv("DATA_PATH_VENDAS", "data/raw/Vendas.xlsx")
 
-# Diretório onde estão os arquivos de meta anuais (Meta 2018.xlsx, etc.)
-PATH_METAS_DIR: Path = ROOT_DIR / os.getenv("DATA_PATH_METAS_DIR", "Metas/")
+# Diretório onde estão os arquivos de meta anuais (Meta_2018.xlsx, etc.)
+PATH_METAS_DIR: Path = ROOT_DIR / os.getenv("DATA_PATH_METAS_DIR", "data/raw/")
 
 # Lista de anos disponíveis nos arquivos de meta
 # Os anos vêm do .env como string separada por vírgula ("2018,2019,2020,2021")

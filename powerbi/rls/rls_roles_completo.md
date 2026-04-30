@@ -1,5 +1,5 @@
 # RLS — Row Level Security
-## Commercial Planning Control Tower
+## Planejamento Comercial
 
 ---
 
@@ -245,4 +245,4 @@ Ele propaga automaticamente pelas Foreign Keys com relacionamento ativo.
 
 ---
 
-*Arquivo gerado como parte do Commercial Planning Control Tower.*
+*Arquivo gerado como parte do Planejamento Comercial.*

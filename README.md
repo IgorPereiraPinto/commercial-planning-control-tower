@@ -1,258 +1,193 @@
-# Commercial Planning Control Tower
+# Planejamento Comercial
 
-Pipeline de dados ponta a ponta para análise de performance comercial, forecast e budget.  
-Consolida 6 fontes Excel em um star schema no SQL Server, com dashboards Power BI, automação via Power Automate e apresentação executiva.
+Projeto de dados ponta a ponta para planejamento comercial, estruturado como material de apoio didatico, funcional e reutilizavel. O repositorio conecta Excel, Python ETL, SQL Server, Power BI, automacao e dashboard executivo em uma narrativa pensada para orientar decisao comercial com mais clareza, previsibilidade e governanca.
 
----
+## Visao geral
 
-## Visão geral
+Fluxo principal do projeto:
 
-| Camada | Tecnologia | Descrição |
-| ------ | ---------- | --------- |
-| Extração | Python / pandas | Lê Vendas.xlsx, Dimensões.xlsx e Meta YYYY.xlsx |
-| Transformação | Python / pandas | Limpeza, tipagem, UNPIVOT das metas (wide → long) |
-| Qualidade | Python (validate.py) | 4 testes RAW + 7 testes STAGING com bloqueio de pipeline |
-| Armazenamento | SQL Server | 3 schemas: raw · staging · dw (star schema Kimball) |
-| Modelo analítico | Power BI | Star schema com 2 fatos, 8 dimensões e 20+ medidas DAX |
-| Automação | Power Automate | 5 fluxos: alertas, resumo semanal, refresh automático |
-| Apresentação | HTML / PowerPoint | 14 slides, self-contained, navegação por teclado |
+`Excel -> Python ETL -> SQL Server (raw, staging, dw) -> Dashboard HTML / Power BI -> automacao`
 
----
+O objetivo do projeto nao e apenas exibir numeros. A proposta e transformar metas, vendas, forecast, margem e comissao em leitura executiva para:
 
-## Estrutura do projeto
+- gerentes comerciais
+- vendedores
+- planejamento comercial
+- lideranca executiva
+
+## Dashboard principal
+
+Link direto do dashboard:
+
+- [Abrir dashboard principal](dashboards/planejamento_comercial.html)
+- [Abrir portal do projeto](index.html)
+
+Preview do dashboard:
+
+![Dashboard Planejamento Comercial](<docs/assets/Print do dashboard Planejamento Comercial.PNG>)
+
+## O que o dashboard entrega
+
+O dashboard principal em [dashboards/planejamento_comercial.html](dashboards/planejamento_comercial.html) foi redesenhado para ter uma navegação mais executiva, mais fluida e mais intuitiva para um publico que nem sempre tem familiaridade com leitura analitica profunda.
+
+As abas principais cobrem:
+
+- visao geral do resultado
+- meta vs realizado
+- forecast e budget
+- comissao e mix
+- rentabilidade
+- sintese executiva e escala operacional
+- glossario de indicadores
+
+## Perguntas de negocio que o projeto responde
+
+- Qual o atingimento da meta no mes, no trimestre e no acumulado?
+- Quais vendedores, regioes, unidades e gerentes puxam o gap do resultado?
+- Qual o forecast de fechamento e qual a confiabilidade dessa previsao?
+- Quais produtos e categorias sustentam volume, margem e prioridade comercial?
+- Como a comissao conversa com atingimento, mix e resultado economico?
+- O que precisa existir para transformar o case em processo automatizado?
+
+## Camada de comissao
+
+O projeto inclui uma proposta de comissionamento para aproximar o portfolio de um caso real de planejamento comercial.
+
+Faixas de payout por atingimento:
+
+- abaixo de 80%: `0%`
+- 80% a 89,9%: `50%`
+- 90% a 99,9%: `80%`
+- 100% a 109,9%: `100%`
+- 110% a 119,9%: `130%`
+- acima de 120%: `160%`
+
+Multiplicadores por prioridade de produto:
+
+- `P1`: `1,35x`
+- `P2`: `1,15x`
+- `P3`: `1,00x`
+- `P4`: `0,85x`
+
+Formula proposta:
+
+`comissao elegivel = receita liquida * taxa base * multiplicador de prioridade`
+
+`comissao paga = comissao elegivel * fator de atingimento`
+
+Detalhamento completo:
+
+- [docs/comissionamento.md](docs/comissionamento.md)
+- [docs/regras_de_negocio.md](docs/regras_de_negocio.md)
+- [docs/dicionario_de_dados.md](docs/dicionario_de_dados.md)
+- [docs/arquitetura.md](docs/arquitetura.md)
+
+## Outputs principais do portfolio
+
+Os artefatos centrais do projeto sao:
+
+1. [index.html](index.html)
+   Portal local do projeto.
+2. [dashboards/planejamento_comercial.html](dashboards/planejamento_comercial.html)
+   Dashboard principal com insights distribuidos por aba.
+3. [presentations/apresentacao_forecast_budget.html](presentations/apresentacao_forecast_budget.html)
+   Apresentacao executiva focada em forecast, budget e tomada de decisao.
+4. [presentations/apresentacao_comercial.html](presentations/apresentacao_comercial.html)
+   Material de arquitetura, estrutura e proposta da solucao.
+
+## Estrutura do repositorio
 
 ```text
-Planejamento Comercial/
-│
-├── src/
-│   ├── config/
-│   │   └── settings.py          # Variáveis de ambiente, conexão, caminhos
-│   └── etl/
-│       ├── extract.py           # E: lê os arquivos Excel (raw)
-│       ├── transform.py         # T: limpa, tipifica, UNPIVOT metas
-│       ├── validate.py          # Validações raw e staging
-│       ├── load.py              # L: grava em raw.* e staging.*
-│       ├── load_dw.py           # L: grava em dw.* via INSERT...SELECT
-│       └── pipeline.py          # Orquestrador: 7 etapas end-to-end
-│
-├── sql/
-│   ├── raw/
-│   │   └── 01_create_raw_tables.sql
-│   ├── staging/
-│   │   └── 02_create_staging_tables.sql
-│   └── dw/
-│       ├── 03_create_dimensions.sql   # 8 dimensões do star schema
-│       ├── 04_create_facts.sql        # fVendas + fMetas (com colunas PERSISTED)
-│       ├── 05_populate_dCalendario.sql
-│       ├── 06_create_indexes.sql
-│       └── 07_analytical_queries.sql  # Queries analíticas de referência
-│
-├── tests/
-│   ├── conftest.py              # Setup de env + markers unit/integration
-│   ├── test_extract.py          # [integration] testa leitura dos Excel
-│   ├── test_transform.py        # [unit] testa transformações com fixtures
-│   └── test_validate.py         # [unit] testa todos os validadores
-│
-├── powerbi/
-│   ├── MODELO_POWERBI.md        # Guia de configuração do modelo
-│   ├── medidas_dax/
-│   │   └── medidas_completas.dax   # 20+ medidas em 6 Display Folders
-│   └── rls/
-│       └── rls_roles_completo.md   # RLS por gerente: Guardiola, Marta, Zagallo
-│
-├── powerautomate/
-│   ├── GUIA_POWER_AUTOMATE.md
-│   ├── flows/
-│   │   ├── 01_alerta_baixo_atingimento.md
-│   │   ├── 02_resumo_semanal.md
-│   │   ├── 03_alerta_meta_em_risco.md
-│   │   ├── 04_celebracao_meta_superada.md
-│   │   └── 05_refresh_automatico.md
-│   └── templates/
-│       └── email_html_base.html    # Template reutilizável para e-mails
-│
-├── apresentacao/
-│   ├── apresentacao_comercial.html  # Apresentação 14 slides (self-contained)
-│   ├── ESTRUTURA_APRESENTACAO.md    # Guia slide a slide com mensagem central
-│   └── SCRIPT_NARRACAO.md          # Script para "Notas do Orador"
-│
-├── docs/
-│   └── GUIA_IMPLEMENTACAO.md    # Guia passo a passo de implementação
-│
-├── Dimensões/
-│   └── Dimensões.xlsx           # 7 abas: dProdutos, dVendedor, dClientes...
-├── Extrações/
-│   └── Vendas.xlsx              # ~20.004 transações (Jan/2018 – Abr/2021)
-├── Metas/
-│   ├── Meta 2018.xlsx
-│   ├── Meta 2019.xlsx
-│   ├── Meta 2020.xlsx
-│   └── Meta 2021.xlsx           # Formato wide: vendedor × mês (528 linhas total)
-│
-├── logs/                        # Gerado automaticamente na primeira execução
-├── .env.example                 # Template com todas as variáveis necessárias
-├── .gitignore
-├── requirements.txt             # Dependências de produção
-└── requirements-dev.txt         # + pytest, black, flake8, ipykernel
+planejamento-comercial/
+|-- README.md
+|-- index.html
+|-- run_etl.py
+|-- Makefile
+|-- data/
+|   |-- raw/
+|   `-- processed/
+|-- dashboards/
+|   `-- planejamento_comercial.html
+|-- docs/
+|   |-- arquitetura.md
+|   |-- como_executar.md
+|   |-- comissionamento.md
+|   |-- dicionario_de_dados.md
+|   |-- faq_reutilizacao.md
+|   |-- regras_de_negocio.md
+|   |-- template_novo_case.md
+|   |-- assets/
+|   `-- legacy/
+|-- powerbi/
+|-- presentations/
+|-- roadmap/
+|-- sql/
+|   `-- sqlserver/
+|-- src/
+|-- tests/
+`-- legacy/
 ```
 
----
+## Documentacao conectada
 
-## Início rápido
+Os principais documentos foram atualizados para refletir o estado real do projeto:
 
-### 1. Ambiente
+- [docs/como_executar.md](docs/como_executar.md)
+  Execucao local e ordem correta do fluxo.
+- [docs/arquitetura.md](docs/arquitetura.md)
+  Arquitetura do pipeline e evolucao para operacao real.
+- [docs/regras_de_negocio.md](docs/regras_de_negocio.md)
+  Regras de KPI, forecast e comissionamento.
+- [docs/comissionamento.md](docs/comissionamento.md)
+  Explicacao didatica, formula e exemplo pratico.
+- [docs/dicionario_de_dados.md](docs/dicionario_de_dados.md)
+  Estruturas atuais e futuras recomendadas.
+- [docs/faq_reutilizacao.md](docs/faq_reutilizacao.md)
+  Adaptacao do projeto para outros contextos.
+- [roadmap/11_dashboard_e_storytelling.md](roadmap/11_dashboard_e_storytelling.md)
+  Direcao da narrativa e do dashboard.
+
+## Por onde comecar
+
+- Ver o resultado:
+  abra [index.html](index.html)
+- Ir direto ao dashboard:
+  abra [dashboards/planejamento_comercial.html](dashboards/planejamento_comercial.html)
+- Executar o projeto:
+  veja [docs/como_executar.md](docs/como_executar.md)
+- Entender as regras:
+  veja [docs/regras_de_negocio.md](docs/regras_de_negocio.md) e [docs/comissionamento.md](docs/comissionamento.md)
+- Reutilizar o modelo:
+  veja [docs/template_novo_case.md](docs/template_novo_case.md)
+
+## Escala e automacao
+
+O projeto foi desenhado para facilitar a evolucao de um case de portfolio para uma rotina corporativa:
+
+- regras de comissao podem virar tabelas parametricas
+- o DW pode expor uma `fComissaoMensal`
+- alertas podem ser disparados por Power Automate
+- forecast pode ser revisado em cadence recorrente
+- o dashboard pode consumir dados reais do pipeline em vez de dados embutidos
+
+## Execucao rapida
 
 ```bash
-python -m venv venv
-venv\Scripts\activate          # Windows
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
 pip install -r requirements-dev.txt
+copy .env.example .env
+python run_etl.py --dry-run
+pytest -q
+python run_etl.py
 ```
 
-### 2. Configuração
+Depois:
 
-```bash
-cp .env.example .env
-# Edite .env com as credenciais do SQL Server local
-```
+- abra [index.html](index.html)
+- abra [dashboards/planejamento_comercial.html](dashboards/planejamento_comercial.html)
 
-Variáveis obrigatórias no `.env`:
+## Observacao sobre legado
 
-```env
-DB_SERVER=localhost\SQLEXPRESS
-DB_DATABASE=planejamento_comercial
-DB_TRUSTED_CONNECTION=yes
-```
-
-### 3. Criar o banco
-
-Execute os scripts SQL na ordem numérica no SQL Server Management Studio (SSMS):
-
-```text
-sql/raw/01_create_raw_tables.sql
-sql/staging/02_create_staging_tables.sql
-sql/dw/03_create_dimensions.sql
-sql/dw/04_create_facts.sql
-sql/dw/05_populate_dCalendario.sql
-sql/dw/06_create_indexes.sql
-```
-
-### 4. Rodar o pipeline
-
-```bash
-# Dry run — valida tudo sem gravar no banco
-python -m src.etl.pipeline --dry-run
-
-# Execução completa (raw → staging → dw)
-python -m src.etl.pipeline
-```
-
-### 5. Testes
-
-```bash
-# Testes unitários (não precisam de arquivos Excel nem SQL Server)
-pytest tests/ -m unit -v
-
-# Todos os testes (precisa dos arquivos Excel na raiz)
-pytest tests/ -v
-
-# Com cobertura de código
-pytest tests/ --cov=src -v
-```
-
----
-
-## Pipeline ETL — 7 etapas
-
-```text
-1. Extract      → lê Excel (raw)
-2. Validate Raw → 4 testes de estrutura: colunas, volume, anos de meta, formato wide
-3. Transform    → limpeza, tipagem, UNPIVOT, metadados _etl_*
-4. Validate STG → 7 testes de negócio: FK, duplicatas, nulos, status, MAPE
-5. Load Raw     → raw.fVendas + raw.dProdutos + raw.dVendedor + ...
-6. Load Staging → staging.fVendas + staging.fMetas + staging.d*
-7. Load DW      → INSERT...SELECT de staging → dw (star schema completo)
-```
-
-Falhas críticas em qualquer etapa interrompem o pipeline antes de gravar.  
-O dado raw não é modificado após a carga — base para reprocessamento seguro.
-
----
-
-## Modelo dimensional (star schema)
-
-```text
-                    dw.dCalendario
-                          |
-  dStatus   dPagamento    |    dUnidades   dCidade
-      \          \        |       /            |
-       -------  dw.fVendas  ------        dClientes
-                    |
-          dVendedor |  dProdutos
-
-      dw.fMetas ---- dVendedor
-              \----- dCalendario
-```
-
-**Colunas calculadas (PERSISTED) em dw.fVendas:**
-
-- `[Margem Bruta]` = Faturamento Total − Custo Total
-- `[Resultado Liquido]` = Faturamento − Custo − Despesas − Impostos − Comissão
-
-Calculadas uma vez no SQL Server, não recalculadas no DAX a cada interação.
-
----
-
-## Power BI
-
-- **Conexão:** SQL Server `noteigor\SQLEXPRESS` → schema `dw`
-- **Medidas DAX:** 20+ medidas em 6 Display Folders (`_Medidas` table)
-- **RLS:** filtro em `dVendedor[Gerente]` — roles: Guardiola, Marta, Zagallo, Admin
-- **Relacionamento inativo:** `fMetas[Data Meta] → dCalendario[Data]` — ativado via `USERELATIONSHIP` na medida `Meta`
-
-Guia completo: [powerbi/MODELO_POWERBI.md](powerbi/MODELO_POWERBI.md)
-
----
-
-## Power Automate — 5 fluxos
-
-| Fluxo | Gatilho | Ação |
-| ----- | ------- | ---- |
-| 01 Alerta baixo atingimento | Segunda 08h | E-mail com vendedores < 70% da meta |
-| 02 Resumo semanal | Sexta 17h | E-mail com KPIs da semana + ranking |
-| 03 Alerta meta em risco | Dia 20 08h | E-mail com projeção e severidade |
-| 04 Celebração meta superada | Alerta Power BI | Post no Teams + e-mail |
-| 05 Refresh automático | Segunda 06h | Refresh do dataset + e-mail de status |
-
-Guia completo: [powerautomate/GUIA_POWER_AUTOMATE.md](powerautomate/GUIA_POWER_AUTOMATE.md)
-
----
-
-## Próximos passos (Fase 3)
-
-- **Forecast com ML:** Prophet ou XGBoost sobre série temporal mensal por vendedor
-- **LLM narrativo:** Python lê o DW → chama API do Claude → gera diagnóstico em linguagem natural para o Page 7 do dashboard
-- **Azure Function:** substituir o Task Scheduler local pelo Cenário A do Fluxo 5
-
----
-
-## Dados
-
-- **fVendas:** ~20.004 transações · Jan/2018 – Abr/2021
-- **fMetas:** 528 registros · 11 vendedores × 12 meses × 4 anos
-- **Dimensões:** 8 tabelas (Produtos, Vendedor, Clientes, Cidade, Unidades, Status, Pagamento, Calendário)
-
----
-
-## Competências e atribuições atendidas
-
-O projeto cobre diretamente as seguintes atribuições de analítica avançada e planejamento orientado por dados:
-
-| Atribuição | Como o projeto atende |
-| ---------- | --------------------- |
-| **Aplicar técnicas de IA/LLM e análise de dados para geração de insights estratégicos** | 3 cenários de forecast via run rate; pipeline ML-ready (star schema pronto para Prophet/XGBoost); MAPE como métrica de qualidade do planejamento; insights automáticos de tendência, risco de budget e aceleração por vendedor |
-| **Benchmark de melhores práticas internas e externas** | Comparação histórica 2018–2021 como benchmark interno; referências de S&OP (MAPE < 10% excelente, revisão trimestral de forecast, semáforo 70/90% como régua comercial padrão de mercado) |
-| **Identificar e integrar soluções analíticas às esteiras, validando valor para o negócio** | Pipeline 7 etapas (Extract → Validate RAW → Transform → Validate STAGING → Load DW); 5 fluxos Power Automate integrados à operação; valor validado: detecção de desvio 30–45 dias antes vs processo manual |
-| **Mineração e análise de dados para geração de insights e melhorias** | ~20.004 transações processadas + 528 metas; decomposição de desvio (volume × preço × mix); descoberta não óbvia: efeito Janeiro mascarando deterioração real em 2021 (140% → 48% em 4 meses) |
-| **Desenvolver análises para apoiar estratégias de jornada, personalização e recuperação** | Semáforo individual por vendedor; aceleração necessária calculada por vendedor (não apenas gap agregado); mapa de risco por nível de atingimento para priorizar intervenção |
-| **Atuar com áreas de negócio na geração de análises orientadas por dados** | Dashboard executivo Power BI com RLS por gerente; apresentação executiva HTML (10 slides, auto-navegável); alertas automáticos via Power Automate para o time comercial |
-| **Analisar indicadores de qualidade para direcionar melhorias de processo** | 11 testes automatizados de qualidade de dados (4 RAW + 7 STAGING, com bloqueio de pipeline em falha); MAPE como KPI de processo de planejamento; validação de integridade referencial antes de qualquer carga no DW |
+As estruturas antigas foram preservadas em `legacy/` e `docs/legacy/` apenas como historico. A organizacao atual documentada acima e a fonte principal de verdade do projeto.

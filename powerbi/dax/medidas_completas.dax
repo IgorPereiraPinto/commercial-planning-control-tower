@@ -1,0 +1,573 @@
+// =============================================================================
+// medidas_completas.dax — Todas as medidas DAX do Planejamento Comercial
+// =============================================================================
+//
+// COMO USAR:
+//   1. Abra o Power BI Desktop com o modelo configurado (ver MODELO_POWERBI.md)
+//   2. Crie a tabela vazia [_Medidas] (veja instrução em MODELO_POWERBI.md)
+//   3. Copie e cole cada medida no editor DAX dentro da tabela _Medidas
+//   4. Configure o Display Folder de cada medida conforme indicado nos comentários
+//
+// PADRÃO DE NOMENCLATURA:
+//   - Nomes em português, sem acentos em variáveis DAX internas
+//   - Percentuais com sufixo " %"
+//   - Valores monetários sem sufixo (padrão) ou com " R$" quando há versão %
+//   - Períodos com sufixo: " YTD", " MTD", " Ano Anterior"
+//
+// CONVENÇÃO DE FORMATAÇÃO:
+//   - Moeda: R$ #,##0.00
+//   - Percentual: #,##0.0%  (uma casa decimal)
+//   - Inteiro: #,##0
+//
+// [REUTILIZAÇÃO]:
+//   Adapte os nomes das colunas se o novo projeto tiver esquema diferente.
+//   As lógicas de TOTALYTD, SAMEPERIODLASTYEAR, USERELATIONSHIP e RANKX
+//   são reutilizáveis em qualquer star schema com fato + dCalendario.
+// =============================================================================
+
+
+// =============================================================================
+// PASTA: 01 - Base
+// Medidas fundamentais de agregação. São a base para TODAS as medidas derivadas.
+// Sempre valide estas medidas primeiro, em uma tabela Matrix simples.
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// Faturamento
+// Soma do faturamento bruto realizado.
+// Fonte: fVendas[Faturamento Total] — já filtrada por dStatus[Conta Para Faturamento] = 1
+//        na carga do DW (apenas pedidos válidos entram).
+// Display Folder: 01 - Base
+// Formato: R$ #,##0.00
+// ---------------------------------------------------------------------------
+Faturamento =
+SUM( 'dw fVendas'[Faturamento Total] )
+
+
+// ---------------------------------------------------------------------------
+// Custo Total
+// Soma do custo total de todos os itens vendidos.
+// Inclui apenas os pedidos válidos (mesma regra do Faturamento).
+// Display Folder: 01 - Base
+// Formato: R$ #,##0.00
+// ---------------------------------------------------------------------------
+Custo Total =
+SUM( 'dw fVendas'[Custo Total] )
+
+
+// ---------------------------------------------------------------------------
+// Margem Bruta R$
+// Faturamento menos Custo Total.
+// A coluna [Margem Bruta] no SQL Server já é calculada (PERSISTED).
+// Aqui somamos a coluna pré-calculada — mais eficiente que subtrair medidas.
+// Display Folder: 01 - Base
+// Formato: R$ #,##0.00
+// ---------------------------------------------------------------------------
+Margem Bruta R$ =
+SUM( 'dw fVendas'[Margem Bruta] )
+
+
+// ---------------------------------------------------------------------------
+// Resultado Liquido R$
+// Faturamento - Custo - Despesas - Impostos - Comissões.
+// A coluna [Resultado Liquido] no SQL Server já é calculada (PERSISTED).
+// Display Folder: 01 - Base
+// Formato: R$ #,##0.00
+// ---------------------------------------------------------------------------
+Resultado Liquido R$ =
+SUM( 'dw fVendas'[Resultado Liquido] )
+
+
+// ---------------------------------------------------------------------------
+// Qtde Vendida
+// Soma da quantidade de itens vendidos em todas as transações do contexto.
+// Útil para análise de volume de produtos.
+// Display Folder: 01 - Base
+// Formato: #,##0.0
+// ---------------------------------------------------------------------------
+Qtde Vendida =
+SUM( 'dw fVendas'[Qtde] )
+
+
+// ---------------------------------------------------------------------------
+// Qtd Pedidos
+// Contagem distinta de pedidos (Num Venda).
+// Um pedido pode ter múltiplos itens (linhas em fVendas), por isso DISTINCTCOUNT.
+// Display Folder: 01 - Base
+// Formato: #,##0
+// ---------------------------------------------------------------------------
+Qtd Pedidos =
+DISTINCTCOUNT( 'dw fVendas'[Num Venda] )
+
+
+// =============================================================================
+// PASTA: 02 - Percentuais
+// Indicadores percentuais e de eficiência derivados das medidas base.
+// Use DIVIDE() SEMPRE para proteger divisões por zero.
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// Margem Bruta %
+// Percentual da Margem Bruta sobre o Faturamento.
+// Leitura: "de cada R$ 1 faturado, quanto sobrou após o custo direto."
+// Referência de mercado: varia muito por setor (ex: varejo ~30–50%, tech ~60–80%)
+// Display Folder: 02 - Percentuais
+// Formato: #,##0.0%
+// ---------------------------------------------------------------------------
+Margem Bruta % =
+DIVIDE(
+    [Margem Bruta R$],
+    [Faturamento]
+)
+
+
+// ---------------------------------------------------------------------------
+// Resultado Liquido %
+// Percentual do Resultado Líquido sobre o Faturamento.
+// Leitura: "de cada R$ 1 faturado, quanto sobrou após TODOS os descontos."
+// Display Folder: 02 - Percentuais
+// Formato: #,##0.0%
+// ---------------------------------------------------------------------------
+Resultado Liquido % =
+DIVIDE(
+    [Resultado Liquido R$],
+    [Faturamento]
+)
+
+
+// ---------------------------------------------------------------------------
+// Ticket Medio
+// Valor médio por pedido.
+// Útil para monitorar se a qualidade das vendas está subindo ou caindo.
+// Display Folder: 02 - Percentuais
+// Formato: R$ #,##0.00
+// ---------------------------------------------------------------------------
+Ticket Medio =
+DIVIDE(
+    [Faturamento],
+    [Qtd Pedidos]
+)
+
+
+// =============================================================================
+// PASTA: 03 - Meta
+// Medidas de budget/meta com USERELATIONSHIP para ativar o relacionamento inativo
+// entre fMetas[Data Meta] e dCalendario[Data].
+//
+// POR QUE USERELATIONSHIP?
+//   dCalendario tem dois relacionamentos possíveis:
+//   1. fVendas[Data] → dCalendario[Data]  (ATIVO)
+//   2. fMetas[Data Meta] → dCalendario[Data]  (INATIVO)
+//   Power BI só pode usar 1 de cada vez por padrão.
+//   USERELATIONSHIP ativa temporariamente o inativo DENTRO da medida.
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// Meta
+// Soma do valor de meta do mês/período filtrado.
+// USERELATIONSHIP ativa a ligação fMetas[Data Meta] → dCalendario[Data],
+// permitindo que filtros do calendário funcionem em fMetas.
+// Display Folder: 03 - Meta
+// Formato: R$ #,##0.00
+// ---------------------------------------------------------------------------
+Meta =
+CALCULATE(
+    SUM( 'dw fMetas'[Valor Meta] ),
+    USERELATIONSHIP( 'dw fMetas'[Data Meta], 'dw dCalendario'[Data] )
+)
+
+
+// ---------------------------------------------------------------------------
+// Atingimento Meta %
+// Percentual do realizado sobre a meta.
+// Ex: Faturamento=900 / Meta=1000 → 90,0%
+// Valores acima de 100% = superou a meta.
+// Display Folder: 03 - Meta
+// Formato: #,##0.0%
+// ---------------------------------------------------------------------------
+Atingimento Meta % =
+DIVIDE(
+    [Faturamento],
+    [Meta]
+)
+
+
+// ---------------------------------------------------------------------------
+// Desvio vs Meta R$
+// Diferença absoluta entre Faturamento e Meta.
+// Positivo = acima da meta; Negativo = abaixo da meta.
+// Display Folder: 03 - Meta
+// Formato: R$ #,##0.00
+// ---------------------------------------------------------------------------
+Desvio vs Meta R$ =
+[Faturamento] - [Meta]
+
+
+// ---------------------------------------------------------------------------
+// Desvio vs Meta %
+// Percentual de desvio: (Realizado - Meta) / Meta
+// Positivo = acima; Negativo = abaixo.
+// Ex: -5% significa que ficou 5% abaixo da meta.
+// Display Folder: 03 - Meta
+// Formato: +#,##0.0%;-#,##0.0%;0,0%
+// ---------------------------------------------------------------------------
+Desvio vs Meta % =
+DIVIDE(
+    [Desvio vs Meta R$],
+    [Meta]
+)
+
+
+// =============================================================================
+// PASTA: 04 - Temporal (YTD / LY / MTD)
+// Inteligência temporal: acumulados no ano, comparação com período anterior.
+//
+// PRÉ-REQUISITO: dCalendario deve estar marcada como Tabela de Data no modelo.
+// Sem isso, TOTALYTD e SAMEPERIODLASTYEAR não funcionam.
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// Faturamento YTD
+// Faturamento acumulado no ano até a data selecionada.
+// Reinicia automaticamente em 1° de Janeiro.
+// Útil para cartões de KPI e gráficos de área comparativo.
+// Display Folder: 04 - Temporal (YTD / LY / MTD)
+// Formato: R$ #,##0.00
+// ---------------------------------------------------------------------------
+Faturamento YTD =
+TOTALYTD(
+    [Faturamento],
+    'dw dCalendario'[Data]
+)
+
+
+// ---------------------------------------------------------------------------
+// Meta YTD
+// Meta acumulada no ano até a data selecionada.
+// Par do Faturamento YTD para comparação de atingimento acumulado.
+// Display Folder: 04 - Temporal (YTD / LY / MTD)
+// Formato: R$ #,##0.00
+// ---------------------------------------------------------------------------
+Meta YTD =
+TOTALYTD(
+    [Meta],
+    'dw dCalendario'[Data]
+)
+
+
+// ---------------------------------------------------------------------------
+// Atingimento Meta YTD %
+// Percentual de atingimento acumulado no ano.
+// Display Folder: 04 - Temporal (YTD / LY / MTD)
+// Formato: #,##0.0%
+// ---------------------------------------------------------------------------
+Atingimento Meta YTD % =
+DIVIDE(
+    [Faturamento YTD],
+    [Meta YTD]
+)
+
+
+// ---------------------------------------------------------------------------
+// Faturamento Ano Anterior
+// Faturamento do mesmo período no ano anterior.
+// Exemplo: filtro em Mar/2020 → traz Mar/2019.
+// Retorna BLANK() se não houver dados no período anterior.
+// Display Folder: 04 - Temporal (YTD / LY / MTD)
+// Formato: R$ #,##0.00
+// ---------------------------------------------------------------------------
+Faturamento Ano Anterior =
+CALCULATE(
+    [Faturamento],
+    SAMEPERIODLASTYEAR( 'dw dCalendario'[Data] )
+)
+
+
+// ---------------------------------------------------------------------------
+// Variacao vs Ano Anterior %
+// Crescimento ou queda percentual em relação ao mesmo período do ano anterior.
+// Ex: +12% = cresceu 12% vs mesmo período; -5% = encolheu 5%.
+// Retorna BLANK() se não houver faturamento no ano anterior (evita divisão por zero).
+// Display Folder: 04 - Temporal (YTD / LY / MTD)
+// Formato: +#,##0.0%;-#,##0.0%;0,0%
+// ---------------------------------------------------------------------------
+Variacao vs Ano Anterior % =
+VAR FatAtual   = [Faturamento]
+VAR FatAnterior = [Faturamento Ano Anterior]
+RETURN
+    IF(
+        ISBLANK( FatAnterior ) || FatAnterior = 0,
+        BLANK(),
+        DIVIDE( FatAtual - FatAnterior, FatAnterior )
+    )
+
+
+// ---------------------------------------------------------------------------
+// Faturamento MTD
+// Faturamento acumulado no mês até o dia selecionado.
+// Útil para cartões de acompanhamento intra-mês.
+// Display Folder: 04 - Temporal (YTD / LY / MTD)
+// Formato: R$ #,##0.00
+// ---------------------------------------------------------------------------
+Faturamento MTD =
+TOTALMTD(
+    [Faturamento],
+    'dw dCalendario'[Data]
+)
+
+
+// =============================================================================
+// PASTA: 05 - Forecast / MAPE
+// MAPE = Mean Absolute Percentage Error = Erro Percentual Médio Absoluto.
+// Mede a qualidade do forecast (meta como proxy).
+//
+// INTERPRETAÇÃO DO MAPE:
+//   < 10%  → Excelente acurácia
+//   10–20% → Boa acurácia
+//   20–50% → Acurácia razoável
+//   > 50%  → Acurácia baixa, revisar processo de planejamento
+//
+// FÓRMULA: MAPE = MÉDIA( |Real - Forecast| / |Real| ) × 100
+//   Neste projeto: Real = Faturamento; Forecast = Meta
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// MAPE Mensal
+// Calcula o MAPE iterando sobre cada combinação de Vendedor × Mês.
+// AVERAGEX percorre cada linha do contexto expandido e calcula o erro % médio.
+//
+// Por que AVERAGEX com ALL(dCalendario)?
+//   AVERAGEX(dCalendario, ...) garante que iteramos mês a mês, independente
+//   do filtro de período do visual, calculando o erro em cada mês separadamente.
+//
+// Display Folder: 05 - Forecast / MAPE
+// Formato: #,##0.0%
+// ---------------------------------------------------------------------------
+MAPE Mensal =
+VAR TabelaMeses =
+    SUMMARIZE(
+        CROSSJOIN(
+            VALUES( 'dw dCalendario'[AnoMes] ),
+            VALUES( 'dw dVendedor'[Vendedor] )
+        ),
+        'dw dCalendario'[AnoMes],
+        'dw dVendedor'[Vendedor],
+        "@Fat",    [Faturamento],
+        "@Meta",   [Meta]
+    )
+VAR MAPECalc =
+    AVERAGEX(
+        FILTER( TabelaMeses, [@Fat] <> 0 && NOT ISBLANK( [@Meta] ) ),
+        ABS( [@Fat] - [@Meta] ) / ABS( [@Fat] )
+    )
+RETURN
+    IF( ISBLANK( MAPECalc ), BLANK(), MAPECalc )
+
+
+// ---------------------------------------------------------------------------
+// Acuracia Forecast %
+// Inverso do MAPE: 100% - MAPE.
+// Mais intuitivo para o gestor: 90% de acurácia = 10% de erro médio.
+// Display Folder: 05 - Forecast / MAPE
+// Formato: #,##0.0%
+// ---------------------------------------------------------------------------
+Acuracia Forecast % =
+VAR Mape = [MAPE Mensal]
+RETURN
+    IF( ISBLANK( Mape ), BLANK(), 1 - Mape )
+
+
+// ---------------------------------------------------------------------------
+// Classificacao Acuracia
+// Rótulo qualitativo da acurácia do forecast para uso em visuais condicional.
+// Retorna texto para uso em KPI, cartão ou formatação condicional.
+// Display Folder: 05 - Forecast / MAPE
+// Formato: Texto
+// ---------------------------------------------------------------------------
+Classificacao Acuracia =
+VAR Mape = [MAPE Mensal]
+RETURN
+    SWITCH(
+        TRUE(),
+        ISBLANK( Mape ),          "Sem dados",
+        Mape < 0.10,              "Excelente (< 10%)",
+        Mape < 0.20,              "Boa (10-20%)",
+        Mape < 0.50,              "Razoável (20-50%)",
+                                  "Baixa (> 50%)"
+    )
+
+
+// =============================================================================
+// PASTA: 06 - Pareto / Ranking
+// Análise de concentração 80/20 por vendedor.
+// Identifica quais vendedores representam 80% da receita.
+//
+// COMO USAR:
+//   1. Crie um visual de tabela com dVendedor[Vendedor]
+//   2. Adicione as medidas: Faturamento, Rank Vendedor,
+//      Faturamento Acumulado %, Classificacao Pareto
+//   3. Ordene por Rank Vendedor (crescente)
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// Rank Vendedor
+// Posição do vendedor no ranking de faturamento (1 = maior faturamento).
+// ALL(dVendedor[Vendedor]) garante que o ranking considera TODOS os vendedores,
+// independente de qualquer filtro de segmentação no visual.
+// Display Folder: 06 - Pareto / Ranking
+// Formato: #,##0
+// ---------------------------------------------------------------------------
+Rank Vendedor =
+IF(
+    ISBLANK( [Faturamento] ),
+    BLANK(),
+    RANKX(
+        ALL( 'dw dVendedor'[Vendedor] ),
+        [Faturamento],
+        ,
+        DESC,
+        Dense
+    )
+)
+
+
+// ---------------------------------------------------------------------------
+// Faturamento Acumulado %
+// Percentual acumulado de faturamento na ordem do ranking (maior → menor).
+// Usado para traçar a curva de Pareto.
+//
+// Por que ALLSELECTED?
+//   ALLSELECTED mantém os filtros externos do relatório (ex: filtro de ano)
+//   mas remove o filtro do visual em si, permitindo o cálculo acumulado.
+//
+// Display Folder: 06 - Pareto / Ranking
+// Formato: #,##0.0%
+// ---------------------------------------------------------------------------
+Faturamento Acumulado % =
+VAR FatVendedorAtual = [Faturamento]
+VAR RankAtual        = [Rank Vendedor]
+VAR TotalGeral       = CALCULATE( [Faturamento], ALLSELECTED( 'dw dVendedor'[Vendedor] ) )
+VAR FatAcumulado =
+    CALCULATE(
+        [Faturamento],
+        FILTER(
+            ALLSELECTED( 'dw dVendedor'[Vendedor] ),
+            [Rank Vendedor] <= RankAtual
+        )
+    )
+RETURN
+    IF(
+        ISBLANK( FatVendedorAtual ),
+        BLANK(),
+        DIVIDE( FatAcumulado, TotalGeral )
+    )
+
+
+// ---------------------------------------------------------------------------
+// Classificacao Pareto
+// Rótulo para formatação condicional e legenda do gráfico de Pareto.
+// "Top 80%" = vendedores que compõem os primeiros 80% do faturamento acumulado.
+// "Restante 20%" = vendedores de cauda longa.
+// Display Folder: 06 - Pareto / Ranking
+// Formato: Texto
+// ---------------------------------------------------------------------------
+Classificacao Pareto =
+VAR PctAcumulado = [Faturamento Acumulado %]
+RETURN
+    IF(
+        ISBLANK( PctAcumulado ),
+        BLANK(),
+        IF( PctAcumulado <= 0.80, "Top 80%", "Restante 20%" )
+    )
+
+
+// =============================================================================
+// MEDIDAS AUXILIARES — Apoio a visuais específicos
+// Usadas pontualmente em visuais que precisam de lógica condicional ou de
+// formatação dinâmica. Não pertencem às pastas principais.
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// Cor Atingimento
+// Retorna uma string de cor para formatação condicional em KPI cards.
+// Use em Formatação Condicional → Cor da fonte → Campo → esta medida.
+// [REUTILIZAÇÃO]: Ajuste os thresholds conforme a régua de performance do projeto.
+// Display Folder: 00 - Auxiliares
+// Formato: Texto
+// ---------------------------------------------------------------------------
+Cor Atingimento =
+VAR Pct = [Atingimento Meta %]
+RETURN
+    SWITCH(
+        TRUE(),
+        ISBLANK( Pct ),    "#999999",  // Cinza — sem dados
+        Pct >= 1.00,       "#107C10",  // Verde escuro — meta batida
+        Pct >= 0.90,       "#FFC300",  // Amarelo — próximo da meta (90-99%)
+                           "#D83B01"   // Vermelho — abaixo de 90%
+    )
+
+
+// ---------------------------------------------------------------------------
+// Label Desvio
+// Rótulo descritivo para o desvio vs meta. Útil em tooltips e cartões.
+// Display Folder: 00 - Auxiliares
+// Formato: Texto
+// ---------------------------------------------------------------------------
+Label Desvio =
+VAR Desvio = [Desvio vs Meta R$]
+RETURN
+    IF(
+        ISBLANK( Desvio ),
+        "Sem dados",
+        IF(
+            Desvio >= 0,
+            "Acima da meta em " & FORMAT( ABS( Desvio ), "R$ #,##0" ),
+            "Abaixo da meta em " & FORMAT( ABS( Desvio ), "R$ #,##0" )
+        )
+    )
+
+
+// ---------------------------------------------------------------------------
+// Faturamento Formatado
+// Versão formatada do faturamento para uso em tooltips e subtítulos dinâmicos.
+// Display Folder: 00 - Auxiliares
+// Formato: Texto
+// ---------------------------------------------------------------------------
+Faturamento Formatado =
+VAR Fat = [Faturamento]
+RETURN
+    IF(
+        ISBLANK( Fat ),
+        "Sem dados",
+        IF(
+            Fat >= 1000000,
+            FORMAT( Fat / 1000000, "#,##0.0" ) & "M",
+            FORMAT( Fat / 1000, "#,##0.0" ) & "K"
+        )
+    )
+
+
+// =============================================================================
+// FIM DO ARQUIVO
+// =============================================================================
+//
+// Validação recomendada após criar todas as medidas:
+//
+// 1. Crie uma Matrix visual com:
+//    Linhas:   dVendedor[Vendedor]
+//    Colunas:  dCalendario[Ano]
+//    Valores:  Faturamento, Meta, Atingimento Meta %
+//    → Valide se os valores fazem sentido com os dados do Excel original.
+//
+// 2. Verifique o MAPE com:
+//    Linhas:   dCalendario[AnoMes]
+//    Valores:  Faturamento, Meta, MAPE Mensal, Acuracia Forecast %
+//    → Deve haver dados para todos os meses com vendas.
+//
+// 3. Teste o Pareto com:
+//    Linhas:   dVendedor[Vendedor]
+//    Valores:  Rank Vendedor, Faturamento, Faturamento Acumulado %, Classificacao Pareto
+//    Ordenar:  Rank Vendedor crescente
+//    → Os top vendedores devem acumular ~80% do faturamento.
+//
+// =============================================================================

@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Planejamento Comercial</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0f172a;
+  --navy:#11253b;
+  --navy-mid:#1a3552;
+  --navy-soft:#233f60;
+  --slate:#334155;
+  --slate-soft:#64748b;
+  --mist:#e2e8f0;
+  --paper:#f4f6f8;
+  --card:#ffffff;
+  --gold:#c7902b;
+  --gold-soft:#fdf4e2;
+  --teal:#0f766e;
+  --teal-soft:#e7f7f4;
+  --emerald:#15803d;
+  --emerald-soft:#e8f6ec;
+  --coral:#c2410c;
+  --coral-soft:#feefe7;
+  --rose:#b42318;
+  --rose-soft:#fcecea;
+  --blue:#1d4ed8;
+  --blue-soft:#eaf2ff;
+  --violet:#6d28d9;
+  --violet-soft:#f2ebff;
+  --shadow:0 12px 34px rgba(15,23,42,.08);
+  --shadow-strong:0 18px 48px rgba(15,23,42,.12);
+  --radius:18px;
+  --radius-sm:12px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:"Manrope",sans-serif;
+  background:linear-gradient(180deg,#f7f8fa 0%,#eef2f6 100%);
+  color:var(--slate);
+  min-height:100vh;
+}
+.shell{max-width:1600px;margin:0 auto;padding:0 16px 22px}
+.header{
+  background:radial-gradient(circle at top right,rgba(199,144,43,.18),transparent 22%),linear-gradient(135deg,var(--navy) 0%,var(--navy-mid) 100%);
+  margin-top:12px;
+  padding:0 20px;
+  height:64px;
+  border-radius:0 0 18px 18px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  box-shadow:0 10px 26px rgba(15,23,42,.18);
+}
+.header-left,.header-right,.logo-wrap{display:flex;align-items:center;gap:12px}
+.logo{
+  width:42px;height:38px;border-radius:10px;display:grid;place-items:center;flex-shrink:0;
+  background:linear-gradient(145deg,#d7a341,#bf7d12);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 8px 18px rgba(0,0,0,.22);
+}
+.logo-divider{width:1px;height:30px;background:rgba(255,255,255,.16)}
+.header-title{color:#fff;font-size:16px;font-weight:800;letter-spacing:-.2px;line-height:1.1}
+.header-sub{color:#dce6ef;font-size:11px;margin-top:3px}
+.badge{
+  border-radius:999px;padding:6px 12px;font-size:11px;font-weight:700;
+  border:1px solid rgba(255,255,255,.12)
+}
+.badge.ref{background:rgba(199,144,43,.12);color:#f6d49c;border-color:rgba(199,144,43,.28)}
+.badge.date{background:rgba(255,255,255,.06);color:#dbe4ee}
+.tabs-shell{padding:14px 12px 0}
+.tabs-bar{
+  background:linear-gradient(180deg,var(--navy-soft) 0%,var(--navy-mid) 100%);
+  padding:0 12px;
+  display:flex;
+  gap:4px;
+  border-radius:16px 16px 0 0;
+  border:1px solid rgba(15,23,42,.06);
+  overflow:auto;
+}
+.tab{
+  padding:12px 14px;
+  color:#c5d3e1;
+  cursor:pointer;
+  font-size:12px;
+  font-weight:700;
+  white-space:nowrap;
+  border-bottom:2px solid transparent;
+  transition:all .16s ease;
+}
+.tab:hover{color:#fff}
+.tab.active{color:#fff;border-bottom-color:var(--gold);background:rgba(255,255,255,.03)}
+.filters{
+  background:#fff;
+  margin:0 12px;
+  padding:12px 16px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  border:1px solid var(--mist);
+  border-top:none;
+  border-radius:0 0 16px 16px;
+  box-shadow:var(--shadow);
+}
+.filter-label{
+  font-size:11px;font-weight:800;color:var(--slate-soft);text-transform:uppercase;letter-spacing:.7px;margin-right:2px
+}
+.filter-select{
+  appearance:none;
+  border:1px solid var(--mist);
+  background:#f8fafc;
+  color:var(--ink);
+  border-radius:12px;
+  padding:8px 34px 8px 12px;
+  font-size:12px;
+  font-weight:600;
+  min-width:140px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2364748b'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 10px center;
+}
+.filter-divider{width:1px;height:22px;background:var(--mist);margin:0 2px}
+.period-btn,.reset-btn{
+  padding:7px 12px;border-radius:999px;font-size:11px;font-weight:800;border:1px solid var(--mist);cursor:pointer;background:transparent;color:var(--slate-soft)
+}
+.period-btn.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.reset-btn{background:var(--gold-soft);border-color:rgba(199,144,43,.22);color:var(--coral)}
+.filter-count{
+  margin-left:auto;
+  font-size:11px;
+  color:var(--slate-soft);
+  background:#f8fafc;
+  border:1px solid var(--mist);
+  border-radius:999px;
+  padding:6px 12px;
+  font-weight:700;
+}
+.content{padding:16px 12px 0;min-height:760px}
+.panel{display:none}
+.panel.active{display:block}
+.section-title{
+  margin:0 0 12px;
+  display:flex;align-items:center;gap:10px;
+  color:var(--slate-soft);
+  font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;
+}
+.section-title::after{content:"";flex:1;height:1px;background:var(--mist)}
+.section-badge{
+  background:var(--gold-soft);
+  color:var(--gold);
+  font-size:10px;
+  padding:3px 8px;
+  border-radius:999px;
+  border:1px solid rgba(199,144,43,.18);
+  font-weight:800;
+  text-transform:none;
+  letter-spacing:0;
+}
+.kpi-grid,.grid-2,.grid-3,.grid-4,.insight-grid,.split-grid,.gloss-grid{display:grid;gap:12px;width:100%}
+.kpi-grid{grid-template-columns:repeat(6,1fr)}
+.grid-2{grid-template-columns:1fr 1fr}
+.grid-3{grid-template-columns:2fr 1fr 1fr}
+.grid-4{grid-template-columns:repeat(4,1fr)}
+.split-grid{grid-template-columns:1.2fr .8fr}
+.insight-grid{grid-template-columns:repeat(3,1fr)}
+.gloss-grid{grid-template-columns:1fr 1fr}
+.card,.kpi-card,.insight-card,.table-card,.note-box{
+  background:linear-gradient(180deg,#fff 0%,#fcfdff 100%);
+  border:1px solid rgba(148,163,184,.14);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+}
+.kpi-card{
+  padding:16px 16px 14px;
+  position:relative;
+  overflow:hidden;
+  border-left:4px solid var(--mist);
+}
+.kpi-card::before{
+  content:"";
+  position:absolute;top:-18px;right:-12px;width:72px;height:72px;border-radius:50%;opacity:.08
+}
+.c-gold{border-left-color:var(--gold)} .c-gold::before{background:var(--gold)}
+.c-teal{border-left-color:var(--teal)} .c-teal::before{background:var(--teal)}
+.c-emerald{border-left-color:var(--emerald)} .c-emerald::before{background:var(--emerald)}
+.c-coral{border-left-color:var(--coral)} .c-coral::before{background:var(--coral)}
+.c-rose{border-left-color:var(--rose)} .c-rose::before{background:var(--rose)}
+.c-blue{border-left-color:var(--blue)} .c-blue::before{background:var(--blue)}
+.kpi-label{font-size:11px;font-weight:700;color:var(--slate-soft);margin-bottom:8px}
+.kpi-value{font-size:25px;font-weight:800;color:var(--ink);letter-spacing:-.7px;line-height:1;margin-bottom:9px}
+.kpi-footer{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.kpi-bench{font-size:10px;color:var(--slate-soft);line-height:1.4}
+.pill{
+  display:inline-flex;align-items:center;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:800;white-space:nowrap
+}
+.p-ok{background:var(--emerald-soft);color:var(--emerald)}
+.p-att{background:var(--gold-soft);color:var(--coral)}
+.p-crit{background:var(--rose-soft);color:var(--rose)}
+.p-info{background:var(--blue-soft);color:var(--blue)}
+.card{padding:15px 16px}
+.card-head,.table-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:800;color:var(--ink)}
+.card-sub{font-size:11px;color:var(--slate-soft);margin-top:3px;line-height:1.55}
+.card-tag{
+  font-size:10px;padding:4px 8px;border-radius:999px;background:#f8fafc;color:var(--slate-soft);font-weight:800;border:1px solid var(--mist)
+}
+.card-tag.gold{background:var(--gold-soft);color:var(--gold);border-color:rgba(199,144,43,.18)}
+.card-tag.teal{background:var(--teal-soft);color:var(--teal);border-color:rgba(15,118,110,.18)}
+.alert-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.alert-box{
+  flex:1;min-width:220px;border-radius:var(--radius);padding:12px 14px;border-left:4px solid;box-shadow:var(--shadow)
+}
+.alert-box strong{display:block;font-size:12px;margin-bottom:4px}
+.alert-box p{font-size:11px;color:var(--slate-soft);line-height:1.55}
+.a-red{background:var(--rose-soft);border-left-color:var(--rose)}
+.a-gold{background:var(--gold-soft);border-left-color:var(--gold)}
+.a-teal{background:var(--teal-soft);border-left-color:var(--teal)}
+.a-blue{background:var(--blue-soft);border-left-color:var(--blue)}
+canvas{max-height:255px}
+.tall canvas{max-height:320px}
+.table-card{overflow:hidden}
+.table-head{padding:14px 16px;border-bottom:1px solid var(--mist)}
+table{width:100%;border-collapse:collapse}
+thead tr{background:linear-gradient(180deg,var(--navy-mid) 0%,var(--navy) 100%)}
+thead th{
+  padding:9px 11px;text-align:left;font-size:10px;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.45px;white-space:nowrap
+}
+tbody tr{border-bottom:1px solid #edf2f7}
+tbody tr:hover{background:#fbfdff}
+tbody td{padding:9px 11px;font-size:12px;color:var(--slate);white-space:nowrap}
+.tb{font-weight:800;color:var(--ink)}
+.bar-wrap{display:flex;align-items:center;gap:7px}
+.bar-bg{width:86px;height:7px;border-radius:999px;background:#e9eef5;overflow:hidden}
+.bar-fill{height:100%;border-radius:999px}
+.status-tag{
+  display:inline-block;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:800
+}
+.s-ok{background:var(--emerald-soft);color:var(--emerald)}
+.s-att{background:var(--gold-soft);color:var(--coral)}
+.s-crit{background:var(--rose-soft);color:var(--rose)}
+.insight-card{
+  padding:16px 18px;
+  border-top:4px solid var(--mist);
+  min-height:164px;
+}
+.i-gold{border-top-color:var(--gold);background:linear-gradient(180deg,rgba(199,144,43,.05),#fff)}
+.i-teal{border-top-color:var(--teal);background:linear-gradient(180deg,rgba(15,118,110,.05),#fff)}
+.i-rose{border-top-color:var(--rose);background:linear-gradient(180deg,rgba(180,35,24,.05),#fff)}
+.i-blue{border-top-color:var(--blue);background:linear-gradient(180deg,rgba(29,78,216,.05),#fff)}
+.i-violet{border-top-color:var(--violet);background:linear-gradient(180deg,rgba(109,40,217,.05),#fff)}
+.insight-type{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.65px;margin-bottom:8px}
+.i-gold .insight-type{color:var(--gold)}
+.i-teal .insight-type{color:var(--teal)}
+.i-rose .insight-type{color:var(--rose)}
+.i-blue .insight-type{color:var(--blue)}
+.i-violet .insight-type{color:var(--violet)}
+.insight-title{font-size:13px;font-weight:800;color:var(--ink);margin-bottom:7px}
+.insight-text{font-size:11px;color:var(--slate-soft);line-height:1.65;margin-bottom:12px}
+.metric{
+  display:inline-flex;padding:5px 9px;border-radius:10px;background:#f8fafc;border:1px solid var(--mist);font-size:10px;font-weight:800;color:var(--ink)
+}
+.mape-list,.formula-list,.matrix-list,.gloss-list{display:flex;flex-direction:column;gap:10px}
+.mape-row,.matrix-row,.legend-row{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:11px
+}
+.mape-row{
+  padding:8px 10px;border-radius:12px;border:1px solid #edf2f7;background:#fbfdff
+}
+.mape-bar{flex:1;height:8px;border-radius:999px;background:#edf2f7;overflow:hidden}
+.mape-fill{height:100%;border-radius:999px}
+.formula{
+  padding:12px 14px;border:1px solid var(--mist);border-radius:14px;background:#fbfdff
+}
+.formula strong{display:block;font-size:12px;color:var(--ink);margin-bottom:4px}
+.formula code{display:block;font-size:11px;line-height:1.75;color:var(--ink);white-space:pre-wrap}
+.agenda{
+  padding-left:18px;display:flex;flex-direction:column;gap:8px;color:var(--slate-soft);font-size:11px;line-height:1.65
+}
+.arch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.arch-card{
+  padding:16px;border-radius:16px;border:1px solid var(--mist);background:#fbfdff
+}
+.arch-card h4{font-size:13px;color:var(--ink);margin-bottom:6px}
+.arch-card p{font-size:11px;color:var(--slate-soft);line-height:1.6}
+.small-tag{
+  display:inline-flex;margin-top:10px;padding:4px 8px;border-radius:999px;background:#fff;border:1px solid var(--mist);font-size:10px;font-weight:800;color:var(--slate-soft)
+}
+.gloss-card{
+  padding:16px 18px;border-top:3px solid var(--gold)
+}
+.gloss-title{font-size:13px;font-weight:800;color:var(--ink);margin-bottom:8px}
+.gloss-formula{
+  font-size:11px;background:#f8fafc;border:1px solid var(--mist);border-radius:10px;padding:8px 10px;color:var(--ink);margin-bottom:10px
+}
+.gloss-text{font-size:11px;color:var(--slate-soft);line-height:1.65;margin-bottom:10px}
+.gloss-bench{display:flex;gap:6px;flex-wrap:wrap}
+.bench-tag{
+  font-size:10px;font-weight:800;padding:3px 8px;border-radius:999px
+}
+.b-ok{background:var(--emerald-soft);color:var(--emerald)}
+.b-att{background:var(--gold-soft);color:var(--coral)}
+.b-crit{background:var(--rose-soft);color:var(--rose)}
+.note-box{
+  margin:16px 12px 0;
+  padding:15px 16px;
+  background:linear-gradient(135deg,var(--navy) 0%,var(--navy-mid) 100%);
+  color:#dbe4ee;
+  display:flex;gap:10px;align-items:flex-start;
+}
+.note-box strong{color:#fff}
+.note-box p{font-size:11px;line-height:1.65}
+@media(max-width:1250px){
+  .kpi-grid,.grid-2,.grid-3,.grid-4,.split-grid,.insight-grid,.gloss-grid,.arch-grid{grid-template-columns:1fr}
+}
+@media(max-width:900px){
+  .header{height:auto;padding:14px 16px;align-items:flex-start;gap:12px;flex-direction:column}
+  .header-right{flex-wrap:wrap}
+  .filter-count{margin-left:0}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="header">
+    <div class="header-left">
+      <div class="logo" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M4 19.25H20" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M7 16V11.5" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round"/>
+          <path d="M12 16V7.5" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round"/>
+          <path d="M17 16V4.5" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round"/>
+          <path d="M6.4 9.6L10.6 6.7L13.4 8.1L18.1 4.8" stroke="#F6D49C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="logo-divider"></div>
+      <div>
+        <div class="header-title">Planejamento Comercial</div>
+        <div class="header-sub">Material de apoio para decisao comercial, forecast, comissao e rentabilidade</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="badge ref" id="refBadge">Referencia: Jan-Abr/2021</span>
+      <span class="badge date">Atualizado em 30/04/2026</span>
+    </div>
+  </div>
+
+  <div class="tabs-shell">
+    <div class="tabs-bar">
+      <div class="tab active" onclick="switchTab(0)">📊 Visao Geral</div>
+      <div class="tab" onclick="switchTab(1)">🎯 Meta vs Realizado</div>
+      <div class="tab" onclick="switchTab(2)">📈 Forecast e Budget</div>
+      <div class="tab" onclick="switchTab(3)">💸 Comissao e Mix</div>
+      <div class="tab" onclick="switchTab(4)">💼 Rentabilidade</div>
+      <div class="tab" onclick="switchTab(5)">🧭 Sintese e Escala</div>
+      <div class="tab" onclick="switchTab(6)">📖 Glossario</div>
+    </div>
+  </div>
+
+  <div class="filters">
+    <span class="filter-label">Filtros</span>
+    <select class="filter-select" id="flt-gerente" onchange="applyFilters()"></select>
+    <select class="filter-select" id="flt-vendedor" onchange="applyFilters()"></select>
+    <select class="filter-select" id="flt-regiao" onchange="applyFilters()"></select>
+    <select class="filter-select" id="flt-unidade" onchange="applyFilters()"></select>
+    <div class="filter-divider"></div>
+    <button class="period-btn" data-period="mtd" onclick="setPeriod('mtd',this)">MTD</button>
+    <button class="period-btn" data-period="qtd" onclick="setPeriod('qtd',this)">QTD</button>
+    <button class="period-btn active" data-period="ytd" onclick="setPeriod('ytd',this)">YTD</button>
+    <button class="period-btn" data-period="fy" onclick="setPeriod('fy',this)">Anualizado</button>
+    <button class="reset-btn" onclick="resetFilters()">✕ Limpar</button>
+    <span class="filter-count" id="filterCount">11 vendedores · 4 regioes · 6 unidades</span>
+  </div>
+
+  <div class="content">
+    <section class="panel active" id="panel-0">
+      <div class="section-title">KPIs principais <span class="section-badge" id="periodLabel0">YTD</span></div>
+      <div class="kpi-grid" id="overviewKpis"></div>
+
+      <div class="section-title">Leitura executiva <span class="section-badge">Traducao dos numeros</span></div>
+      <div class="alert-row" id="overviewAlerts"></div>
+
+      <div class="grid-2">
+        <div class="card tall">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Meta vs realizado no periodo</div>
+              <div class="card-sub">Visual principal do budget para leitura rapida de ritmo, gap e recuperacao.</div>
+            </div>
+            <span class="card-tag gold">Barras</span>
+          </div>
+          <canvas id="chartOverviewMonthly"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Atingimento por vendedor</div>
+              <div class="card-sub">Semaforo para priorizar o acompanhamento da equipe comercial.</div>
+            </div>
+            <span class="card-tag teal">Ranking</span>
+          </div>
+          <canvas id="chartOverviewAttainment"></canvas>
+        </div>
+      </div>
+
+      <div class="section-title">Insights da aba <span class="section-badge">Onde agir primeiro</span></div>
+      <div class="insight-grid" id="overviewInsights"></div>
+    </section>
+
+    <section class="panel" id="panel-1">
+      <div class="section-title">Tabela de atingimento <span class="section-badge" id="periodLabel1">YTD</span></div>
+      <div class="table-card">
+        <div class="table-head">
+          <div>
+            <div class="card-title">Meta, realizado e faixa de payout</div>
+            <div class="card-sub">Tabela pensada para gerentes e vendedores entenderem o desvio e a consequencia pratica na comissao.</div>
+          </div>
+          <span class="card-tag gold" id="sellerCountTag">11 vendedores</span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Vendedor</th>
+              <th>Gerente</th>
+              <th>Regiao</th>
+              <th>Meta</th>
+              <th>Realizado</th>
+              <th>Atingimento</th>
+              <th>Gap</th>
+              <th>Faixa</th>
+            </tr>
+          </thead>
+          <tbody id="sellerTable"></tbody>
+        </table>
+      </div>
+
+      <div class="section-title">Concentracao e lideranca <span class="section-badge">Leitura gerencial</span></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Pareto de receita por vendedor</div>
+              <div class="card-sub">Mostra a dependencia do resultado em poucos nomes e orienta a discussao sobre cobertura comercial.</div>
+            </div>
+            <span class="card-tag">80/20</span>
+          </div>
+          <canvas id="chartPareto"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Comparativo por gerente</div>
+              <div class="card-sub">Ajuda a separar tema de execucao, carteira e acompanhamento.</div>
+            </div>
+            <span class="card-tag teal">Gerentes</span>
+          </div>
+          <canvas id="chartManagers"></canvas>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top:12px">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Receita por regiao</div>
+              <div class="card-sub">Abertura territorial para suportar desdobramento de meta e cobertura comercial.</div>
+            </div>
+            <span class="card-tag gold">Regiao</span>
+          </div>
+          <canvas id="chartRegions"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Receita por unidade</div>
+              <div class="card-sub">Leitura operacional para avaliar alocacao e concentracao do resultado.</div>
+            </div>
+            <span class="card-tag teal">Unidades</span>
+          </div>
+          <canvas id="chartUnits"></canvas>
+        </div>
+      </div>
+
+      <div class="section-title">Insights da aba <span class="section-badge">Meta, cobertura e concentracao</span></div>
+      <div class="insight-grid" id="attainmentInsights"></div>
+    </section>
+
+    <section class="panel" id="panel-2">
+      <div class="section-title">Forecast do periodo <span class="section-badge" id="periodLabel2">YTD</span></div>
+      <div class="grid-4" id="forecastKpis"></div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Cenarios de forecast</div>
+              <div class="card-sub">Leitura simples para comite: conservador, base e otimista.</div>
+            </div>
+            <span class="card-tag gold">3 cenarios</span>
+          </div>
+          <canvas id="chartForecastScenarios"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">MAPE por vendedor</div>
+              <div class="card-sub">Acuracia como indicador de maturidade do processo de planejamento.</div>
+            </div>
+            <span class="card-tag teal">MAPE</span>
+          </div>
+          <div class="mape-list" id="mapeList"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Historico de forecast vs realizado</div>
+            <div class="card-sub">Ajuda a mostrar se o erro de previsao e pontual ou estrutural.</div>
+          </div>
+          <span class="card-tag gold">Serie temporal</span>
+        </div>
+        <canvas id="chartForecastHistory"></canvas>
+      </div>
+
+      <div class="section-title">Insights da aba <span class="section-badge">Confiabilidade e acao</span></div>
+      <div class="insight-grid" id="forecastInsights"></div>
+    </section>
+
+    <section class="panel" id="panel-3">
+      <div class="section-title">KPIs de comissao <span class="section-badge" id="periodLabel3">YTD</span></div>
+      <div class="grid-4" id="commissionKpis"></div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Comissao estimada por vendedor</div>
+              <div class="card-sub">Mostra o payout estimado com base no atingimento e no mix de prioridade do vendedor.</div>
+            </div>
+            <span class="card-tag gold">Payout</span>
+          </div>
+          <canvas id="chartCommission"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Top produtos e prioridade</div>
+              <div class="card-sub">Conecta produto, foco comercial e potencial de comissao.</div>
+            </div>
+            <span class="card-tag teal">P1 a P4</span>
+          </div>
+          <canvas id="chartProducts"></canvas>
+          <div class="mape-list" id="priorityLegend"></div>
+        </div>
+      </div>
+
+      <div class="split-grid" style="margin-top:12px">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Regra de calculo de comissao</div>
+              <div class="card-sub">Explicacao didatica para quem nao domina o tema, mas precisa confiar no processo e usa-lo para tomada de decisao.</div>
+            </div>
+            <span class="card-tag gold">Explicacao</span>
+          </div>
+          <div class="formula-list">
+            <div class="formula">
+              <strong>Passo 1 - Definir a comissao elegivel</strong>
+              <code>Comissao Elegivel = Receita Liquida * Taxa Base * Multiplicador de Prioridade</code>
+            </div>
+            <div class="formula">
+              <strong>Passo 2 - Aplicar a faixa de atingimento</strong>
+              <code>&lt; 80%  = 0%
+80% a 89,9% = 50%
+90% a 99,9% = 80%
+100% a 109,9% = 100%
+110% a 119,9% = 130%
+>= 120% = 160%</code>
+            </div>
+            <div class="formula">
+              <strong>Passo 3 - Chegar na comissao paga</strong>
+              <code>Comissao Paga = Comissao Elegivel * Fator de Atingimento</code>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Prioridade de produto</div>
+              <div class="card-sub">Quanto menor o numero da prioridade, maior o incentivo de comissao.</div>
+            </div>
+            <span class="card-tag teal">Matriz</span>
+          </div>
+          <div class="matrix-list" id="productMatrix"></div>
+        </div>
+      </div>
+
+      <div class="section-title">Aplicacao pratica <span class="section-badge">Exemplo simples</span></div>
+      <div class="table-card">
+        <div class="table-head">
+          <div>
+            <div class="card-title">Tabela pratica de comissao</div>
+            <div class="card-sub">Exemplo explicado na linguagem do negocio. A pessoa consegue enxergar o racional do calculo sem precisar ler formula tecnica.</div>
+          </div>
+          <span class="card-tag gold">Exemplo</span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Vendedor</th>
+              <th>Meta</th>
+              <th>Realizado</th>
+              <th>Atingimento</th>
+              <th>Prioridade media</th>
+              <th>Comissao elegivel</th>
+              <th>Fator</th>
+              <th>Comissao paga</th>
+            </tr>
+          </thead>
+          <tbody id="commissionTable"></tbody>
+        </table>
+      </div>
+
+      <div class="section-title">Insights da aba <span class="section-badge">Comissao, categoria e produto</span></div>
+      <div class="insight-grid" id="commissionInsights"></div>
+    </section>
+
+    <section class="panel" id="panel-4">
+      <div class="section-title">Qualidade do resultado <span class="section-badge" id="periodLabel4">YTD</span></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Waterfall do resultado</div>
+              <div class="card-sub">Visual para explicar quanto da receita vira custo, comissao, despesa e resultado final.</div>
+            </div>
+            <span class="card-tag teal">DRE simplificada</span>
+          </div>
+          <div id="waterfallRows"></div>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Estrutura da margem</div>
+              <div class="card-sub">Mostra a composicao economica do faturamento.</div>
+            </div>
+            <span class="card-tag gold">Share</span>
+          </div>
+          <canvas id="chartMarginShare"></canvas>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top:12px">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Margem por categoria</div>
+              <div class="card-sub">Indica quais linhas suportam crescimento com qualidade economica.</div>
+            </div>
+            <span class="card-tag gold">Categorias</span>
+          </div>
+          <canvas id="chartCategoryMargin"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Evolucao da margem</div>
+              <div class="card-sub">Compara 2020 e 2021 para diferenciar oscilacao de tendencia estrutural.</div>
+            </div>
+            <span class="card-tag teal">Serie</span>
+          </div>
+          <canvas id="chartMarginTrend"></canvas>
+        </div>
+      </div>
+
+      <div class="section-title">Insights da aba <span class="section-badge">Margem e disciplina comercial</span></div>
+      <div class="insight-grid" id="marginInsights"></div>
+    </section>
+
+    <section class="panel" id="panel-5">
+      <div class="section-title">Sintese executiva <span class="section-badge">Leitura para comite</span></div>
+      <div class="insight-grid" id="summaryInsights"></div>
+
+      <div class="section-title">Perguntas para o proximo comite <span class="section-badge">Agenda</span></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head"><div class="card-title">Perguntas de negocio</div></div>
+          <ul class="agenda">
+            <li>Quais vendedores abaixo de 80% vao entrar em acompanhamento semanal?</li>
+            <li>Quais produtos P1 e P2 podem puxar recuperacao de meta sem deteriorar margem?</li>
+            <li>Quais regioes precisam de reforco de carteira ou de cobertura comercial?</li>
+            <li>Existe dependencia excessiva dos top performers para fechar o budget?</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">Perguntas de processo</div></div>
+          <ul class="agenda">
+            <li>O MAPE individual esta sendo acompanhado como indicador do processo de forecast?</li>
+            <li>A politica de comissao esta parametrizada ou ainda depende de excecoes manuais?</li>
+            <li>Quais alertas automaticos precisamos disparar para gerente e planejamento?</li>
+            <li>Quais dados extras faltam para evoluir o case para rotina corporativa?</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="section-title">Escala operacional <span class="section-badge">Do portfolio para a empresa</span></div>
+      <div class="arch-grid">
+        <div class="arch-card">
+          <h4>Regras em tabela parametrica</h4>
+          <p>Faixas de payout, vigencia da politica e multiplicadores por prioridade devem viver em tabelas proprias para que a area ajuste a regra sem reescrever o dashboard.</p>
+          <span class="small-tag">param_regra_comissao</span>
+        </div>
+        <div class="arch-card">
+          <h4>Fato mensal de comissao</h4>
+          <p>Uma tabela `fComissaoMensal` ajuda a conciliar valor calculado, valor pago, provisao de despesa comercial e simulacao de politica.</p>
+          <span class="small-tag">dw.fComissaoMensal</span>
+        </div>
+        <div class="arch-card">
+          <h4>Alertas e automacao</h4>
+          <p>O projeto pode disparar alerta para vendedores abaixo de 80%, forecast base abaixo de 95% e queda na participacao de P1/P2.</p>
+          <span class="small-tag">Power Automate</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-6">
+      <div class="section-title">Indicadores do dashboard <span class="section-badge">O que cada KPI significa</span></div>
+      <div class="gloss-grid" id="glossaryGrid"></div>
+    </section>
+  </div>
+
+  <div class="note-box">
+    <div style="font-size:16px;flex-shrink:0">💡</div>
+    <p><strong>Nota tecnica:</strong> projeto estruturado para mostrar uma evolucao plausivel de portfolio para ambiente real. A camada atual conecta Excel, ETL Python, SQL Server, Power BI, dashboard HTML e automacao. A politica de comissao apresentada aqui e uma proposta parametrizavel e auditavel para apoiar gerentes, vendedores e planejamento comercial na tomada de decisao.</p>
+  </div>
+</div>
+
+<script>
+'use strict';
+const COLORS={ink:'#0f172a',navy:'#1a3552',gold:'#c7902b',teal:'#0f766e',emerald:'#15803d',coral:'#c2410c',rose:'#b42318',blue:'#1d4ed8',violet:'#6d28d9',gray:'#94a3b8'};
+const MONTHS=['Jan','Fev','Mar','Abr'];
+const HISTORY_LABELS=['Jan 20','Fev 20','Mar 20','Abr 20','Mai 20','Jun 20','Jul 20','Ago 20','Set 20','Out 20','Nov 20','Dez 20','Jan 21','Fev 21','Mar 21','Abr 21'];
+const BASE_RATE=0.024;
+const PERIODS={
+  mtd:{label:'MTD',indices:[3],reference:'Abr/2021'},
+  qtd:{label:'QTD',indices:[3],reference:'Q2 2021'},
+  ytd:{label:'YTD',indices:[0,1,2,3],reference:'Jan-Abr/2021'},
+  fy:{label:'Anualizado',indices:[0,1,2,3],reference:'FY 2021 estimado'}
+};
+const state={period:'ytd',gerente:'',vendedor:'',regiao:'',unidade:''};
+const charts={};
+
+const sellers=[
+  {nome:'Cristiano',gerente:'Zagallo',regiao:'Sudeste',unidade:'Matriz',meta:[1.72,1.78,1.86,1.84],real:[1.94,2.03,2.07,1.96],mape:7,priorityMix:1.27},
+  {nome:'Ronaldo',gerente:'Guardiola',regiao:'Sul',unidade:'Filial 1',meta:[1.64,1.71,1.82,1.83],real:[1.69,1.78,1.82,1.81],mape:8,priorityMix:1.18},
+  {nome:'Luan',gerente:'Marta',regiao:'Centro-Oeste',unidade:'Filial 2',meta:[1.45,1.49,1.58,1.58],real:[1.32,1.44,1.56,1.48],mape:6,priorityMix:1.14},
+  {nome:'Marilia',gerente:'Marta',regiao:'Nordeste',unidade:'Filial 3',meta:[1.34,1.40,1.46,1.50],real:[1.17,1.26,1.39,1.28],mape:11,priorityMix:1.08},
+  {nome:'Rodrigo',gerente:'Guardiola',regiao:'Sudeste',unidade:'Matriz',meta:[1.18,1.23,1.28,1.31],real:[1.02,1.09,1.24,1.15],mape:13,priorityMix:1.05},
+  {nome:'Paola',gerente:'Marta',regiao:'Sul',unidade:'Filial 4',meta:[1.06,1.13,1.18,1.23],real:[0.86,0.92,1.01,0.91],mape:15,priorityMix:1.12},
+  {nome:'Gustavo',gerente:'Zagallo',regiao:'Centro-Oeste',unidade:'Filial 5',meta:[1.01,1.05,1.10,1.14],real:[0.79,0.84,0.95,0.82],mape:14,priorityMix:1.04},
+  {nome:'Lazaro',gerente:'Guardiola',regiao:'Nordeste',unidade:'Filial 6',meta:[0.89,0.92,0.95,0.94],real:[0.69,0.74,0.79,0.68],mape:18,priorityMix:0.98},
+  {nome:'Messi',gerente:'Zagallo',regiao:'Sudeste',unidade:'Filial 1',meta:[0.83,0.87,0.89,0.91],real:[0.61,0.65,0.72,0.62],mape:19,priorityMix:0.96},
+  {nome:'Lilia',gerente:'Marta',regiao:'Norte',unidade:'Filial 2',meta:[0.81,0.84,0.87,0.88],real:[0.57,0.61,0.69,0.63],mape:22,priorityMix:0.94},
+  {nome:'Neymar',gerente:'Zagallo',regiao:'Norte',unidade:'Filial 3',meta:[0.54,0.58,0.60,0.62],real:[0.39,0.44,0.52,0.45],mape:28,priorityMix:1.02}
+];
+
+const categories=[
+  {nome:'Eletronicos',fat:15.4,margem:28.4},
+  {nome:'Moveis',fat:10.1,margem:37.6},
+  {nome:'Eletrodomesticos',fat:8.3,margem:27.1},
+  {nome:'Informatica',fat:6.4,margem:34.8},
+  {nome:'Moda e Acessorios',fat:4.7,margem:42.1},
+  {nome:'Servicos agregados',fat:2.4,margem:48.0}
+];
+
+const products=[
+  {nome:'Notebook Pro Elite',categoria:'Informatica',fat:4.8,prioridade:'P1',mult:1.35},
+  {nome:'Mesa Executiva Prime',categoria:'Moveis',fat:4.0,prioridade:'P1',mult:1.35},
+  {nome:'Smart TV 55 4K',categoria:'Eletronicos',fat:3.8,prioridade:'P2',mult:1.15},
+  {nome:'Workstation i9',categoria:'Informatica',fat:3.1,prioridade:'P2',mult:1.15},
+  {nome:'Cadeira Ergonomica',categoria:'Moveis',fat:2.9,prioridade:'P2',mult:1.15},
+  {nome:'Geladeira Frost Free',categoria:'Eletrodomesticos',fat:2.7,prioridade:'P3',mult:1.00},
+  {nome:'Ar condicionado 18k',categoria:'Eletrodomesticos',fat:2.1,prioridade:'P3',mult:1.00},
+  {nome:'Monitor UltraWide 34',categoria:'Informatica',fat:1.9,prioridade:'P3',mult:1.00},
+  {nome:'Teclado Mecanico',categoria:'Informatica',fat:1.4,prioridade:'P4',mult:0.85},
+  {nome:'Acessorios diversos',categoria:'Moda e Acessorios',fat:1.1,prioridade:'P4',mult:0.85}
+];
+
+const history={
+  real:[10.4,11.0,11.8,10.1,11.3,12.1,12.0,12.6,13.0,13.4,14.0,12.7,11.3,12.0,14.1,9.9],
+  forecast:[10.8,11.3,11.6,9.8,11.2,12.4,12.3,12.9,13.1,13.5,13.8,13.1,11.6,12.3,13.7,12.8]
+};
+
+const marginTrend={
+  prev:[30.8,31.2,31.9,30.5,31.0,31.8,32.1,32.6,32.9,33.4,33.1,32.3],
+  curr:[31.6,33.1,34.0,32.8]
+};
+
+const glossary=[
+  {titulo:'Faturamento realizado',formula:'SUM(Realizado)',texto:'Valor efetivamente vendido no periodo filtrado. E o principal ponto de partida para comparar entrega, meta e resultado.',bench:['Leitura de entrega','Base do budget','Abre o storytelling']},
+  {titulo:'Meta comercial',formula:'SUM(Meta)',texto:'Valor planejado para o periodo. Serve como referencia para acompanhamento gerencial, comissao e forecast.',bench:['Budget','Alvo do periodo','Base do gap']},
+  {titulo:'% de atingimento',formula:'Realizado / Meta * 100',texto:'Mostra o quanto da meta foi entregue. E o indicador mais intuitivo para vendedores, gerentes e diretoria.',bench:['>= 100%','80% a 99,9%','< 80%']},
+  {titulo:'Gap para a meta',formula:'Realizado - Meta',texto:'Traduz o desvio em valor absoluto. Ajuda a equipe a entender o tamanho real do problema ou da superacao.',bench:['Acima = positivo','Abaixo = risco','Define plano de acao']},
+  {titulo:'Forecast base',formula:'Run rate atual * periodo projetado',texto:'Estimativa mais provavel de fechamento mantido o ritmo atual. Ajuda a agir antes do encerramento do periodo.',bench:['Leitura de tendencia','Apoia o comite','Base de alerta']},
+  {titulo:'MAPE',formula:'AVG( ABS(Real - Forecast) / Real )',texto:'Mede a qualidade do forecast. Nao basta prever; e preciso medir o erro para melhorar o processo.',bench:['< 10% = alta','10% a 20% = media','> 20% = baixa']},
+  {titulo:'Comissao elegivel',formula:'Receita Liquida * Taxa Base * Multiplicador de Prioridade',texto:'Base potencial de comissao antes de aplicar a faixa de atingimento. Conecta valor vendido e mix estrategico.',bench:['P1 = 1,35x','P2 = 1,15x','P4 = 0,85x']},
+  {titulo:'Comissao paga',formula:'Comissao Elegivel * Fator de Atingimento',texto:'Valor final estimado de payout. Permite explicar de forma simples como meta e mix afetam remuneracao variavel.',bench:['< 80% = 0%','100% = 100%','120% = 160%']},
+  {titulo:'Margem bruta',formula:'(Receita - Custo) / Receita',texto:'Mostra a qualidade economica do faturamento. Ajuda a evitar crescimento com desconto destrutivo.',bench:['Leitura de qualidade','Protege resultado','Conecta com mix']},
+  {titulo:'Share P1 e P2',formula:'Receita P1+P2 / Receita Total',texto:'Mostra quanto da receita vem dos produtos estrategicos que a empresa quer empurrar.',bench:['Mix estrategico','Prioridade comercial','Influencia a comissao']}
+];
+
+function money(v){return `R$ ${v.toFixed(1).replace('.',',')}M`;}
+function percent(v){return `${v.toFixed(1).replace('.',',')}%`;}
+function payoutFactor(ating){
+  if(ating < 80) return 0;
+  if(ating < 90) return 0.5;
+  if(ating < 100) return 0.8;
+  if(ating < 110) return 1.0;
+  if(ating < 120) return 1.3;
+  return 1.6;
+}
+function payoutLabel(ating){
+  if(ating < 80) return 'Sem payout';
+  if(ating < 90) return '50%';
+  if(ating < 100) return '80%';
+  if(ating < 110) return '100%';
+  if(ating < 120) return '130%';
+  return '160%';
+}
+function statusClass(ating){
+  if(ating >= 100) return 's-ok';
+  if(ating >= 80) return 's-att';
+  return 's-crit';
+}
+function fillColor(ating){
+  if(ating >= 100) return COLORS.emerald;
+  if(ating >= 80) return COLORS.gold;
+  return COLORS.rose;
+}
+function sum(arr){return arr.reduce((acc,val)=>acc+val,0);}
+function round(v){return Math.round(v*10)/10;}
+function periodIndices(){return PERIODS[state.period].indices;}
+
+function getFilteredSellers(){
+  return sellers.filter((seller)=>{
+    if(state.gerente && seller.gerente!==state.gerente) return false;
+    if(state.vendedor && seller.nome!==state.vendedor) return false;
+    if(state.regiao && seller.regiao!==state.regiao) return false;
+    if(state.unidade && seller.unidade!==state.unidade) return false;
+    return true;
+  }).map((seller)=>{
+    const idx=periodIndices();
+    const meta=sum(idx.map(i=>seller.meta[i]));
+    const real=sum(idx.map(i=>seller.real[i]));
+    const ating=meta===0?0:(real/meta)*100;
+    const base=real*BASE_RATE*seller.priorityMix;
+    const fator=payoutFactor(ating);
+    return {...seller,metaTotal:round(meta),realTotal:round(real),ating:round(ating),gap:round(real-meta),base:round(base),payout:round(base*fator),fator};
+  });
+}
+
+function getMonthlySeries(filtered){
+  const idx=periodIndices();
+  const labels=idx.map(i=>MONTHS[i]);
+  const meta=idx.map(i=>round(sum(filtered.map(s=>s.meta[i]))));
+  const real=idx.map(i=>round(sum(filtered.map(s=>s.real[i]))));
+  if(state.period==='fy'){
+    const monthsDone=4;
+    const annualMeta=round(sum(meta)*3);
+    const annualReal=round(sum(real)*(12/monthsDone));
+    return {labels:['Realizado anualizado'],meta:[annualMeta],real:[annualReal]};
+  }
+  return {labels,meta,real};
+}
+
+function scaleProducts(filteredRevenue){
+  const totalBase=sum(sellers.map(s=>sum(s.real)));
+  const factor=filteredRevenue/totalBase;
+  return products.map(p=>({...p,fatScaled:round(p.fat*factor)}));
+}
+
+function scaleCategories(filteredRevenue){
+  const totalBase=sum(sellers.map(s=>sum(s.real)));
+  const factor=filteredRevenue/totalBase;
+  return categories.map(c=>({...c,fatScaled:round(c.fat*factor)}));
+}
+
+function groupBy(items,key,field){
+  const grouped={};
+  items.forEach((item)=>{grouped[item[key]]=(grouped[item[key]]||0)+item[field];});
+  return grouped;
+}
+
+function setPeriod(period,btn){
+  state.period=period;
+  document.querySelectorAll('.period-btn').forEach((el)=>el.classList.toggle('active',el===btn));
+  applyFilters(false);
+}
+
+function switchTab(index){
+  document.querySelectorAll('.tab').forEach((tab,tabIndex)=>tab.classList.toggle('active',tabIndex===index));
+  document.querySelectorAll('.panel').forEach((panel,panelIndex)=>panel.classList.toggle('active',panelIndex===index));
+}
+
+function populateFilters(){
+  const gerenteSel=document.getElementById('flt-gerente');
+  const vendedorSel=document.getElementById('flt-vendedor');
+  const regiaoSel=document.getElementById('flt-regiao');
+  const unidadeSel=document.getElementById('flt-unidade');
+  const makeOptions=(values,label,current)=>[`<option value="">${label}</option>`].concat(values.map(v=>`<option value="${v}" ${current===v?'selected':''}>${v}</option>`)).join('');
+  gerenteSel.innerHTML=makeOptions([...new Set(sellers.map(s=>s.gerente))].sort(),'Todos os gerentes',state.gerente);
+  const sellersBase=sellers.filter(s=>!state.gerente || s.gerente===state.gerente).map(s=>s.nome).sort();
+  vendedorSel.innerHTML=makeOptions([...new Set(sellersBase)],'Todos os vendedores',state.vendedor);
+  regiaoSel.innerHTML=makeOptions([...new Set(sellers.map(s=>s.regiao))].sort(),'Todas as regioes',state.regiao);
+  unidadeSel.innerHTML=makeOptions([...new Set(sellers.map(s=>s.unidade))].sort(),'Todas as unidades',state.unidade);
+}
+
+function resetFilters(){
+  state.gerente='';state.vendedor='';state.regiao='';state.unidade='';state.period='ytd';
+  document.querySelectorAll('.period-btn').forEach((el)=>el.classList.toggle('active',el.dataset.period==='ytd'));
+  applyFilters(true);
+}
+
+function applyFilters(refreshFilters=true){
+  if(!refreshFilters){
+    state.gerente=document.getElementById('flt-gerente').value;
+    state.vendedor=document.getElementById('flt-vendedor').value;
+    state.regiao=document.getElementById('flt-regiao').value;
+    state.unidade=document.getElementById('flt-unidade').value;
+  }
+  populateFilters();
+  state.gerente=document.getElementById('flt-gerente').value;
+  state.vendedor=document.getElementById('flt-vendedor').value;
+  state.regiao=document.getElementById('flt-regiao').value;
+  state.unidade=document.getElementById('flt-unidade').value;
+  renderDashboard();
+}
+
+function destroyCharts(){
+  Object.values(charts).forEach((chart)=>chart && chart.destroy());
+  Object.keys(charts).forEach((key)=>delete charts[key]);
+}
+
+function injectHtml(id,html){document.getElementById(id).innerHTML=html;}
+
+function renderDashboard(){
+  const filtered=getFilteredSellers();
+  const series=getMonthlySeries(filtered);
+  const totalMeta=round(sum(filtered.map(s=>s.metaTotal)));
+  const totalReal=round(sum(filtered.map(s=>s.realTotal)));
+  const attainment=totalMeta===0?0:(totalReal/totalMeta)*100;
+  const gap=round(totalReal-totalMeta);
+  const avgMape=filtered.length?round(sum(filtered.map(s=>s.mape))/filtered.length):0;
+  const commissionBase=round(sum(filtered.map(s=>s.base)));
+  const commissionPaid=round(sum(filtered.map(s=>s.payout)));
+  const sellers80=filtered.filter(s=>s.ating<80).length;
+  const sellers100=filtered.filter(s=>s.ating>=100).length;
+  const sellers110=filtered.filter(s=>s.ating>=110).length;
+  const filteredRevenueFull=round(sum(filtered.map(s=>sum(s.real))));
+  const scaledProducts=scaleProducts(filteredRevenueFull);
+  const scaledCategories=scaleCategories(filteredRevenueFull);
+  const sharePriority=round((scaledProducts.filter(p=>['P1','P2'].includes(p.prioridade)).reduce((acc,p)=>acc+p.fatScaled,0)/Math.max(scaledProducts.reduce((acc,p)=>acc+p.fatScaled,0),0.001))*100);
+  const managers=groupBy(filtered,'gerente','realTotal');
+  const regions=groupBy(filtered,'regiao','realTotal');
+  const units=groupBy(filtered,'unidade','realTotal');
+  const topRevenueShare=filtered.length?round((filtered.slice().sort((a,b)=>b.realTotal-a.realTotal).slice(0,3).reduce((acc,s)=>acc+s.realTotal,0)/Math.max(totalReal,0.001))*100):0;
+  const forecastBase=state.period==='fy'?totalReal:round(totalReal*(12/Math.max(periodIndices().length,1)));
+  const monthlyRunRate=state.period==='fy'?round(totalReal/12):round(totalReal/Math.max(periodIndices().length,1));
+  const forecastMonthlyBase=round(monthlyRunRate*12);
+  const forecastMonthlyPess=round(forecastMonthlyBase*.92);
+  const forecastMonthlyOpt=round(forecastMonthlyBase*1.08);
+  const resultLiquido=round(totalReal*0.14);
+
+  document.getElementById('filterCount').textContent=`${filtered.length} vendedores · ${Object.keys(regions).length} regioes · ${Object.keys(units).length} unidades`;
+  document.getElementById('refBadge').textContent=`Referencia: ${PERIODS[state.period].reference}`;
+  ['0','1','2','3','4'].forEach((n)=>{const el=document.getElementById(`periodLabel${n}`); if(el) el.textContent=PERIODS[state.period].label;});
+  document.getElementById('sellerCountTag').textContent=`${filtered.length} vendedores`;
+
+  injectHtml('overviewKpis',[
+    cardKpi('Faturamento','money',money(totalReal),'vs meta do periodo',gap>=0?'+ acima do plano':'abaixo do esperado',gap>=0?'c-emerald':'c-coral',gap>=0?'p-ok':'p-att'),
+    cardKpi('Meta','money',money(totalMeta),'budget consolidado','referencia do periodo','c-teal','p-info'),
+    cardKpi('Atingimento','pct',percent(attainment),`Gap: ${gap>=0?'+':'-'}${money(Math.abs(gap))}`,attainment>=100?'meta batida':attainment>=80?'abaixo da meta':'zona critica','c-gold',attainment>=100?'p-ok':attainment>=80?'p-att':'p-crit'),
+    cardKpi('Forecast base','money',money(forecastBase),`Run rate medio: ${money(monthlyRunRate)}/mes`,forecastBase>=totalMeta?'fechamento sustentado':'precisa acelerar','c-blue',forecastBase>=totalMeta?'p-ok':'p-att'),
+    cardKpi('Margem bruta','pct','32,8%','qualidade economica preservada','crescer com disciplina','c-emerald','p-ok'),
+    cardKpi('Comissao paga','money',money(commissionPaid),`Pool elegivel: ${money(commissionBase)}`,`${sellers110} acelerados`, 'c-rose','p-info')
+  ].join(''));
+
+  injectHtml('overviewAlerts',[
+    alertBox('a-red',`${sellers80} vendedores abaixo de 80%`,`Esta e a faixa de maior risco para o resultado e tambem o grupo sem payout no modelo proposto.`),
+    alertBox('a-gold','Forecast precisa virar rotina','Mais importante do que prever e medir o erro. O MAPE mostra onde o processo precisa amadurecer.'),
+    alertBox('a-teal','Margem ainda protege a operacao','A reacao comercial pode mirar mix e produtividade sem entrar em guerra de desconto.'),
+    alertBox('a-blue','Comissao foi conectada a estrategia','A politica premia resultado, mas tambem direciona a venda dos produtos prioritarios.')
+  ].join(''));
+
+  injectHtml('overviewInsights',[
+    insight('i-rose','Sinal de risco','O desvio ja virou tema de execucao, nao so de leitura.','A combinacao de gap, vendedores abaixo de 80% e forecast pressionado pede plano tatico imediato por gerente, carteira e mix.','Gap: '+(gap>=0?'+':'-')+money(Math.abs(gap))),
+    insight('i-gold','Leitura comercial','O problema nao esta distribuido de forma homogenea.','A concentracao do resultado em poucos nomes sugere dependencia alta dos top performers e cobertura insuficiente na cauda comercial.',`Top 3 = ${percent(topRevenueShare)}`),
+    insight('i-teal','Leitura de incentivo','Comissao passa a direcionar comportamento comercial.','A estrutura por prioridade e atingimento ajuda a alinhar push de produtos, disciplina de meta e previsao de despesa comercial.','Share P1/P2: '+percent(sharePriority))
+  ].join(''));
+
+  injectHtml('forecastKpis',[
+    cardKpi('Forecast pessimistico','money',money(forecastMonthlyPess),`Comparado a meta: ${money(totalMeta)}`,forecastMonthlyPess>=totalMeta?'sustenta budget':'risco alto','c-coral',forecastMonthlyPess>=totalMeta?'p-ok':'p-crit'),
+    cardKpi('Forecast base','money',money(forecastMonthlyBase),`MAPE medio: ${percent(avgMape)}`,forecastMonthlyBase>=totalMeta?'fechamento defendido':'acao imediata','c-gold',forecastMonthlyBase>=totalMeta?'p-ok':'p-att'),
+    cardKpi('Forecast otimista','money',money(forecastMonthlyOpt),`Necessita aceleracao controlada`,`cenario de upside`,'c-teal','p-info'),
+    cardKpi('MAPE medio','pct',percent(avgMape),'qualidade do processo de forecast',avgMape<10?'alta confiabilidade':avgMape<20?'confiabilidade media':'baixa confiabilidade','c-blue',avgMape<10?'p-ok':avgMape<20?'p-att':'p-crit')
+  ].join(''));
+
+  injectHtml('commissionKpis',[
+    cardKpi('Pool elegivel','money',money(commissionBase),'base potencial antes do fator','custo variavel estimado','c-gold','p-info'),
+    cardKpi('Comissao paga','money',money(commissionPaid),'apos aplicar faixa de atingimento','payout estimado','c-rose','p-att'),
+    cardKpi('Elegiveis >= 100%','count',String(sellers100),'recebem payout cheio ou acima','faixa cheia','c-teal','p-ok'),
+    cardKpi('Share P1 e P2','pct',percent(sharePriority),'receita em produtos estrategicos','orienta foco comercial','c-blue','p-info')
+  ].join(''));
+
+  injectHtml('attainmentInsights',[
+    insight('i-gold','Priorizacao','O gap nao esta pulverizado.','Existe um grupo menor puxando o maior desvio e isso facilita a definicao de plano de acao por vendedor e gerente.','Nomes em risco: '+sellers80),
+    insight('i-violet','Concentracao','A operacao depende de poucos vendedores para fechar o resultado.','Essa concentracao melhora foco, mas aumenta risco operacional e volatilidade de forecast.','Top 3 = '+percent(topRevenueShare)),
+    insight('i-teal','Leitura gerencial','Regiao e unidade ajudam a qualificar o problema.','Quando a leitura territorial aparece junto da performance individual, a conversa sai do subjetivo e entra em plano de execucao.','Cortes: gerente, regiao e unidade')
+  ].join(''));
+
+  injectHtml('forecastInsights',[
+    insight('i-gold','Leitura principal','Forecast precisa orientar decisao antes do fechamento.','A melhor versao de forecast nao e a mais otimista, e sim a mais util para planejar acao, meta restante e expectativa executiva.','Base: '+money(forecastMonthlyBase)),
+    insight('i-rose','Risco de previsao','Carteiras com baixo atingimento e MAPE alto merecem governance dedicada.','Esse grupo pressiona resultado, dificulta previsibilidade e pode distorcer a estimativa de comissao e despesa comercial.','MAPE medio: '+percent(avgMape)),
+    insight('i-teal','Uso gerencial','Forecast bom reduz surpresa na reuniao de resultado.','Ao medir erro e revisar a previsao periodicamente, planejamento comercial ganha credibilidade e reduz reacoes tardias.','Processo, nao opiniao')
+  ].join(''));
+
+  injectHtml('commissionInsights',[
+    insight('i-teal','Alinhamento','Comissao passa a premiar o que a empresa quer vender.','Quando prioridade de produto entra no calculo, o incentivo comercial deixa de ser neutro e passa a reforcar a estrategia.','P1 = 1,35x'),
+    insight('i-rose','Controle','Faixa minima protege o custo comercial.','A regra evita payout cheio para vendedor abaixo do piso de performance e reduz incoerencia entre gasto e entrega.','Piso de 80%'),
+    insight('i-gold','Didatica','A tabela pratica torna o processo explicavel para qualquer publico.','Isso ajuda na venda do projeto para empresa porque o modelo deixa de parecer abstrato e passa a parecer operacional.','Calculo demonstrado')
+  ].join(''));
+
+  injectHtml('marginInsights',[
+    insight('i-teal','Qualidade','A margem ainda sustenta a narrativa do negocio.','O time nao precisa buscar recuperacao apenas por desconto; o mix mostra onde acelerar com disciplina economica.','Margem bruta: 32,8%'),
+    insight('i-rose','Risco','Receita sem qualidade pressiona resultado e pode distorcer comissao.','Se a politica comercial ignorar margem, o payout pode subir enquanto o resultado liquido perde saude.','Comissao precisa de governanca'),
+    insight('i-gold','Decisao','As melhores linhas para recuperar meta nao sao sempre as de maior volume.','Categorias com melhor combinacao de prioridade, margem e volume devem receber foco comercial.','Foco em margem + prioridade')
+  ].join(''));
+
+  injectHtml('summaryInsights',[
+    insight('i-rose','Resultado','O periodo pede gestao ativa de execucao.','O desvio nao representa caos estrutural, mas mostra que a operacao precisa de cadencia gerencial, leitura de gap e foco nos vendedores certos.','Atingimento: '+percent(attainment)),
+    insight('i-gold','Forecast','Planejamento comercial precisa prever e medir o erro.','Forecast com MAPE vira instrumento de decisao. Forecast sem acuracia vira apenas expectativa.','MAPE: '+percent(avgMape)),
+    insight('i-teal','Comissao','O modelo ja nasce pronto para ser vendido como algo real.','A politica de incentivo, quando parametrizada e documentada, eleva o projeto e aproxima o case da realidade empresarial.','Payout: '+money(commissionPaid))
+  ].join(''));
+
+  injectHtml('glossaryGrid',glossary.map((item,index)=>`
+    <div class="gloss-card">
+      <div class="gloss-title">${item.titulo}</div>
+      <div class="gloss-formula">${item.formula}</div>
+      <div class="gloss-text">${item.texto}</div>
+      <div class="gloss-bench">
+        <span class="bench-tag b-ok">${item.bench[0]||''}</span>
+        <span class="bench-tag b-att">${item.bench[1]||''}</span>
+        <span class="bench-tag b-crit">${item.bench[2]||''}</span>
+      </div>
+    </div>`).join(''));
+
+  buildSellerTable(filtered);
+  buildMape(filtered);
+  buildCommissionTable(filtered);
+  buildPriorityLegend();
+  buildProductMatrix();
+  buildWaterfall(totalReal,commissionPaid,resultLiquido);
+  destroyCharts();
+  renderCharts({filtered,series,totalMeta,totalReal,attainment,gap,avgMape,scaledProducts,scaledCategories,managers,regions,units,forecastMonthlyPess,forecastMonthlyBase,forecastMonthlyOpt,commissionPaid});
+}
+
+function cardKpi(label,type,value,bench,pillText,klass,pillClass){
+  return `<div class="kpi-card ${klass}">
+    <div class="kpi-label">${label}</div>
+    <div class="kpi-value">${value}</div>
+    <div class="kpi-footer"><div class="kpi-bench">${bench}</div><span class="pill ${pillClass}">${pillText}</span></div>
+  </div>`;
+}
+function alertBox(klass,title,text){
+  return `<div class="alert-box ${klass}"><strong>${title}</strong><p>${text}</p></div>`;
+}
+function insight(klass,type,title,text,metric){
+  return `<div class="insight-card ${klass}">
+    <div class="insight-type">${type}</div>
+    <div class="insight-title">${title}</div>
+    <div class="insight-text">${text}</div>
+    <span class="metric">${metric}</span>
+  </div>`;
+}
+
+function buildSellerTable(filtered){
+  const tbody=document.getElementById('sellerTable');
+  tbody.innerHTML='';
+  filtered.slice().sort((a,b)=>b.ating-a.ating).forEach((seller)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td class="tb">${seller.nome}</td>
+      <td>${seller.gerente}</td>
+      <td>${seller.regiao}</td>
+      <td>${money(seller.metaTotal)}</td>
+      <td class="tb">${money(seller.realTotal)}</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:${Math.min(seller.ating,120)}%;background:${fillColor(seller.ating)}"></div></div><strong>${percent(seller.ating)}</strong></div></td>
+      <td style="color:${seller.gap>=0?COLORS.emerald:COLORS.rose};font-weight:800">${seller.gap>=0?'+':'-'}${money(Math.abs(seller.gap))}</td>
+      <td><span class="status-tag ${statusClass(seller.ating)}">${payoutLabel(seller.ating)}</span></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function buildMape(filtered){
+  const wrap=document.getElementById('mapeList');
+  wrap.innerHTML='';
+  filtered.slice().sort((a,b)=>a.mape-b.mape).forEach((seller)=>{
+    const color=seller.mape<10?COLORS.emerald:seller.mape<20?COLORS.gold:COLORS.rose;
+    wrap.innerHTML+=`<div class="mape-row"><div class="tb" style="font-size:11px">${seller.nome}</div><div class="mape-bar"><div class="mape-fill" style="width:${Math.min(seller.mape*3,100)}%;background:${color}"></div></div><div style="font-size:11px;font-weight:800;color:${color}">${percent(seller.mape)}</div></div>`;
+  });
+}
+
+function buildPriorityLegend(){
+  const wrap=document.getElementById('priorityLegend');
+  wrap.innerHTML='';
+  [
+    {txt:'P1 | foco maximo e maior comissao',color:COLORS.teal},
+    {txt:'P2 | foco alto com incentivo reforcado',color:COLORS.gold},
+    {txt:'P3 | mix neutro',color:COLORS.blue},
+    {txt:'P4 | menor prioridade relativa',color:COLORS.rose}
+  ].forEach((row)=>wrap.innerHTML+=`<div class="legend-row"><div style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:50%;background:${row.color}"></span>${row.txt}</div></div>`);
+}
+
+function buildProductMatrix(){
+  const wrap=document.getElementById('productMatrix');
+  wrap.innerHTML='';
+  products.forEach((product)=>{
+    const color=product.prioridade==='P1'?COLORS.teal:product.prioridade==='P2'?COLORS.gold:product.prioridade==='P3'?COLORS.blue:COLORS.rose;
+    wrap.innerHTML+=`<div class="matrix-row"><div style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:50%;background:${color}"></span><strong>${product.nome}</strong></div><div style="display:flex;gap:10px;align-items:center"><span class="status-tag ${product.prioridade==='P4'?'s-crit':product.prioridade==='P3'?'s-att':'s-ok'}">${product.prioridade}</span><strong>${product.mult.toFixed(2).replace('.',',')}x</strong></div></div>`;
+  });
+}
+
+function buildCommissionTable(filtered){
+  const tbody=document.getElementById('commissionTable');
+  tbody.innerHTML='';
+  filtered.slice().sort((a,b)=>b.payout-a.payout).slice(0,5).forEach((seller)=>{
+    tbody.innerHTML+=`<tr>
+      <td class="tb">${seller.nome}</td>
+      <td>${money(seller.metaTotal)}</td>
+      <td>${money(seller.realTotal)}</td>
+      <td>${percent(seller.ating)}</td>
+      <td>${seller.priorityMix.toFixed(2).replace('.',',')}x</td>
+      <td>${money(seller.base)}</td>
+      <td>${percent(seller.fator*100)}</td>
+      <td class="tb">${money(seller.payout)}</td>
+    </tr>`;
+  });
+}
+
+function buildWaterfall(totalReal,commissionPaid,resultLiquido){
+  const wrap=document.getElementById('waterfallRows');
+  wrap.innerHTML='';
+  const rows=[
+    {label:'Faturamento bruto',val:totalReal,color:COLORS.teal},
+    {label:'Custo dos produtos',val:round(totalReal*0.67),color:COLORS.rose},
+    {label:'Margem bruta',val:round(totalReal*0.328),color:COLORS.emerald},
+    {label:'Despesas operacionais',val:round(totalReal*0.08),color:COLORS.coral},
+    {label:'Impostos',val:round(totalReal*0.09),color:COLORS.gold},
+    {label:'Comissao paga',val:commissionPaid,color:COLORS.violet},
+    {label:'Resultado liquido',val:resultLiquido,color:COLORS.ink}
+  ];
+  const max=Math.max(...rows.map(r=>r.val));
+  rows.forEach((row)=>{
+    wrap.innerHTML+=`<div style="display:grid;grid-template-columns:160px 1fr 82px 60px;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid #edf2f7">
+      <div style="font-size:12px;font-weight:700;color:var(--ink)">${row.label}</div>
+      <div style="height:16px;background:#edf2f7;border-radius:6px;overflow:hidden"><div style="height:100%;width:${row.val/max*100}%;background:${row.color};border-radius:6px"></div></div>
+      <div style="font-size:11px;font-weight:800;text-align:right">${money(row.val)}</div>
+      <div style="font-size:11px;font-weight:800;text-align:right">${percent((row.val/Math.max(totalReal,0.001))*100)}</div>
+    </div>`;
+  });
+}
+
+function chartDefaults(){
+  Chart.defaults.font.family='"Manrope",sans-serif';
+  Chart.defaults.color='#475569';
+  Chart.defaults.borderColor='rgba(148,163,184,.16)';
+}
+
+function registerChart(id,chart){charts[id]=chart;}
+
+function renderCharts(ctx){
+  chartDefaults();
+  const ranking=ctx.filtered.slice().sort((a,b)=>a.ating-b.ating);
+  registerChart('overviewMonthly',new Chart(document.getElementById('chartOverviewMonthly'),{
+    type:'bar',
+    data:{labels:ctx.series.labels,datasets:[
+      {label:'Meta',data:ctx.series.meta,backgroundColor:'rgba(15,23,42,.16)',borderWidth:0,borderRadius:8},
+      {label:'Realizado',data:ctx.series.real,backgroundColor:'rgba(199,144,43,.88)',borderWidth:0,borderRadius:8}
+    ]},
+    options:{plugins:{legend:{position:'bottom'}},scales:{y:{ticks:{callback:(v)=>`R$ ${v}M`}}}}
+  }));
+  registerChart('overviewAttainment',new Chart(document.getElementById('chartOverviewAttainment'),{
+    type:'bar',
+    data:{labels:ranking.map(r=>r.nome),datasets:[{data:ranking.map(r=>r.ating),backgroundColor:ranking.map(r=>fillColor(r.ating)),borderWidth:0,borderRadius:8}]},
+    options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{min:60,max:115,ticks:{callback:(v)=>`${v}%`}}}}
+  }));
+  const pareto=ctx.filtered.slice().sort((a,b)=>b.realTotal-a.realTotal);
+  let acc=0;
+  const cum=pareto.map(p=>{acc+=p.realTotal;return round((acc/Math.max(ctx.totalReal,0.001))*100);});
+  registerChart('pareto',new Chart(document.getElementById('chartPareto'),{
+    data:{labels:pareto.map(p=>p.nome),datasets:[
+      {type:'bar',label:'Receita',data:pareto.map(p=>p.realTotal),backgroundColor:'rgba(17,37,59,.82)',borderWidth:0,borderRadius:8,yAxisID:'y'},
+      {type:'line',label:'% acumulado',data:cum,borderColor:COLORS.gold,borderWidth:2.4,pointRadius:3,tension:.28,fill:false,yAxisID:'y1'}
+    ]},
+    options:{plugins:{legend:{position:'bottom'}},scales:{y:{ticks:{callback:(v)=>`R$ ${v}M`}},y1:{position:'right',max:110,ticks:{callback:(v)=>`${v}%`},grid:{display:false}}}}
+  }));
+  registerChart('managers',new Chart(document.getElementById('chartManagers'),{
+    type:'bar',
+    data:{labels:Object.keys(ctx.managers),datasets:[{data:Object.values(ctx.managers),backgroundColor:[COLORS.ink,COLORS.teal,COLORS.gold],borderWidth:0,borderRadius:10}]},
+    options:{plugins:{legend:{display:false}},scales:{y:{ticks:{callback:(v)=>`R$ ${v}M`}}}}
+  }));
+  registerChart('regions',new Chart(document.getElementById('chartRegions'),{
+    type:'bar',
+    data:{labels:Object.keys(ctx.regions),datasets:[{data:Object.values(ctx.regions),backgroundColor:'rgba(15,118,110,.80)',borderWidth:0,borderRadius:8}]},
+    options:{plugins:{legend:{display:false}},scales:{y:{ticks:{callback:(v)=>`R$ ${v}M`}}}}
+  }));
+  registerChart('units',new Chart(document.getElementById('chartUnits'),{
+    type:'bar',
+    data:{labels:Object.keys(ctx.units),datasets:[{data:Object.values(ctx.units),backgroundColor:'rgba(29,78,216,.78)',borderWidth:0,borderRadius:8}]},
+    options:{plugins:{legend:{display:false}},scales:{y:{ticks:{callback:(v)=>`R$ ${v}M`}}}}
+  }));
+  registerChart('forecastScenarios',new Chart(document.getElementById('chartForecastScenarios'),{
+    type:'bar',
+    data:{labels:['Pessimista','Base','Otimista'],datasets:[{data:[ctx.forecastMonthlyPess,ctx.forecastMonthlyBase,ctx.forecastMonthlyOpt],backgroundColor:[COLORS.rose,COLORS.gold,COLORS.emerald],borderWidth:0,borderRadius:10}]},
+    options:{plugins:{legend:{display:false}},scales:{y:{ticks:{callback:(v)=>`R$ ${v}M`}}}}
+  }));
+  registerChart('forecastHistory',new Chart(document.getElementById('chartForecastHistory'),{
+    type:'line',
+    data:{labels:HISTORY_LABELS,datasets:[
+      {label:'Realizado',data:history.real,borderColor:COLORS.ink,borderWidth:2.4,tension:.28,pointRadius:2.5,fill:false},
+      {label:'Forecast',data:history.forecast,borderColor:COLORS.gold,borderWidth:2.4,borderDash:[6,4],tension:.28,pointRadius:2,fill:false}
+    ]},
+    options:{plugins:{legend:{position:'bottom'}},scales:{y:{ticks:{callback:(v)=>`R$ ${v}M`}}}}
+  }));
+  const payoutRank=ctx.filtered.slice().sort((a,b)=>b.payout-a.payout);
+  registerChart('commission',new Chart(document.getElementById('chartCommission'),{
+    type:'bar',
+    data:{labels:payoutRank.map(p=>p.nome),datasets:[{data:payoutRank.map(p=>p.payout),backgroundColor:payoutRank.map(p=>fillColor(p.ating)),borderWidth:0,borderRadius:8}]},
+    options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{callback:(v)=>`R$ ${v.toFixed(1)}M`}}}}
+  }));
+  const prColor=(p)=>p.prioridade==='P1'?COLORS.teal:p.prioridade==='P2'?COLORS.gold:p.prioridade==='P3'?COLORS.blue:COLORS.rose;
+  registerChart('products',new Chart(document.getElementById('chartProducts'),{
+    type:'bar',
+    data:{labels:ctx.scaledProducts.map(p=>p.nome),datasets:[{data:ctx.scaledProducts.map(p=>p.fatScaled),backgroundColor:ctx.scaledProducts.map(p=>prColor(p)),borderWidth:0,borderRadius:8}]},
+    options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{callback:(v)=>`R$ ${v}M`}}}}
+  }));
+  registerChart('marginShare',new Chart(document.getElementById('chartMarginShare'),{
+    type:'doughnut',
+    data:{labels:['Resultado liquido','Custo','Despesas','Impostos','Comissao'],datasets:[{data:[14.0,67.0,8.1,9.0,ctx.commissionPaid/Math.max(ctx.totalReal,0.001)*100],backgroundColor:[COLORS.emerald,COLORS.ink,COLORS.coral,COLORS.gold,COLORS.violet],borderColor:'#fff',borderWidth:2}]},
+    options:{cutout:'64%',plugins:{legend:{position:'bottom'}}}
+  }));
+  registerChart('categoryMargin',new Chart(document.getElementById('chartCategoryMargin'),{
+    type:'bar',
+    data:{labels:ctx.scaledCategories.map(c=>c.nome),datasets:[{data:ctx.scaledCategories.map(c=>c.margem),backgroundColor:'rgba(15,118,110,.82)',borderWidth:0,borderRadius:8}]},
+    options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{callback:(v)=>`${v}%`}}}}
+  }));
+  registerChart('marginTrend',new Chart(document.getElementById('chartMarginTrend'),{
+    type:'line',
+    data:{labels:['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],datasets:[
+      {label:'Margem 2020',data:marginTrend.prev,borderColor:'rgba(51,65,85,.56)',borderDash:[5,4],borderWidth:2,tension:.25,pointRadius:2,fill:false},
+      {label:'Margem 2021',data:[...marginTrend.curr,...Array(8).fill(null)],borderColor:COLORS.teal,borderWidth:2.6,tension:.25,pointRadius:3,fill:false}
+    ]},
+    options:{plugins:{legend:{position:'bottom'}},scales:{y:{ticks:{callback:(v)=>`${v}%`}}}}
+  }));
+}
+
+populateFilters();
+renderDashboard();
+</script>
+</body>
+</html>

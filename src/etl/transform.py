@@ -177,7 +177,7 @@ def transform_vendas(df_raw: pd.DataFrame) -> pd.DataFrame:
     df = _remover_nulos_obrigatorios(df, VENDAS_COLUNAS_OBRIGATORIAS, "fVendas")
 
     # Passo 7: Adiciona metadados ETL
-    df = _adicionar_metadados(df, fonte="Extrações/Vendas.xlsx")
+    df = _adicionar_metadados(df, fonte="data/raw/Vendas.xlsx")
 
     logger.info(f"Transformação de fVendas concluída: {len(df):,} linhas prontas.")
     return df
@@ -220,7 +220,7 @@ def transform_dimensoes(dimensoes_raw: dict[str, pd.DataFrame]) -> dict[str, pd.
             df[col] = pd.to_numeric(df[col], errors="coerce").astype("Int64")
 
         # Adiciona metadados
-        df = _adicionar_metadados(df, fonte=f"Dimensões/Dimensões.xlsx (aba: {nome})")
+        df = _adicionar_metadados(df, fonte=f"data/raw/Dimensoes.xlsx (aba: {nome})")
 
         logger.info(f"  [{nome}] → {len(df):,} linhas transformadas.")
         resultado[nome] = df
@@ -353,7 +353,7 @@ def transform_metas(metas_raw: dict[int, pd.DataFrame]) -> pd.DataFrame:
         df_long = df_long.dropna(subset=["Valor Meta"])
 
         # Adiciona metadados ETL
-        df_long = _adicionar_metadados(df_long, fonte=f"Metas/Meta {ano}.xlsx")
+        df_long = _adicionar_metadados(df_long, fonte=f"data/raw/Meta_{ano}.xlsx")
 
         logger.info(f"  [Meta {ano}] → {len(df_long):,} linhas após UNPIVOT.")
         frames_long.append(df_long)
