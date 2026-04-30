@@ -4,7 +4,7 @@
 
 Arquivo alvo: `dashboards/planejamento_comercial.html`
 
-Publicado em: [GitHub Pages](https://igorpereirapinto.github.io/planejamento-comercial/) *(a definir)*
+Publicado em: [GitHub Pages](https://igorpereirapinto.github.io/planejamento-comercial/)
 
 ### Perguntas que o dashboard responde
 

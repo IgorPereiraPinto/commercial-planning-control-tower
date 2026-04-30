@@ -21,6 +21,9 @@ Link direto do dashboard:
 
 - [Abrir dashboard principal](dashboards/planejamento_comercial.html)
 - [Abrir portal do projeto](index.html)
+- [GitHub do projeto](https://github.com/IgorPereiraPinto/planejamento-comercial)
+- [GitHub Pages](https://igorpereirapinto.github.io/planejamento-comercial/)
+- [Dashboard publicado](https://igorpereirapinto.github.io/planejamento-comercial/dashboards/planejamento_comercial.html)
 
 Preview do dashboard:
 
