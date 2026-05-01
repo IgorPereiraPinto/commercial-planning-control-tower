@@ -1,5 +1,5 @@
 # Fluxo 5 — Atualização Automática do Dataset
-## Commercial Planning Control Tower — Power Automate
+## Planejamento Comercial — Power Automate
 
 ---
 
@@ -100,7 +100,7 @@ Duração: 30 minutos
 
 ```
 Workspace:   [Nome do workspace — ex: "Planejamento Comercial"]
-Dataset:     [Nome do dataset — ex: "Commercial Planning Control Tower"]
+Dataset:     [Nome do dataset — ex: "Planejamento Comercial"]
 ```
 
 > Este step envia o comando de refresh. O Power BI executa em background.
@@ -191,7 +191,7 @@ Status == "Failed"      → Ação 5B (falha)
 
 **Assunto:**
 ```
-✅ Refresh Concluído — Commercial Planning Control Tower | @{formatDateTime(utcNow(), 'dd/MM/yyyy')}
+✅ Refresh Concluído — Planejamento Comercial | @{formatDateTime(utcNow(), 'dd/MM/yyyy')}
 ```
 
 **Corpo (HTML):**
@@ -221,7 +221,7 @@ Status == "Failed"      → Ação 5B (falha)
 
 <div class="content">
   <div class="ok-box">
-    O dataset <strong>Commercial Planning Control Tower</strong> foi atualizado com sucesso.
+    O dataset <strong>Planejamento Comercial</strong> foi atualizado com sucesso.
     O dashboard e os alertas automáticos estão com os dados mais recentes.
   </div>
 
@@ -238,7 +238,7 @@ Status == "Failed"      → Ação 5B (falha)
 </div>
 
 <div class="footer">
-  Commercial Planning Control Tower — Notificação automática
+  Planejamento Comercial — Notificação automática
 </div>
 </body>
 </html>
@@ -254,7 +254,7 @@ Status == "Failed"      → Ação 5B (falha)
 
 **Assunto:**
 ```
-❌ FALHA no Refresh — Commercial Planning Control Tower | @{formatDateTime(utcNow(), 'dd/MM/yyyy')}
+❌ FALHA no Refresh — Planejamento Comercial | @{formatDateTime(utcNow(), 'dd/MM/yyyy')}
 ```
 
 **Corpo (HTML):**
@@ -283,7 +283,7 @@ Status == "Failed"      → Ação 5B (falha)
 
 <div class="content">
   <div class="erro-box">
-    O refresh do dataset <strong>Commercial Planning Control Tower</strong>
+    O refresh do dataset <strong>Planejamento Comercial</strong>
     falhou em @{formatDateTime(utcNow(), 'dd/MM/yyyy HH:mm')}.
     Os alertas automáticos desta semana podem ter dados desatualizados.
   </div>
@@ -376,7 +376,7 @@ Toda segunda-feira, antes das 08h:
 - E-mail de confirmação chega ao Igor ~20–40 min depois:
 
 ```
-Assunto: ✅ Refresh Concluído — Commercial Planning Control Tower | 13/01/2025
+Assunto: ✅ Refresh Concluído — Planejamento Comercial | 13/01/2025
 
 "O dataset foi atualizado com sucesso.
 O dashboard e os alertas automáticos estão com os dados mais recentes.
@@ -399,4 +399,4 @@ Próximo refresh: 20/01/2025 às 06:00"
 
 ---
 
-*Fluxo 5 de 5 — Commercial Planning Control Tower.*
+*Fluxo 5 de 5 — Planejamento Comercial.*

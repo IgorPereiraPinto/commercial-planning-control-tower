@@ -28,6 +28,7 @@ jobs:
           cp index.html _site/
           cp -r dashboards _site/
           cp -r presentations _site/
+          cp -r assets _site/
           mkdir -p _site/docs/assets
           if [ -d docs/assets ]; then cp -r docs/assets/. _site/docs/assets/; fi
           touch _site/.nojekyll

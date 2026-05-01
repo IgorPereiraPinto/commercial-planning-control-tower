@@ -264,3 +264,8 @@ Azul   (#1a3a5c) → Realizado / base
 - Alertar sobre cardinalidade alta, direção de filtro incorreta e ausência de dCalendario
 - Sugerir validações: tabela de apoio, matriz com total = soma das partes
 - Código DAX sempre comentado com `//`
+
+## Rules complementares
+
+Aplicar junto com esta skill:
+- `07_powerbi-development.md` — padrões de modelagem, DAX, contexto de filtro e performance no Power BI

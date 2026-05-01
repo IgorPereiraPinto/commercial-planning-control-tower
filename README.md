@@ -1,19 +1,19 @@
 # Planejamento Comercial
 
-Projeto de dados ponta a ponta para planejamento comercial, estruturado como material de apoio didatico, funcional e reutilizavel. O repositorio conecta Excel, Python ETL, SQL Server, Power BI, automacao e dashboard executivo em uma narrativa pensada para orientar decisao comercial com mais clareza, previsibilidade e governanca.
+Projeto de dados ponta a ponta para planejamento comercial, estruturado como material de apoio didático, funcional e reutilizável. O repositório conecta Excel, Python ETL, SQL Server, Power BI, automação e dashboard executivo em uma narrativa pensada para orientar decisão comercial com mais clareza, previsibilidade e governança.
 
-## Visao geral
+## Visão geral
 
 Fluxo principal do projeto:
 
-`Excel -> Python ETL -> SQL Server (raw, staging, dw) -> Dashboard HTML / Power BI -> automacao`
+`Excel → Python ETL → SQL Server (raw, staging, dw) → Dashboard HTML / Power BI → Automação`
 
-O objetivo do projeto nao e apenas exibir numeros. A proposta e transformar metas, vendas, forecast, margem e comissao em leitura executiva para:
+O objetivo do projeto não é apenas exibir números. A proposta é transformar metas, vendas, forecast, margem e comissão em leitura executiva para:
 
 - gerentes comerciais
 - vendedores
 - planejamento comercial
-- lideranca executiva
+- liderança executiva
 
 ## Dashboard principal
 
@@ -31,30 +31,31 @@ Preview do dashboard:
 
 ## O que o dashboard entrega
 
-O dashboard principal em [dashboards/planejamento_comercial.html](dashboards/planejamento_comercial.html) foi redesenhado para ter uma navegação mais executiva, mais fluida e mais intuitiva para um publico que nem sempre tem familiaridade com leitura analitica profunda.
+O dashboard principal em [dashboards/planejamento_comercial.html](dashboards/planejamento_comercial.html) foi desenhado para ter navegação executiva, fluida e intuitiva para um público que nem sempre tem familiaridade com leitura analítica profunda.
 
 As abas principais cobrem:
 
-- visao geral do resultado
-- meta vs realizado
+- visão geral do resultado
+- meta vs. realizado
 - forecast e budget
-- comissao e mix
+- comissão e mix
 - rentabilidade
-- sintese executiva e escala operacional
-- glossario de indicadores
+- síntese executiva e escala operacional
+- glossário de indicadores
 
-## Perguntas de negocio que o projeto responde
+## Perguntas de negócio que o projeto responde
 
-- Qual o atingimento da meta no mes, no trimestre e no acumulado?
-- Quais vendedores, regioes, unidades e gerentes puxam o gap do resultado?
-- Qual o forecast de fechamento e qual a confiabilidade dessa previsao?
+- Qual o atingimento da meta no mês, no trimestre e no acumulado?
+- Quais vendedores, regiões, unidades e gerentes puxam o gap do resultado?
+- Qual o forecast de fechamento e qual a confiabilidade dessa previsão?
 - Quais produtos e categorias sustentam volume, margem e prioridade comercial?
-- Como a comissao conversa com atingimento, mix e resultado economico?
+- Como a comissão conversa com atingimento, mix e resultado econômico?
+- Qual a provisão de comissão projetada para o fechamento do mês?
 - O que precisa existir para transformar o case em processo automatizado?
 
-## Camada de comissao
+## Camada de comissão
 
-O projeto inclui uma proposta de comissionamento para aproximar o portfolio de um caso real de planejamento comercial.
+O projeto inclui uma proposta de comissionamento para aproximar o portfólio de um caso real de planejamento comercial. A lógica está documentada e implementada como esquema SQL parametrizável.
 
 Faixas de payout por atingimento:
 
@@ -72,11 +73,11 @@ Multiplicadores por prioridade de produto:
 - `P3`: `1,00x`
 - `P4`: `0,85x`
 
-Formula proposta:
+Fórmula proposta:
 
-`comissao elegivel = receita liquida * taxa base * multiplicador de prioridade`
+`comissão elegível = receita líquida × taxa base × multiplicador de prioridade`
 
-`comissao paga = comissao elegivel * fator de atingimento`
+`comissão paga = comissão elegível × fator de atingimento`
 
 Detalhamento completo:
 
@@ -85,72 +86,107 @@ Detalhamento completo:
 - [docs/dicionario_de_dados.md](docs/dicionario_de_dados.md)
 - [docs/arquitetura.md](docs/arquitetura.md)
 
-## Outputs principais do portfolio
+## Calendário corporativo de comissão
 
-Os artefatos centrais do projeto sao:
+O projeto modela o ciclo mensal de apuração e envio de provisão de comissão:
+
+| Quando | Etapa | Responsável |
+| --- | --- | --- |
+| Dia 20 do mês | Calcular projeção de vendas (run rate) | Planejamento comercial |
+| Dia 22 do mês | Calcular provisão de comissão | Planejamento comercial |
+| Dia 24 do mês | Validação pela área comercial | Gerentes + Planejamento |
+| Dia 27 do mês | Envio da provisão ao financeiro | Planejamento comercial |
+| Dia 03 (mês+1) | Fechamento definitivo de vendas (ETL) | Dados |
+| Dia 05 (mês+1) | Cálculo definitivo de comissão | Planejamento comercial |
+| Dia 10 (mês+1) | Aprovação e liberação para pagamento | Financeiro |
+
+Este calendário está refletido na query de carga do arquivo [sql/sqlserver/08_comissao.sql](sql/sqlserver/08_comissao.sql).
+
+## Outputs principais do portfólio
+
+Os artefatos centrais do projeto são:
 
 1. [index.html](index.html)
    Portal local do projeto.
 2. [dashboards/planejamento_comercial.html](dashboards/planejamento_comercial.html)
-   Dashboard principal com insights distribuidos por aba.
+   Dashboard principal com insights distribuídos por aba.
 3. [presentations/apresentacao_forecast_budget.html](presentations/apresentacao_forecast_budget.html)
-   Apresentacao executiva focada em forecast, budget e tomada de decisao.
+   Apresentação executiva focada em forecast, budget e tomada de decisão.
 4. [presentations/apresentacao_comercial.html](presentations/apresentacao_comercial.html)
-   Material de arquitetura, estrutura e proposta da solucao.
+   Material de arquitetura, estrutura e proposta da solução.
 
-## Estrutura do repositorio
+## Estrutura do repositório
 
 ```text
 planejamento-comercial/
-|-- README.md
-|-- index.html
-|-- run_etl.py
-|-- Makefile
-|-- data/
-|   |-- raw/
-|   `-- processed/
-|-- dashboards/
-|   `-- planejamento_comercial.html
-|-- docs/
-|   |-- arquitetura.md
-|   |-- como_executar.md
-|   |-- comissionamento.md
-|   |-- dicionario_de_dados.md
-|   |-- faq_reutilizacao.md
-|   |-- regras_de_negocio.md
-|   |-- template_novo_case.md
-|   |-- assets/
-|   `-- legacy/
-|-- powerbi/
-|-- presentations/
-|-- roadmap/
-|-- sql/
-|   `-- sqlserver/
-|-- src/
-|-- tests/
-`-- legacy/
+├── README.md
+├── index.html
+├── run_etl.py
+├── Makefile
+├── assets/
+│   └── js/
+│       └── chart.umd.min.js       ← Chart.js 4.4.1 bundled (sem CDN externo)
+├── data/
+│   ├── raw/                       ← arquivos Excel de entrada
+│   └── processed/                 ← saídas do pipeline (JSON, CSV)
+├── dashboards/
+│   └── planejamento_comercial.html
+├── docs/
+│   ├── arquitetura.md
+│   ├── como_executar.md
+│   ├── comissionamento.md
+│   ├── dicionario_de_dados.md
+│   ├── faq_reutilizacao.md
+│   ├── regras_de_negocio.md
+│   ├── template_novo_case.md
+│   ├── assets/
+│   └── legacy/
+├── powerautomate/
+│   ├── GUIA_POWER_AUTOMATE.md
+│   ├── flows/                     ← 5 fluxos documentados
+│   └── templates/
+├── powerbi/
+│   └── dax/
+├── presentations/
+├── roadmap/
+├── sql/
+│   ├── sqlserver/
+│   │   ├── 00_setup.sql
+│   │   ├── 01_raw_tables.sql
+│   │   ├── 02_staging_tables.sql
+│   │   ├── 03_dw_dimensions.sql
+│   │   ├── 04_dw_facts.sql
+│   │   ├── 05_calendario.sql
+│   │   ├── 06_indexes.sql
+│   │   ├── 07_analytical_queries.sql
+│   │   └── 08_comissao.sql        ← tabelas paramétricas + fato de comissão
+│   └── extras/
+├── src/
+│   └── etl/
+├── tests/
+└── legacy/
 ```
 
-## Documentacao conectada
+## Documentação conectada
 
 Os principais documentos foram atualizados para refletir o estado real do projeto:
 
 - [docs/como_executar.md](docs/como_executar.md)
-  Execucao local e ordem correta do fluxo.
+  Execução local e ordem correta do fluxo.
 - [docs/arquitetura.md](docs/arquitetura.md)
-  Arquitetura do pipeline e evolucao para operacao real.
+  Arquitetura do pipeline e evolução para operação real.
 - [docs/regras_de_negocio.md](docs/regras_de_negocio.md)
   Regras de KPI, forecast e comissionamento.
 - [docs/comissionamento.md](docs/comissionamento.md)
-  Explicacao didatica, formula e exemplo pratico.
+  Explicação didática, fórmula e exemplo prático.
 - [docs/dicionario_de_dados.md](docs/dicionario_de_dados.md)
   Estruturas atuais e futuras recomendadas.
 - [docs/faq_reutilizacao.md](docs/faq_reutilizacao.md)
-  Adaptacao do projeto para outros contextos.
+  Adaptação do projeto para outros contextos.
 - [roadmap/11_dashboard_e_storytelling.md](roadmap/11_dashboard_e_storytelling.md)
-  Direcao da narrativa e do dashboard.
+  Direção da narrativa e do dashboard.
 
-## Por onde comecar
+## Por onde começar
 
 - Ver o resultado:
   abra [index.html](index.html)
@@ -163,17 +199,17 @@ Os principais documentos foram atualizados para refletir o estado real do projet
 - Reutilizar o modelo:
   veja [docs/template_novo_case.md](docs/template_novo_case.md)
 
-## Escala e automacao
+## Escala e automação
 
-O projeto foi desenhado para facilitar a evolucao de um case de portfolio para uma rotina corporativa:
+O projeto foi desenhado para facilitar a evolução de um case de portfólio para uma rotina corporativa:
 
-- regras de comissao podem virar tabelas parametricas
-- o DW pode expor uma `fComissaoMensal`
-- alertas podem ser disparados por Power Automate
-- forecast pode ser revisado em cadence recorrente
-- o dashboard pode consumir dados reais do pipeline em vez de dados embutidos
+- regras de comissão podem virar tabelas paramétricas (`config.param_regra_comissao`)
+- o DW expõe `dw.fComissaoMensal` com provisão, definitivo e pago
+- alertas podem ser disparados por Power Automate (5 fluxos documentados)
+- forecast pode ser revisado em cadência recorrente
+- o dashboard pode consumir dados reais do pipeline via `data/processed/`
 
-## Execucao rapida
+## Execução rápida
 
 ```bash
 python -m venv .venv
@@ -191,6 +227,15 @@ Depois:
 - abra [index.html](index.html)
 - abra [dashboards/planejamento_comercial.html](dashboards/planejamento_comercial.html)
 
-## Observacao sobre legado
+## Premissas e limitações
 
-As estruturas antigas foram preservadas em `legacy/` e `docs/legacy/` apenas como historico. A organizacao atual documentada acima e a fonte principal de verdade do projeto.
+- **Dados fictícios**: os arquivos Excel em `data/raw/` foram gerados para fins didáticos. Os nomes de vendedores, produtos e clientes são ilustrativos.
+- **SQL Server obrigatório para o ETL completo**: as etapas 7 e 8 do fluxo (carga no banco) requerem SQL Server local ou Azure SQL. O dry-run funciona sem banco.
+- **Dashboard estático**: o dashboard HTML usa dados embutidos no próprio arquivo. Para conectar a dados reais, o pipeline precisaria gerar `data/processed/dashboard_data.json` e o JS faria `fetch()` desse arquivo.
+- **GitHub Pages sem atualização automática**: a publicação no Pages é estática. O JSON de dados precisaria ser commitado no repositório para refletir no site publicado.
+- **Comissão como proposta**: a política de comissão é um modelo didático. Faixas, taxas e multiplicadores devem ser revisados conforme a política real da empresa antes de qualquer uso em produção.
+- **Power BI não publicado**: os arquivos DAX e o modelo Power BI estão documentados mas não publicados no serviço. O dashboard HTML é o output principal publicado.
+
+## Observação sobre legado
+
+As estruturas antigas foram preservadas em `legacy/` e `docs/legacy/` apenas como histórico. A organização atual documentada acima é a fonte principal de verdade do projeto.

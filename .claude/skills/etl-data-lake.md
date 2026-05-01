@@ -426,3 +426,9 @@ CARGA:
 - **SCD2 para todas as dimensões** com atributos que mudam ao longo do tempo
 - **Testar** com dataset pequeno antes de rodar em produção
 - **Versionamento:** todo pipeline deve ter run_id e ser rastreável por data de execução
+
+## Rules complementares
+
+Aplicar junto com esta skill:
+- `24_etl-data-lake.md` — padrões de arquitetura medallion, tratamento de nulos e rastreabilidade
+- `05_sql-development.md` — para as queries de transformação Silver e Gold dentro do pipeline

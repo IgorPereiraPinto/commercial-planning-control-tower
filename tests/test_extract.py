@@ -1,6 +1,6 @@
 # =============================================================================
 # test_extract.py — Testes automatizados para o módulo de extração
-# Commercial Planning Control Tower
+# Planejamento Comercial
 # =============================================================================
 #
 # COMO RODAR:

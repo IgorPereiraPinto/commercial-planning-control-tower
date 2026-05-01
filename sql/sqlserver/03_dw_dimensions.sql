@@ -1,6 +1,6 @@
 -- =============================================================================
 -- 03_create_dimensions.sql — Camada DW: tabelas de dimensão (star schema)
--- Commercial Planning Control Tower
+-- Planejamento Comercial
 -- =============================================================================
 --
 -- RESPONSABILIDADE:
@@ -40,7 +40,7 @@
 --   Se precisar de surrogate keys, adicione coluna IDENTITY e ajuste os INSERTs.
 -- =============================================================================
 
-USE planejamento_comercial;
+USE planejamento_comercial; -- [EDITÁVEL] nome do banco — deve ser igual ao criado no 00_setup.sql
 GO
 
 PRINT '>>> Criando dimensões do DW (star schema)...';

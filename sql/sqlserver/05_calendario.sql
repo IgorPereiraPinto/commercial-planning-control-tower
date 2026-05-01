@@ -1,6 +1,6 @@
 -- =============================================================================
 -- 05_populate_dCalendario.sql — População da dimensão calendário
--- Commercial Planning Control Tower
+-- Planejamento Comercial
 -- =============================================================================
 --
 -- RESPONSABILIDADE:
@@ -27,7 +27,7 @@
 --   automaticamente para qualquer período.
 -- =============================================================================
 
-USE planejamento_comercial;
+USE planejamento_comercial; -- [EDITÁVEL] nome do banco — deve ser igual ao criado no 00_setup.sql
 GO
 
 PRINT '>>> Populando dw.dCalendario...';
@@ -39,8 +39,8 @@ GO
 -- =============================================================================
 -- GERAÇÃO DAS DATAS VIA RECURSIVE CTE
 -- =============================================================================
-DECLARE @DataInicio DATE = '2017-01-01';  -- [REUTILIZAÇÃO]: ajuste aqui
-DECLARE @DataFim    DATE = '2022-12-31';  -- [REUTILIZAÇÃO]: ajuste aqui
+DECLARE @DataInicio DATE = '2017-01-01';  -- [EDITÁVEL] início do período: normalmente 1 ano antes dos dados
+DECLARE @DataFim    DATE = '2022-12-31';  -- [EDITÁVEL] fim do período: normalmente 1-2 anos depois dos dados
 
 -- Tabela temporária para trabalhar com os dados antes de inserir
 -- (melhor performance que INSERT direto na CTE recursiva)

@@ -1,6 +1,6 @@
 # =============================================================================
 # pipeline.py - Orquestrador do Pipeline ETL
-# Commercial Planning Control Tower
+# Planejamento Comercial
 # =============================================================================
 
 import sys

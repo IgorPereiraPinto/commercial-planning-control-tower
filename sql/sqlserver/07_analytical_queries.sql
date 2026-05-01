@@ -1,6 +1,6 @@
 -- =============================================================================
 -- 07_analytical_queries.sql — Queries analíticas de validação e diagnóstico
--- Commercial Planning Control Tower
+-- Planejamento Comercial
 -- =============================================================================
 --
 -- RESPONSABILIDADE:
@@ -18,7 +18,7 @@
 --   Adapte os filtros de período e as métricas conforme o novo projeto.
 -- =============================================================================
 
-USE planejamento_comercial;
+USE planejamento_comercial; -- [EDITÁVEL] nome do banco — deve ser igual ao criado no 00_setup.sql
 GO
 
 -- =============================================================================
@@ -239,7 +239,7 @@ SELECT
     ROUND([FaturamentoAcumulado] / [TotalGeral] * 100, 1)   AS PctAcumulado,
     -- Classificação Pareto
     CASE
-        WHEN [FaturamentoAcumulado] / [TotalGeral] <= 0.80 THEN 'Top 80%'
+        WHEN [FaturamentoAcumulado] / [TotalGeral] <= 0.80 THEN 'Top 80%'  -- [EDITÁVEL] limiar Pareto: 0.80 = top 80% da receita
         ELSE 'Restante 20%'
     END AS ClassificacaoPareto
 FROM Ranqueado
@@ -250,9 +250,10 @@ GO
 -- SEÇÃO 5: ANÁLISE DE PRODUTOS
 -- =============================================================================
 
--- Query 5.1 — Top 10 produtos por faturamento com margem
+-- Query 5.1 — Top N produtos por faturamento com margem
+-- [EDITÁVEL] ajuste o número no SELECT TOP conforme o ranking desejado
 PRINT '=== 5.1 Top 10 Produtos por Faturamento ===';
-SELECT TOP 10
+SELECT TOP 10  -- [EDITÁVEL] número de produtos no ranking (ex: 5, 10, 20)
     p.[Categoria],
     p.[Subcategoria],
     p.[Produto],

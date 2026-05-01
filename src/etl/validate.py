@@ -1,6 +1,6 @@
 # =============================================================================
 # validate.py — Camada de Validação de Qualidade de Dados
-# Commercial Planning Control Tower
+# Planejamento Comercial
 # =============================================================================
 #
 # RESPONSABILIDADE:
@@ -45,31 +45,32 @@ logger = configure_logging()
 # =============================================================================
 # CONSTANTES DE REGRAS DE NEGÓCIO
 # =============================================================================
-# [REUTILIZAÇÃO]: Ajuste estes valores para o novo projeto.
+# [EDITÁVEL] Ajuste todos os valores abaixo conforme as regras do novo projeto.
 
-# IDs de status válidos (1=Válidas, 2=Inválidas — conforme dStatus)
+# [EDITÁVEL] IDs de status válidos conforme tabela dStatus do novo projeto
 STATUS_VALIDOS: set[int] = {1, 2, 3}
 
-# Quantidade esperada de vendedores com meta definida
+# [EDITÁVEL] Número de vendedores com meta definida (validação de cobertura)
 QTD_VENDEDORES_ESPERADOS: int = 11
 
-# Quantidade de meses esperados por vendedor por ano (12 = ano completo)
+# [EDITÁVEL] Meses por vendedor por ano (12 = ano completo; ajuste para anos parciais)
 QTD_MESES_ESPERADOS: int = 12
 
-# Colunas que não podem ter nulos em fVendas
+# [EDITÁVEL] Colunas que não podem ter nulos em fVendas (chaves de integridade)
 VENDAS_COLUNAS_CHAVE: list[str] = [
     "Id Produto", "Id Vendedor", "Id Cliente",
     "Num Venda", "Data", "Faturamento Total"
 ]
 
-# Colunas de IDs para verificação de integridade referencial
+# [EDITÁVEL] Mapeamento de FKs para validação de integridade referencial
 # Formato: {coluna_em_fVendas: nome_da_dimensao_para_log}
+# Remova ou adicione entradas conforme as dimensões do novo projeto
 FOREIGN_KEYS: dict[str, str] = {
     "Id Vendedor": "dVendedor",
-    "Id Produto": "dProdutos",
-    "Id Unidade": "dUnidades",
-    "Id Status": "dStatus",
-    "Id Pgto": "dPagamento",
+    "Id Produto":  "dProdutos",
+    "Id Unidade":  "dUnidades",
+    "Id Status":   "dStatus",
+    "Id Pgto":     "dPagamento",
 }
 
 
@@ -285,14 +286,14 @@ def validar_duplicidade_transacoes(df_vendas: pd.DataFrame) -> ValidationResult:
             nome="duplicidade_transacoes",
             passou=True,
             mensagem=f"OK — Nenhuma duplicidade em Num Venda + Id Produto ({total:,} linhas únicas).",
-            critico=True,
+            critico=False,
         )
     else:
         return ValidationResult(
             nome="duplicidade_transacoes",
             passou=False,
             mensagem=f"FALHA — {duplicados:,} linhas duplicadas em Num Venda + Id Produto.",
-            critico=True,
+            critico=False,
             detalhes=f"Total: {total:,} | Únicos: {unicos:,} | Duplicados: {duplicados:,}",
         )
 

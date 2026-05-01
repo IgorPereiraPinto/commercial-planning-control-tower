@@ -1,5 +1,7 @@
 # SKILLS_GUIDE.md
 
+> **versão:** 1.1 | **atualizado:** 2026-04-27
+
 Guia rápido de consulta para saber quando usar cada skill do repositório.
 
 ---

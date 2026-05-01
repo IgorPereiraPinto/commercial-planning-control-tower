@@ -1,6 +1,6 @@
 -- =============================================================================
 -- 04_create_facts.sql — Camada DW: tabelas fato (star schema)
--- Commercial Planning Control Tower
+-- Planejamento Comercial
 -- =============================================================================
 --
 -- RESPONSABILIDADE:
@@ -37,7 +37,7 @@
 --   ajuste as colunas de ID e métricas conforme necessário.
 -- =============================================================================
 
-USE planejamento_comercial;
+USE planejamento_comercial; -- [EDITÁVEL] nome do banco — deve ser igual ao criado no 00_setup.sql
 GO
 
 PRINT '>>> Criando tabelas fato do DW...';

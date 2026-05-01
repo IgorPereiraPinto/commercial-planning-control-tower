@@ -1,6 +1,6 @@
 # =============================================================================
 # settings.py — Configurações centrais do projeto
-# Commercial Planning Control Tower
+# Planejamento Comercial
 # =============================================================================
 #
 # RESPONSABILIDADE:

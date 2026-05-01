@@ -307,3 +307,8 @@ APPROX_COUNT_DISTINCT(id_cliente)
 - Alertar sobre duplicidade causada por JOIN
 - Incluir validações de contagem e consistência
 - Sugerir índices, particionamento ou filtros quando aplicável
+
+## Rules complementares
+
+Aplicar junto com esta skill:
+- `05_sql-development.md` — padrões de escrita, organização, CTEs e validação de SQL analítico

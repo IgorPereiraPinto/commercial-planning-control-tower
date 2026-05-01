@@ -1,6 +1,6 @@
 -- =============================================================================
 -- 00_setup.sql — Script mestre de configuração do banco de dados
--- Commercial Planning Control Tower
+-- Planejamento Comercial
 -- =============================================================================
 --
 -- RESPONSABILIDADE:
@@ -28,7 +28,7 @@
 --   Os schemas raw/staging/dw são padrão de mercado — mantenha os nomes.
 -- =============================================================================
 
-USE planejamento_comercial;
+USE planejamento_comercial; -- [EDITÁVEL] nome do banco — deve corresponder ao banco criado no servidor
 GO
 
 -- =============================================================================

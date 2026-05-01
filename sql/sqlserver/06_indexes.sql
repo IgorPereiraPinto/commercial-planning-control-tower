@@ -1,6 +1,6 @@
 -- =============================================================================
 -- 06_create_indexes.sql — Índices de performance para o star schema
--- Commercial Planning Control Tower
+-- Planejamento Comercial
 -- =============================================================================
 --
 -- RESPONSABILIDADE:
@@ -27,7 +27,7 @@
 --   mais usadas nos relatórios Power BI do novo projeto.
 -- =============================================================================
 
-USE planejamento_comercial;
+USE planejamento_comercial; -- [EDITÁVEL] nome do banco — deve ser igual ao criado no 00_setup.sql
 GO
 
 PRINT '>>> Criando índices de performance...';

@@ -214,3 +214,9 @@ Título: "Ações recomendadas para [objetivo]"
 
 Skill irmã: `executive-summaries` para versão em texto do mesmo conteúdo.
 Skill irmã: `templates-comunicacao-executiva` para humanização e e-mails.
+
+## Rules complementares
+
+Aplicar junto com esta skill:
+- `12_corporate-presentations.md` — padrões de estrutura de deck, títulos conclusivos e narrativa por slide
+- `11_executive-storytelling.md` — para construir a sequência lógica entre contexto, achado e recomendação

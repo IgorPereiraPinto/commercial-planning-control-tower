@@ -369,3 +369,9 @@ def avaliar_classificacao(y_true, y_pred, y_proba=None) -> dict:
 - Reportar MAPE para regressão, AUC para classificação — sempre incluir base rate
 - Documentar premissas, período de treino e data de corte (cutoff)
 - Alertar sobre data leakage, overfitting e viés de seleção sempre que relevante
+
+## Rules complementares
+
+Aplicar junto com esta skill:
+- `17_machine-learning.md` — padrões de definição de problema, baseline, validação e tradução para o negócio
+- `27_statistics-business-kpis.md` — para interpretação de métricas (AUC, MAPE, lift) e comunicação ao negócio

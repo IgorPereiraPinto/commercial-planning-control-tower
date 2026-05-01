@@ -192,3 +192,9 @@ ORDER BY total DESC;
 Stack disponível para análise: SQL Server, Athena, BigQuery, Python (pandas/polars/numpy),
 Power BI (DAX), QuickSight, HTML/Chart.js. Sugerir a ferramenta mais adequada para cada
 tipo de análise conforme o contexto informado.
+
+## Rules complementares
+
+Aplicar junto com esta skill:
+- `01_data-analysis.md` — padrões de estrutura analítica, separação fato/hipótese e formato de entrega
+- `27_statistics-business-kpis.md` — quando a análise envolver KPIs, fórmulas e métricas quantitativas

@@ -19,10 +19,20 @@
 //   - Percentual: #,##0.0%  (uma casa decimal)
 //   - Inteiro: #,##0
 //
-// [REUTILIZAÇÃO]:
-//   Adapte os nomes das colunas se o novo projeto tiver esquema diferente.
-//   As lógicas de TOTALYTD, SAMEPERIODLASTYEAR, USERELATIONSHIP e RANKX
-//   são reutilizáveis em qualquer star schema com fato + dCalendario.
+// [EDITÁVEL] NOMES DE TABELA NO POWER BI:
+//   Todas as referências a tabelas neste arquivo seguem o padrão:
+//     'dw fVendas'    → tabela fato de vendas
+//     'dw fMetas'     → tabela fato de metas
+//     'dw dCalendario'→ dimensão calendário
+//     'dw dVendedor'  → dimensão vendedor
+//     'dw dProdutos'  → dimensão produto
+//
+//   Se o novo projeto usar nomes diferentes (ex: 'Vendas', 'fFaturamento'),
+//   use Ctrl+H no editor DAX para substituir todos de uma vez antes de importar.
+//
+// [EDITÁVEL] NOMES DE COLUNAS:
+//   Se o esquema do DW tiver nomes diferentes, ajuste as referências de coluna
+//   nos trechos marcados com [EDITÁVEL] abaixo.
 // =============================================================================
 
 
@@ -322,7 +332,7 @@ TOTALMTD(
 // Mede a qualidade do forecast (meta como proxy).
 //
 // INTERPRETAÇÃO DO MAPE:
-//   < 10%  → Excelente acurácia
+//   < 10%  → Excelente acurácia   // [EDITÁVEL] limiares conforme tolerância do negócio
 //   10–20% → Boa acurácia
 //   20–50% → Acurácia razoável
 //   > 50%  → Acurácia baixa, revisar processo de planejamento

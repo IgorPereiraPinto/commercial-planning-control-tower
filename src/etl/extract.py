@@ -1,6 +1,6 @@
 # =============================================================================
 # extract.py — Camada de Extração (E do ETL)
-# Commercial Planning Control Tower
+# Planejamento Comercial
 # =============================================================================
 #
 # RESPONSABILIDADE:
@@ -53,22 +53,23 @@ logger = configure_logging()
 #
 # [REUTILIZAÇÃO]: Ajuste este valor se o arquivo de vendas do novo projeto
 # tiver o cabeçalho em uma linha diferente (ex: skiprows=0 se na linha 1).
-VENDAS_SKIPROWS: int = 4
+VENDAS_SKIPROWS: int = 4  # [EDITÁVEL] linha do cabeçalho no Excel (4 = linha 5 no arquivo)
 
 
 # =============================================================================
 # NOMES DAS ABAS DO ARQUIVO DE DIMENSÕES
 # =============================================================================
 # Mapeamento explícito para evitar dependência da ordem das abas.
-# [REUTILIZAÇÃO]: Ajuste os nomes das abas se o arquivo tiver nomes diferentes.
+# [EDITÁVEL] Ajuste os nomes das abas se o arquivo Excel tiver nomes diferentes.
+# Formato: "chave_interna": "Nome da Aba no Excel"
 DIMENSOES_SHEETS: dict[str, str] = {
-    "produtos": "dProdutos",
-    "vendedor": "dVendedor",
-    "clientes": "dClientes",
-    "cidade": "dCidade",
-    "unidades": "dUnidades",
-    "status": "dStatus",
-    "pagamento": "dPagamento",
+    "produtos":   "dProdutos",    # [EDITÁVEL] nome da aba de produtos
+    "vendedor":   "dVendedor",    # [EDITÁVEL] nome da aba de vendedores
+    "clientes":   "dClientes",    # [EDITÁVEL] nome da aba de clientes
+    "cidade":     "dCidade",      # [EDITÁVEL] nome da aba de cidades
+    "unidades":   "dUnidades",    # [EDITÁVEL] nome da aba de unidades/filiais
+    "status":     "dStatus",      # [EDITÁVEL] nome da aba de status de pedido
+    "pagamento":  "dPagamento",   # [EDITÁVEL] nome da aba de formas de pagamento
 }
 
 

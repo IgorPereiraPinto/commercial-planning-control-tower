@@ -1,6 +1,6 @@
 -- =============================================================================
 -- 02_create_staging_tables.sql — Camada STAGING: dados limpos e tipados
--- Commercial Planning Control Tower
+-- Planejamento Comercial
 -- =============================================================================
 --
 -- RESPONSABILIDADE:
@@ -24,7 +24,7 @@
 --   métricas financeiras como DECIMAL(18,2).
 -- =============================================================================
 
-USE planejamento_comercial;
+USE planejamento_comercial; -- [EDITÁVEL] nome do banco — deve ser igual ao criado no 00_setup.sql
 GO
 
 PRINT '>>> Criando tabelas da camada STAGING...';

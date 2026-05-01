@@ -1,5 +1,5 @@
 # Fluxo 4 — Celebração de Meta Superada
-## Commercial Planning Control Tower — Power Automate
+## Planejamento Comercial — Power Automate
 
 ---
 
@@ -241,7 +241,7 @@ _Acesse o [dashboard completo]([URL_DO_DASHBOARD]) para ver o desempenho detalha
 </div>
 
 <div class="footer">
-  Notificação automática do Commercial Planning Control Tower.<br>
+  Notificação automática do Planejamento Comercial.<br>
   <a href="[URL_DO_DASHBOARD]">Ver dashboard completo</a>
 </div>
 
@@ -304,4 +304,4 @@ gatilho pode disparar um badge automático para o vendedor.
 
 ---
 
-*Fluxo 4 de 5 — Commercial Planning Control Tower.*
+*Fluxo 4 de 5 — Planejamento Comercial.*

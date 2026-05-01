@@ -291,3 +291,9 @@ async function loadData() {
 Este dashboard deve parecer um produto analítico executivo real, pronto para portfólio ou
 apresentação. O objetivo não é ser apenas bonito, mas analítico, executivo e funcional.
 A narrativa deve sintetizar insights do contexto filtrado, soar profissional e não robótica.
+
+## Rules complementares
+
+Aplicar junto com esta skill:
+- `20_dashboard-html.md` — padrões de arquitetura single-file, UX analítico e separação de camadas
+- `19_dashboard-design.md` — para decisões de layout, escolha de gráficos e hierarquia visual

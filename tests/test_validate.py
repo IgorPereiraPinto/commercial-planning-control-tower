@@ -1,6 +1,6 @@
 # =============================================================================
 # test_validate.py — Testes automatizados para o módulo de validação
-# Commercial Planning Control Tower
+# Planejamento Comercial
 # =============================================================================
 
 import pytest

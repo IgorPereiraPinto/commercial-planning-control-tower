@@ -1,6 +1,6 @@
 -- =============================================================================
 -- 01_create_raw_tables.sql — Camada RAW: espelho direto dos arquivos Excel
--- Commercial Planning Control Tower
+-- Planejamento Comercial
 -- =============================================================================
 --
 -- RESPONSABILIDADE:
@@ -25,7 +25,7 @@
 --   Mantenha todos os tipos como NVARCHAR na camada raw.
 -- =============================================================================
 
-USE planejamento_comercial;
+USE planejamento_comercial; -- [EDITÁVEL] nome do banco — deve ser igual ao criado no 00_setup.sql
 GO
 
 PRINT '>>> Criando tabelas da camada RAW...';

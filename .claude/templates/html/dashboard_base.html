@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Executivo</title>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <style>
+    /* -------------------------------------------------------
+       Design System — variáveis centralizadas
+       Trocar apenas as variáveis para mudar o tema
+    ------------------------------------------------------- */
+    :root {
+      --color-bg:         #0f172a;
+      --color-surface:    #1e293b;
+      --color-border:     #334155;
+      --color-text:       #f1f5f9;
+      --color-muted:      #94a3b8;
+      --color-accent:     #3b82f6;
+      --color-positive:   #22c55e;
+      --color-negative:   #ef4444;
+      --color-warning:    #f59e0b;
+
+      --font-sans:        'Segoe UI', system-ui, sans-serif;
+      --radius:           8px;
+      --spacing:          16px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--color-bg);
+      color: var(--color-text);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      min-height: 100vh;
+    }
+
+    /* -------------------------------------------------------
+       Layout principal
+    ------------------------------------------------------- */
+    .layout {
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      min-height: 100vh;
+    }
+
+    /* -------------------------------------------------------
+       Header
+    ------------------------------------------------------- */
+    .header {
+      background: var(--color-surface);
+      border-bottom: 1px solid var(--color-border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header h1 { font-size: 18px; font-weight: 600; }
+    .header .subtitle { font-size: 12px; color: var(--color-muted); margin-top: 2px; }
+    .header .last-update { font-size: 11px; color: var(--color-muted); }
+
+    /* -------------------------------------------------------
+       Filtros
+    ------------------------------------------------------- */
+    .filters {
+      background: var(--color-surface);
+      border-bottom: 1px solid var(--color-border);
+      padding: 12px 24px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .filter-label { font-size: 12px; color: var(--color-muted); }
+    .filter-select {
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      color: var(--color-text);
+      border-radius: var(--radius);
+      padding: 6px 10px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .filter-select:focus { outline: 2px solid var(--color-accent); }
+
+    /* -------------------------------------------------------
+       Conteúdo principal
+    ------------------------------------------------------- */
+    .main {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* -------------------------------------------------------
+       KPI Cards
+    ------------------------------------------------------- */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: var(--spacing);
+    }
+    .kpi-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+    .kpi-card .kpi-label   { font-size: 11px; color: var(--color-muted); text-transform: uppercase; letter-spacing: .5px; }
+    .kpi-card .kpi-value   { font-size: 26px; font-weight: 700; margin-top: 6px; }
+    .kpi-card .kpi-delta   { font-size: 12px; margin-top: 4px; }
+    .kpi-card .kpi-context { font-size: 11px; color: var(--color-muted); margin-top: 2px; }
+    .positive { color: var(--color-positive); }
+    .negative { color: var(--color-negative); }
+    .neutral  { color: var(--color-muted); }
+
+    /* -------------------------------------------------------
+       Gráficos
+    ------------------------------------------------------- */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: var(--spacing);
+    }
+    .chart-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+    .chart-card .chart-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--color-text);
+    }
+    .chart-card .chart-subtitle {
+      font-size: 11px;
+      color: var(--color-muted);
+      margin-top: -8px;
+      margin-bottom: 12px;
+    }
+    .chart-container { position: relative; height: 220px; }
+
+    /* -------------------------------------------------------
+       Narrativa executiva
+    ------------------------------------------------------- */
+    .narrative {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-left: 3px solid var(--color-accent);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+    }
+    .narrative h3    { font-size: 12px; color: var(--color-muted); text-transform: uppercase; margin-bottom: 8px; }
+    .narrative p     { font-size: 13px; line-height: 1.6; color: var(--color-text); }
+    .narrative #narrative-text { min-height: 40px; }
+
+    /* -------------------------------------------------------
+       Footer
+    ------------------------------------------------------- */
+    .footer {
+      background: var(--color-surface);
+      border-top: 1px solid var(--color-border);
+      padding: 10px 24px;
+      font-size: 11px;
+      color: var(--color-muted);
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+<div class="layout">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div>
+      <h1 id="dashboard-title">Performance Comercial</h1>
+      <div class="subtitle" id="dashboard-subtitle">Análise executiva do período</div>
+    </div>
+    <div class="last-update" id="last-update"></div>
+  </header>
+
+  <!-- FILTROS -->
+  <div class="filters">
+    <span class="filter-label">Filtrar por:</span>
+    <select class="filter-select" id="filter-period" onchange="applyFilters()">
+      <option value="all">Todos os períodos</option>
+      <option value="jan">Janeiro</option>
+      <option value="fev">Fevereiro</option>
+      <option value="mar">Março</option>
+    </select>
+    <select class="filter-select" id="filter-region" onchange="applyFilters()">
+      <option value="all">Todas as regionais</option>
+    </select>
+    <select class="filter-select" id="filter-channel" onchange="applyFilters()">
+      <option value="all">Todos os canais</option>
+    </select>
+  </div>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <main class="main">
+
+    <!-- KPI CARDS -->
+    <div class="kpi-grid" id="kpi-grid">
+      <!-- gerado por renderKPIs() -->
+    </div>
+
+    <!-- GRÁFICOS -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title">Evolução Mensal</div>
+        <div class="chart-subtitle">Receita realizada vs meta</div>
+        <div class="chart-container">
+          <canvas id="chart-trend"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Distribuição por Canal</div>
+        <div class="chart-subtitle">Participação no período selecionado</div>
+        <div class="chart-container">
+          <canvas id="chart-breakdown"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- NARRATIVA EXECUTIVA -->
+    <div class="narrative">
+      <h3>Leitura Executiva</h3>
+      <p id="narrative-text">Selecione os filtros para gerar a leitura do período.</p>
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer" id="footer-text">
+    Dashboard | Dados simulados — substituir pelos dados reais
+  </footer>
+
+</div>
+
+<script>
+// =============================================================
+// CAMADA DE DADOS — substituir por dados reais ou fetch de API
+// =============================================================
+const DATA = {
+  meta: {
+    title: "Performance Comercial",
+    subtitle: "Análise do 1º Trimestre 2026",
+    updatedAt: "2026-04-27",
+  },
+
+  // KPIs: label, valor formatado, delta % vs período anterior, contexto
+  kpis: [
+    { label: "Receita Líquida",  value: "R$ 4,2M",  delta: +8.3,  context: "vs meta: +5%" },
+    { label: "Margem Bruta",     value: "38,4%",    delta: -1.2,  context: "meta: 40%" },
+    { label: "Pedidos",          value: "1.842",    delta: +12.1, context: "ticket: R$ 2.280" },
+    { label: "Clientes Ativos",  value: "412",      delta: +3.5,  context: "novos: 38" },
+  ],
+
+  // Série temporal — adaptar labels e datasets
+  trend: {
+    labels: ["Jan", "Fev", "Mar"],
+    datasets: [
+      {
+        label: "Realizado",
+        data: [1320000, 1450000, 1430000],
+        borderColor: "#3b82f6",
+        backgroundColor: "rgba(59,130,246,0.1)",
+        fill: true, tension: 0.4,
+      },
+      {
+        label: "Meta",
+        data: [1400000, 1400000, 1400000],
+        borderColor: "#f59e0b",
+        borderDash: [6, 4],
+        fill: false, tension: 0,
+      },
+    ],
+  },
+
+  // Distribuição — adaptar labels e dados
+  breakdown: {
+    labels: ["Direto", "Distribuidor", "E-commerce", "Parceiros"],
+    data:   [42, 28, 18, 12],
+    colors: ["#3b82f6", "#22c55e", "#f59e0b", "#a855f7"],
+  },
+
+  // Filtros disponíveis
+  filters: {
+    regions:  ["Sul", "Sudeste", "Norte", "Nordeste"],
+    channels: ["Direto", "Distribuidor", "E-commerce", "Parceiros"],
+  },
+
+  // Narrativa por combinação de filtros (chave: period_region_channel)
+  narratives: {
+    default: "No 1T26, a receita atingiu R$ 4,2M (+8,3% vs 1T25), 5% acima da meta. " +
+             "O canal Direto liderou com 42% de participação. " +
+             "Atenção: margem bruta recuou 1,2 p.p. por pressão de custos — revisão de precificação recomendada.",
+  },
+};
+
+
+// =============================================================
+// INICIALIZAÇÃO
+// =============================================================
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("dashboard-title").textContent   = DATA.meta.title;
+  document.getElementById("dashboard-subtitle").textContent = DATA.meta.subtitle;
+  document.getElementById("last-update").textContent       = `Atualizado: ${DATA.meta.updatedAt}`;
+
+  populateFilters();
+  renderKPIs(DATA.kpis);
+  renderTrendChart(DATA.trend);
+  renderBreakdownChart(DATA.breakdown);
+  updateNarrative("default");
+});
+
+
+// =============================================================
+// FILTROS
+// =============================================================
+function populateFilters() {
+  const regionSel  = document.getElementById("filter-region");
+  const channelSel = document.getElementById("filter-channel");
+
+  DATA.filters.regions.forEach(r => {
+    const opt = document.createElement("option");
+    opt.value = r.toLowerCase(); opt.textContent = r;
+    regionSel.appendChild(opt);
+  });
+
+  DATA.filters.channels.forEach(c => {
+    const opt = document.createElement("option");
+    opt.value = c.toLowerCase(); opt.textContent = c;
+    channelSel.appendChild(opt);
+  });
+}
+
+function applyFilters() {
+  // Lógica de filtro: recalcular KPIs e gráficos com base nos valores selecionados
+  // Para dados reais: filtrar DATA.raw pelo período/regional/canal selecionados
+  // e recalcular os agregados antes de chamar render
+  const period  = document.getElementById("filter-period").value;
+  const region  = document.getElementById("filter-region").value;
+  const channel = document.getElementById("filter-channel").value;
+
+  const key = `${period}_${region}_${channel}`;
+  updateNarrative(DATA.narratives[key] ? key : "default");
+}
+
+
+// =============================================================
+// KPI CARDS
+// =============================================================
+function renderKPIs(kpis) {
+  const grid = document.getElementById("kpi-grid");
+  grid.innerHTML = kpis.map(kpi => {
+    const deltaClass = kpi.delta > 0 ? "positive" : kpi.delta < 0 ? "negative" : "neutral";
+    const deltaSign  = kpi.delta > 0 ? "▲" : "▼";
+    return `
+      <div class="kpi-card">
+        <div class="kpi-label">${kpi.label}</div>
+        <div class="kpi-value">${kpi.value}</div>
+        <div class="kpi-delta ${deltaClass}">${deltaSign} ${Math.abs(kpi.delta)}%</div>
+        <div class="kpi-context">${kpi.context}</div>
+      </div>`;
+  }).join("");
+}
+
+
+// =============================================================
+// GRÁFICOS
+// =============================================================
+const chartDefaults = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { labels: { color: "#94a3b8", font: { size: 11 } } },
+  },
+  scales: {
+    x: { ticks: { color: "#94a3b8" }, grid: { color: "#1e293b" } },
+    y: { ticks: { color: "#94a3b8" }, grid: { color: "#334155" } },
+  },
+};
+
+function renderTrendChart(trendData) {
+  new Chart(document.getElementById("chart-trend"), {
+    type: "line",
+    data: trendData,
+    options: { ...chartDefaults },
+  });
+}
+
+function renderBreakdownChart(breakdownData) {
+  new Chart(document.getElementById("chart-breakdown"), {
+    type: "doughnut",
+    data: {
+      labels: breakdownData.labels,
+      datasets: [{
+        data: breakdownData.data,
+        backgroundColor: breakdownData.colors,
+        borderWidth: 0,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: "right", labels: { color: "#94a3b8", font: { size: 11 } } },
+      },
+    },
+  });
+}
+
+
+// =============================================================
+// NARRATIVA
+// =============================================================
+function updateNarrative(key) {
+  const text = DATA.narratives[key] || DATA.narratives["default"];
+  document.getElementById("narrative-text").textContent = text;
+}
+</script>
+</body>
+</html>

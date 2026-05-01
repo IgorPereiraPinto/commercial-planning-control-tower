@@ -1,6 +1,6 @@
 # =============================================================================
 # conftest.py — Configuração global de testes
-# Commercial Planning Control Tower
+# Planejamento Comercial
 # =============================================================================
 #
 # RESPONSABILIDADE:

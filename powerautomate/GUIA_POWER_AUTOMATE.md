@@ -1,11 +1,11 @@
 # Power Automate — Guia Geral dos 5 Fluxos de Automação
-## Commercial Planning Control Tower
+## Planejamento Comercial
 
 ---
 
 ## Visão Geral
 
-Os 5 fluxos de Power Automate fecham o ciclo do Commercial Planning Control Tower:
+Os 5 fluxos de Power Automate fecham o ciclo do Planejamento Comercial:
 o dado sai do Excel, passa pelo Python ETL, vai para o SQL Server, alimenta o Power BI
 e, via Power Automate, **dispara alertas proativos para os gestores** — sem que ninguém
 precise abrir o dashboard para perceber um problema.
@@ -59,12 +59,12 @@ Ciclo de automação:
 
 Ao adicionar o primeiro step de SQL Server em cada fluxo:
 - **Tipo de autenticação:** SQL Server Authentication
-- **Servidor:** `noteigor`
-- **Banco de dados:** `planejamento_comercial`
-- **Usuário / Senha:** as credenciais SQL criadas para o Power Automate
+- **Servidor:** `SEU_SERVIDOR` <!-- [EDITÁVEL] endereço do seu SQL Server (ex: localhost\SQLEXPRESS ou servidor.database.windows.net) -->
+- **Banco de dados:** `planejamento_comercial` <!-- [EDITÁVEL] nome do banco conforme criado no 00_setup.sql -->
+- **Usuário / Senha:** as credenciais SQL criadas para o Power Automate (usuário `powerautomate_reader`)
 
-> [REUTILIZAÇÃO]: Para novos projetos, apenas o servidor e banco de dados mudam.
-> A estrutura das queries muda conforme as tabelas do novo schema DW.
+> **[EDITÁVEL]** Para novos projetos: atualize o servidor, o banco de dados e as queries SQL em cada fluxo.
+> A estrutura dos fluxos permanece a mesma — apenas os parâmetros de conexão e os limiares mudam.
 
 ### 4. Criar um usuário SQL exclusivo para o Power Automate
 
@@ -147,4 +147,4 @@ Todos os fluxos têm um bloco `Scope` com configuração `Configure run after �
 
 ---
 
-*Arquivo gerado como parte do Commercial Planning Control Tower.*
+*Arquivo gerado como parte do Planejamento Comercial.*

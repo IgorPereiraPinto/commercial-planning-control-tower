@@ -1,6 +1,6 @@
 # =============================================================================
 # requirements-dev.txt — Dependências de desenvolvimento e testes
-# Commercial Planning Control Tower
+# Planejamento Comercial
 # =============================================================================
 #
 # INSTALAÇÃO (apenas em ambiente local/dev):

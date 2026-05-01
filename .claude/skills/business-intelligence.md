@@ -74,3 +74,9 @@ Contexto do negócio, objetivo do dashboard, público-alvo, perguntas que o pain
 
 ## Observações
 Esta skill é conceitual e gerencial. Para implementação em Power BI, usar `powerbi-development.md`. Para análise em si, usar `data-analysis.md`.
+
+## Rules complementares
+
+Aplicar junto com esta skill:
+- `02_business-intelligence.md` — padrões de definição de KPIs, estrutura de painéis e governança de métricas
+- `19_dashboard-design.md` — para escolha de visuais, layout e hierarquia na estrutura do painel

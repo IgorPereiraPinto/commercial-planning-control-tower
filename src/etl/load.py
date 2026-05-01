@@ -1,6 +1,6 @@
 # =============================================================================
 # load.py — Camada de Carga (L do ETL)
-# Commercial Planning Control Tower
+# Planejamento Comercial
 # =============================================================================
 #
 # RESPONSABILIDADE:

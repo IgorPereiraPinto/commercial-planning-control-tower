@@ -1,6 +1,6 @@
 # =============================================================================
 # requirements.txt — Dependências de produção
-# Commercial Planning Control Tower
+# Planejamento Comercial
 # =============================================================================
 #
 # INSTALAÇÃO:

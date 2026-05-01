@@ -1,5 +1,5 @@
 # Fluxo 1 — Alerta de Baixo Atingimento
-## Commercial Planning Control Tower — Power Automate
+## Planejamento Comercial — Power Automate
 
 ---
 
@@ -80,12 +80,12 @@ LEFT JOIN [dw].[fMetas] m
     AND m.[Mes]  = MONTH(GETDATE())
     AND m.[Ano]  = YEAR(GETDATE())
 WHERE
-    -- Apenas vendedores com atingimento abaixo do threshold
+    -- [EDITÁVEL] threshold de atingimento para disparar o alerta (ex: 70 = abaixo de 70%)
     COALESCE(
         CAST(SUM(f.[Faturamento Total]) AS FLOAT)
         / NULLIF(SUM(m.[Valor Meta]), 0) * 100,
         0
-    ) < 70
+    ) < 70  -- [EDITÁVEL] ajuste o limiar conforme a régua de performance da empresa
 GROUP BY
     v.[Vendedor], v.[Gerente]
 ORDER BY
@@ -93,8 +93,8 @@ ORDER BY
 ```
 
 > A query usa LEFT JOIN para incluir vendedores sem vendas no mês (atingimento = 0%).
-> O threshold de 70% é o parâmetro mais relevante para [REUTILIZAÇÃO] — ajuste conforme
-> a régua de performance da empresa.
+> **[EDITÁVEL]** O threshold `< 70` é o principal parâmetro a ajustar: defina conforme
+> a régua de performance da empresa (ex: `< 80` para times com meta mais agressiva).
 
 ---
 
@@ -193,7 +193,7 @@ float(items('Apply_to_each')?['AtingimentoPct']) is greater than or equal to 90
 <body>
   <div class="header">
     <h1>⚠️ Alerta de Baixo Atingimento de Meta</h1>
-    <p>Commercial Planning Control Tower — @{formatDateTime(utcNow(), 'MMMM yyyy')}</p>
+    <p>Planejamento Comercial — @{formatDateTime(utcNow(), 'MMMM yyyy')}</p>
   </div>
   <div class="content">
     <div class="alerta-box">
@@ -218,7 +218,7 @@ float(items('Apply_to_each')?['AtingimentoPct']) is greater than or equal to 90
     </table>
   </div>
   <div class="footer">
-    Este alerta foi gerado automaticamente pelo Commercial Planning Control Tower.<br>
+    Este alerta foi gerado automaticamente pelo Planejamento Comercial.<br>
     Acesse o <a href="[URL_DO_DASHBOARD]">dashboard completo</a> para mais detalhes.<br>
     Para cancelar estes alertas, contate o administrador.
   </div>
@@ -314,4 +314,4 @@ Tabela:
 
 ---
 
-*Fluxo 1 de 5 — Commercial Planning Control Tower.*
+*Fluxo 1 de 5 — Planejamento Comercial.*

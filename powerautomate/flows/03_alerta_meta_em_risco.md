@@ -1,5 +1,5 @@
 # Fluxo 3 — Alerta de Meta em Risco no Fechamento
-## Commercial Planning Control Tower — Power Automate
+## Planejamento Comercial — Power Automate
 
 ---
 
@@ -310,7 +310,7 @@ Se varAtingimentoProjetado < 90  → severidade = "MÉDIO"    / cor = "#FFC107"
 </div>
 
 <div class="footer">
-  Alerta gerado em @{formatDateTime(utcNow(), 'dd/MM/yyyy HH:mm')} pelo Commercial Planning Control Tower.<br>
+  Alerta gerado em @{formatDateTime(utcNow(), 'dd/MM/yyyy HH:mm')} pelo Planejamento Comercial.<br>
   <a href="[URL_DO_DASHBOARD]">Acesse o dashboard</a> para análise completa por produto e região.
 </div>
 
@@ -354,4 +354,4 @@ Restam 11 dias para recuperação. Faturamento necessário: R$ 7.636/dia."
 
 ---
 
-*Fluxo 3 de 5 — Commercial Planning Control Tower.*
+*Fluxo 3 de 5 — Planejamento Comercial.*

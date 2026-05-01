@@ -1,6 +1,6 @@
 # =============================================================================
 # load_dw.py — Carga da Camada DW (staging → dw)
-# Commercial Planning Control Tower
+# Planejamento Comercial
 # =============================================================================
 #
 # RESPONSABILIDADE:

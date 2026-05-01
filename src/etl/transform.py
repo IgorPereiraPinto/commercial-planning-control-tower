@@ -1,6 +1,6 @@
 # =============================================================================
 # transform.py — Camada de Transformação (T do ETL)
-# Commercial Planning Control Tower
+# Planejamento Comercial
 # =============================================================================
 #
 # RESPONSABILIDADE:
@@ -45,7 +45,8 @@ logger = configure_logging()
 # =============================================================================
 # Centralizar os nomes de colunas aqui evita erros de digitação espalhados
 # pelo código e facilita a adaptação quando o layout do Excel mudar.
-# [REUTILIZAÇÃO]: Ajuste os valores abaixo se as colunas da fonte mudarem.
+# [EDITÁVEL] Ajuste os valores abaixo se os nomes de coluna do Excel mudarem.
+# Cada constante abaixo deve corresponder exatamente ao cabeçalho da planilha.
 
 # Colunas da tabela fVendas
 COL_VENDAS_DATA = "Data"
@@ -141,8 +142,8 @@ def transform_vendas(df_raw: pd.DataFrame) -> pd.DataFrame:
     # Passo 3: Cast de colunas de data
     # pd.to_datetime com errors="coerce" converte o que conseguir e coloca
     # NaT (Not a Time) onde não conseguir — facilita detecção de problemas
-    df[COL_VENDAS_DATA] = pd.to_datetime(df[COL_VENDAS_DATA], errors="coerce", dayfirst=True)
-    df[COL_VENDAS_DATA_ENVIO] = pd.to_datetime(df[COL_VENDAS_DATA_ENVIO], errors="coerce", dayfirst=True)
+    df[COL_VENDAS_DATA] = pd.to_datetime(df[COL_VENDAS_DATA], errors="coerce")
+    df[COL_VENDAS_DATA_ENVIO] = pd.to_datetime(df[COL_VENDAS_DATA_ENVIO], errors="coerce")
 
     # Passo 4: Cast de colunas de ID para inteiro nullable (pd.Int64Dtype)
     # Usamos Int64 (com I maiúsculo) e não int64 porque o tipo nativo do pandas

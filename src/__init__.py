@@ -1,1 +1,1 @@
-# Pacote raiz do projeto Commercial Planning Control Tower
+# Pacote raiz do projeto Planejamento Comercial

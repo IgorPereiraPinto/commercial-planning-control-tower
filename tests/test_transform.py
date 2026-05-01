@@ -1,6 +1,6 @@
 # =============================================================================
 # test_transform.py — Testes automatizados para o módulo de transformação
-# Commercial Planning Control Tower
+# Planejamento Comercial
 # =============================================================================
 
 import pytest

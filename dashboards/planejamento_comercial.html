@@ -4,7 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Planejamento Comercial</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<!-- Chart.js bundled localmente — sem dependência de CDN externo -->
+<!-- [EDITÁVEL] Para atualizar a versão: baixe de cdnjs.com e substitua assets/js/chart.umd.min.js -->
+<script src="../assets/js/chart.umd.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -191,6 +193,7 @@ body{
 .c-coral{border-left-color:var(--coral)} .c-coral::before{background:var(--coral)}
 .c-rose{border-left-color:var(--rose)} .c-rose::before{background:var(--rose)}
 .c-blue{border-left-color:var(--blue)} .c-blue::before{background:var(--blue)}
+.c-violet{border-left-color:var(--violet)} .c-violet::before{background:var(--violet)}
 .kpi-label{font-size:11px;font-weight:700;color:var(--slate-soft);margin-bottom:8px}
 .kpi-value{font-size:25px;font-weight:800;color:var(--ink);letter-spacing:-.7px;line-height:1;margin-bottom:9px}
 .kpi-footer{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -282,6 +285,19 @@ tbody td{padding:9px 11px;font-size:12px;color:var(--slate);white-space:nowrap}
   padding-left:18px;display:flex;flex-direction:column;gap:8px;color:var(--slate-soft);font-size:11px;line-height:1.65
 }
 .arch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.cal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:4px}
+.cal-item{padding:12px 14px;border-radius:var(--radius-sm);border-left:4px solid;background:#fbfdff;box-shadow:0 2px 8px rgba(15,23,42,.04)}
+.cal-item.cal-prep{border-left-color:var(--teal)}
+.cal-item.cal-calc{border-left-color:var(--gold)}
+.cal-item.cal-valid{border-left-color:var(--blue)}
+.cal-item.cal-send{border-left-color:var(--violet)}
+.cal-item.cal-close{border-left-color:var(--emerald)}
+.cal-item.cal-def{border-left-color:var(--coral)}
+.cal-item.cal-pay{border-left-color:var(--rose)}
+.cal-day{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.55px;margin-bottom:4px;color:var(--slate-soft)}
+.cal-title{font-size:12px;font-weight:800;color:var(--ink);margin-bottom:3px;line-height:1.3}
+.cal-desc{font-size:11px;color:var(--slate-soft);line-height:1.5;margin-bottom:6px}
+.cal-owner{display:inline-block;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:700;background:#f1f5f9;color:var(--slate)}
 .arch-card{
   padding:16px;border-radius:16px;border:1px solid var(--mist);background:#fbfdff
 }
@@ -534,6 +550,7 @@ tbody td{padding:9px 11px;font-size:12px;color:var(--slate);white-space:nowrap}
     <section class="panel" id="panel-3">
       <div class="section-title">KPIs de comissao <span class="section-badge" id="periodLabel3">YTD</span></div>
       <div class="grid-4" id="commissionKpis"></div>
+      <div class="grid-2" style="margin-top:10px" id="provisionKpis"></div>
 
       <div class="grid-2">
         <div class="card">
@@ -624,6 +641,61 @@ tbody td{padding:9px 11px;font-size:12px;color:var(--slate);white-space:nowrap}
           </thead>
           <tbody id="commissionTable"></tbody>
         </table>
+      </div>
+
+      <div class="section-title">Calendario corporativo de comissao <span class="section-badge">Ciclo mensal</span></div>
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Ciclo mensal de apuracao e provisao</div>
+            <div class="card-sub">Sequencia de etapas do mes corrente ate o pagamento do mes seguinte. Organiza responsabilidades entre comercial, planejamento e financeiro.</div>
+          </div>
+          <span class="card-tag gold">Agenda</span>
+        </div>
+        <div class="cal-grid">
+          <div class="cal-item cal-prep">
+            <div class="cal-day">Dia 20 do mes</div>
+            <div class="cal-title">Projecao de vendas</div>
+            <div class="cal-desc">Calcular run rate e estimar o fechamento do mes com base no realizado ate o dia 20.</div>
+            <span class="cal-owner">Planejamento comercial</span>
+          </div>
+          <div class="cal-item cal-calc">
+            <div class="cal-day">Dia 22 do mes</div>
+            <div class="cal-title">Calculo da provisao</div>
+            <div class="cal-desc">Apurar provisao de comissao com base na projecao. Inserir em fComissaoMensal com status = Provisao.</div>
+            <span class="cal-owner">Planejamento comercial</span>
+          </div>
+          <div class="cal-item cal-valid">
+            <div class="cal-day">Dia 24 do mes</div>
+            <div class="cal-title">Validacao comercial</div>
+            <div class="cal-desc">Gerentes e planejamento revisam a provisao. Ajustes manuais documentados com justificativa em observacao_ajuste.</div>
+            <span class="cal-owner">Gerentes + Planejamento</span>
+          </div>
+          <div class="cal-item cal-send">
+            <div class="cal-day">Dia 27 do mes</div>
+            <div class="cal-title">Envio ao financeiro</div>
+            <div class="cal-desc">Provisao validada e enviada para o financeiro. Status atualizado para Enviado na fComissaoMensal.</div>
+            <span class="cal-owner">Planejamento comercial</span>
+          </div>
+          <div class="cal-item cal-close">
+            <div class="cal-day">Dia 03 (mes seguinte)</div>
+            <div class="cal-title">Fechamento de vendas</div>
+            <div class="cal-desc">ETL completo roda com o mes fechado. Dados definitivos de faturamento carregados no DW.</div>
+            <span class="cal-owner">Dados / ETL</span>
+          </div>
+          <div class="cal-item cal-def">
+            <div class="cal-day">Dia 05 (mes seguinte)</div>
+            <div class="cal-title">Comissao definitiva</div>
+            <div class="cal-desc">Recalculo com dados fechados. Status = Definitivo. Desvio entre provisao e definitivo documentado.</div>
+            <span class="cal-owner">Planejamento comercial</span>
+          </div>
+          <div class="cal-item cal-pay">
+            <div class="cal-day">Dia 10 (mes seguinte)</div>
+            <div class="cal-title">Aprovacao e pagamento</div>
+            <div class="cal-desc">Financeiro aprova e libera para pagamento. Status = Pago. Fechamento do ciclo mensal.</div>
+            <span class="cal-owner">Financeiro</span>
+          </div>
+        </div>
       </div>
 
       <div class="section-title">Insights da aba <span class="section-badge">Comissao, categoria e produto</span></div>
@@ -736,25 +808,54 @@ tbody td{padding:9px 11px;font-size:12px;color:var(--slate);white-space:nowrap}
 
   <div class="note-box">
     <div style="font-size:16px;flex-shrink:0">💡</div>
-    <p><strong>Nota tecnica:</strong> projeto estruturado para mostrar uma evolucao plausivel de portfolio para ambiente real. A camada atual conecta Excel, ETL Python, SQL Server, Power BI, dashboard HTML e automacao. A politica de comissao apresentada aqui e uma proposta parametrizavel e auditavel para apoiar gerentes, vendedores e planejamento comercial na tomada de decisao.</p>
+    <p><strong>Nota técnica:</strong> projeto estruturado para mostrar uma evolução plausível de portfólio para ambiente real. A camada atual conecta Excel, ETL Python, SQL Server, Power BI, dashboard HTML e automação. A política de comissão apresentada aqui é uma proposta parametrizável e auditável para apoiar gerentes, vendedores e planejamento comercial na tomada de decisão.</p>
   </div>
 </div>
 
 <script>
 'use strict';
+
+// =============================================================================
+// CAMADA DE DADOS — SUBSTITUA AQUI PARA CONECTAR A DADOS REAIS
+// =============================================================================
+// Todos os arrays e constantes abaixo estão marcados com [EDITÁVEL].
+// Para conectar a dados reais, substitua os valores hardcoded por:
+//   - Uma chamada fetch() a uma API ou endpoint JSON
+//   - Um import de arquivo JSON gerado pelo pipeline Python
+//   - Uma query via servidor (ex: Flask/FastAPI servindo os dados)
+//
+// Estrutura mínima esperada por sellers[]:
+//   { nome, gerente, regiao, unidade, meta:[n0,n1,n2,n3], real:[n0,n1,n2,n3],
+//     mape:number, priorityMix:number }
+//
+// Valores em R$ milhões (M). Ex: meta:[1.72,1.78] = R$1,72M e R$1,78M por mês.
+// =============================================================================
+
 const COLORS={ink:'#0f172a',navy:'#1a3552',gold:'#c7902b',teal:'#0f766e',emerald:'#15803d',coral:'#c2410c',rose:'#b42318',blue:'#1d4ed8',violet:'#6d28d9',gray:'#94a3b8'};
+
+// [EDITÁVEL] Rótulos dos meses do período analisado (deve corresponder ao índice dos arrays meta/real)
 const MONTHS=['Jan','Fev','Mar','Abr'];
+
+// [EDITÁVEL] Rótulos históricos para o gráfico de tendência (da esquerda para a direita, cronológico)
 const HISTORY_LABELS=['Jan 20','Fev 20','Mar 20','Abr 20','Mai 20','Jun 20','Jul 20','Ago 20','Set 20','Out 20','Nov 20','Dez 20','Jan 21','Fev 21','Mar 21','Abr 21'];
+
+// [EDITÁVEL] Taxa base de comissão sobre receita líquida (2,4% = 0.024)
 const BASE_RATE=0.024;
+
+// [EDITÁVEL] Períodos de análise — ajuste os índices conforme os meses disponíveis no array sellers[]
+// indices: posições no array meta/real (0=Jan, 1=Fev, 2=Mar, 3=Abr...)
 const PERIODS={
-  mtd:{label:'MTD',indices:[3],reference:'Abr/2021'},
-  qtd:{label:'QTD',indices:[3],reference:'Q2 2021'},
-  ytd:{label:'YTD',indices:[0,1,2,3],reference:'Jan-Abr/2021'},
-  fy:{label:'Anualizado',indices:[0,1,2,3],reference:'FY 2021 estimado'}
+  mtd:{label:'MTD',indices:[3],reference:'Abr/2021'},       // [EDITÁVEL] mês atual
+  qtd:{label:'QTD',indices:[3],reference:'Q2 2021'},        // [EDITÁVEL] meses do trimestre atual
+  ytd:{label:'YTD',indices:[0,1,2,3],reference:'Jan-Abr/2021'}, // [EDITÁVEL] todos os meses do ano
+  fy:{label:'Anualizado',indices:[0,1,2,3],reference:'FY 2021 estimado'} // [EDITÁVEL] mesmo que YTD neste case
 };
 const state={period:'ytd',gerente:'',vendedor:'',regiao:'',unidade:''};
 const charts={};
 
+// [EDITÁVEL] Lista de vendedores com suas metas, realizados e atributos de mix
+// Origem: dw.fVendas + dw.fMetas + dw.dVendedor via query analítica
+// Cada vendedor precisa ter o mesmo número de entradas em meta[] e real[] que em MONTHS[]
 const sellers=[
   {nome:'Cristiano',gerente:'Zagallo',regiao:'Sudeste',unidade:'Matriz',meta:[1.72,1.78,1.86,1.84],real:[1.94,2.03,2.07,1.96],mape:7,priorityMix:1.27},
   {nome:'Ronaldo',gerente:'Guardiola',regiao:'Sul',unidade:'Filial 1',meta:[1.64,1.71,1.82,1.83],real:[1.69,1.78,1.82,1.81],mape:8,priorityMix:1.18},
@@ -769,6 +870,8 @@ const sellers=[
   {nome:'Neymar',gerente:'Zagallo',regiao:'Norte',unidade:'Filial 3',meta:[0.54,0.58,0.60,0.62],real:[0.39,0.44,0.52,0.45],mape:28,priorityMix:1.02}
 ];
 
+// [EDITÁVEL] Faturamento e margem por categoria de produto (em R$ milhões e %)
+// Origem: dw.fVendas JOIN dw.dProdutos GROUP BY Categoria
 const categories=[
   {nome:'Eletronicos',fat:15.4,margem:28.4},
   {nome:'Moveis',fat:10.1,margem:37.6},
@@ -778,6 +881,9 @@ const categories=[
   {nome:'Servicos agregados',fat:2.4,margem:48.0}
 ];
 
+// [EDITÁVEL] Top produtos por faturamento com prioridade e multiplicador de comissão
+// Origem: dw.fVendas JOIN dw.dProdutos — prioridade P1/P2/P3/P4 definida em dw.dProdutos
+// mult: multiplicador de comissão (P1=1.35, P2=1.15, P3=1.00, P4=0.85)
 const products=[
   {nome:'Notebook Pro Elite',categoria:'Informatica',fat:4.8,prioridade:'P1',mult:1.35},
   {nome:'Mesa Executiva Prime',categoria:'Moveis',fat:4.0,prioridade:'P1',mult:1.35},
@@ -791,11 +897,15 @@ const products=[
   {nome:'Acessorios diversos',categoria:'Moda e Acessorios',fat:1.1,prioridade:'P4',mult:0.85}
 ];
 
+// [EDITÁVEL] Histórico de faturamento realizado vs forecast (em R$ milhões, mesma ordem que HISTORY_LABELS)
+// Origem: dw.fVendas (real) e modelo de forecast (ex: Prophet ou média móvel exportada)
 const history={
   real:[10.4,11.0,11.8,10.1,11.3,12.1,12.0,12.6,13.0,13.4,14.0,12.7,11.3,12.0,14.1,9.9],
   forecast:[10.8,11.3,11.6,9.8,11.2,12.4,12.3,12.9,13.1,13.5,13.8,13.1,11.6,12.3,13.7,12.8]
 };
 
+// [EDITÁVEL] Tendência de margem bruta %: ano anterior (12 meses) e ano atual (meses disponíveis)
+// Origem: dw.fVendas — cálculo: SUM(Margem Bruta) / SUM(Faturamento Total) por mês
 const marginTrend={
   prev:[30.8,31.2,31.9,30.5,31.0,31.8,32.1,32.6,32.9,33.4,33.1,32.3],
   curr:[31.6,33.1,34.0,32.8]
@@ -816,17 +926,20 @@ const glossary=[
 
 function money(v){return `R$ ${v.toFixed(1).replace('.',',')}M`;}
 function percent(v){return `${v.toFixed(1).replace('.',',')}%`;}
+// [EDITÁVEL] Política de payout por faixa de atingimento
+// Faixas: < 80% = sem payout | 80-89% = 50% | 90-99% = 80% | 100-109% = 100% | 110-119% = 130% | 120%+ = 160%
+// Ajuste os limiares e fatores conforme a política de RV do novo projeto
 function payoutFactor(ating){
-  if(ating < 80) return 0;
-  if(ating < 90) return 0.5;
-  if(ating < 100) return 0.8;
-  if(ating < 110) return 1.0;
-  if(ating < 120) return 1.3;
-  return 1.6;
+  if(ating < 80)  return 0;    // [EDITÁVEL] limiar mínimo de atingimento para pagar
+  if(ating < 90)  return 0.5;  // [EDITÁVEL] fator para faixa 80-89%
+  if(ating < 100) return 0.8;  // [EDITÁVEL] fator para faixa 90-99%
+  if(ating < 110) return 1.0;  // [EDITÁVEL] fator para faixa 100-109%
+  if(ating < 120) return 1.3;  // [EDITÁVEL] fator para faixa 110-119% (acelerador)
+  return 1.6;                   // [EDITÁVEL] fator para atingimento 120%+ (acelerador máximo)
 }
 function payoutLabel(ating){
-  if(ating < 80) return 'Sem payout';
-  if(ating < 90) return '50%';
+  if(ating < 80)  return 'Sem payout';
+  if(ating < 90)  return '50%';
   if(ating < 100) return '80%';
   if(ating < 110) return '100%';
   if(ating < 120) return '130%';
@@ -976,6 +1089,16 @@ function renderDashboard(){
   const forecastMonthlyOpt=round(forecastMonthlyBase*1.08);
   const resultLiquido=round(totalReal*0.14);
 
+  // Previsão de receita para o mês (run rate mensal baseado no período selecionado)
+  const previsaoReceita=monthlyRunRate;
+
+  // Provisão de comissão: aplica taxa base × mix × fator de atingimento sobre receita projetada
+  const avgPriorityMix=totalReal>0?commissionBase/(totalReal*BASE_RATE):1.0;
+  const monthlyMeta=round(totalMeta/Math.max(periodIndices().length,1));
+  const attingProjetado=monthlyMeta===0?0:(previsaoReceita/monthlyMeta)*100;
+  const provisaoBase=round(previsaoReceita*BASE_RATE*avgPriorityMix);
+  const provisaoComissao=round(provisaoBase*payoutFactor(attingProjetado));
+
   document.getElementById('filterCount').textContent=`${filtered.length} vendedores · ${Object.keys(regions).length} regioes · ${Object.keys(units).length} unidades`;
   document.getElementById('refBadge').textContent=`Referencia: ${PERIODS[state.period].reference}`;
   ['0','1','2','3','4'].forEach((n)=>{const el=document.getElementById(`periodLabel${n}`); if(el) el.textContent=PERIODS[state.period].label;});
@@ -1015,6 +1138,12 @@ function renderDashboard(){
     cardKpi('Comissao paga','money',money(commissionPaid),'apos aplicar faixa de atingimento','payout estimado','c-rose','p-att'),
     cardKpi('Elegiveis >= 100%','count',String(sellers100),'recebem payout cheio ou acima','faixa cheia','c-teal','p-ok'),
     cardKpi('Share P1 e P2','pct',percent(sharePriority),'receita em produtos estrategicos','orienta foco comercial','c-blue','p-info')
+  ].join(''));
+
+  // KPIs de previsao e provisao — base para envio ao financeiro
+  injectHtml('provisionKpis',[
+    cardKpi('Previsao de receita (mes)','money',money(previsaoReceita),`Atingimento projetado: ${percent(attingProjetado)}`,attingProjetado>=100?'fecha acima da meta':attingProjetado>=80?'dentro do piso':'abaixo do piso','c-teal',attingProjetado>=100?'p-ok':attingProjetado>=80?'p-att':'p-crit'),
+    cardKpi('Provisao de comissao (mes)','money',money(provisaoComissao),`Pool projetado: ${money(provisaoBase)} | Fator: ${payoutLabel(attingProjetado)}`,'custo comercial estimado para o financeiro','c-violet','p-info')
   ].join(''));
 
   injectHtml('attainmentInsights',[

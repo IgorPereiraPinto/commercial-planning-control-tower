@@ -1,5 +1,5 @@
 # Fluxo 2 — Resumo Semanal de Performance
-## Commercial Planning Control Tower — Power Automate
+## Planejamento Comercial — Power Automate
 
 ---
 
@@ -338,7 +338,7 @@ Senão                     → corLinha = "#FDECEA"   (vermelho claro)
 
 <div class="footer">
   Resumo gerado automaticamente às @{formatDateTime(utcNow(), 'HH:mm')} de
-  @{formatDateTime(utcNow(), 'dd/MM/yyyy')} pelo Commercial Planning Control Tower.<br>
+  @{formatDateTime(utcNow(), 'dd/MM/yyyy')} pelo Planejamento Comercial.<br>
   <a href="[URL_DO_DASHBOARD]">Acesse o dashboard completo</a> para drill-down e análise detalhada.
 </div>
 
@@ -379,4 +379,4 @@ E-mail recebido por todos os gerentes toda sexta às 17h com:
 
 ---
 
-*Fluxo 2 de 5 — Commercial Planning Control Tower.*
+*Fluxo 2 de 5 — Planejamento Comercial.*
