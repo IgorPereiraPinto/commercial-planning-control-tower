@@ -17,21 +17,9 @@ O objetivo do projeto não é apenas exibir números. A proposta é transformar 
 
 ## Dashboard principal
 
-Link direto do dashboard:
-
-- [Abrir dashboard principal](dashboards/planejamento_comercial.html)
-- [Abrir portal do projeto](index.html)
-- [GitHub do projeto](https://github.com/IgorPereiraPinto/planejamento-comercial)
-- [GitHub Pages](https://igorpereirapinto.github.io/planejamento-comercial/)
-- [Dashboard publicado](https://igorpereirapinto.github.io/planejamento-comercial/dashboards/planejamento_comercial.html)
-
-Preview do dashboard:
-
-![Dashboard Planejamento Comercial](<docs/assets/Print do dashboard Planejamento Comercial.PNG>)
-
 ## O que o dashboard entrega
 
-O dashboard principal em [dashboards/planejamento_comercial.html](dashboards/planejamento_comercial.html) foi desenhado para ter navegação executiva, fluida e intuitiva para um público que nem sempre tem familiaridade com leitura analítica profunda.
+O dashboard principal em [https://igorpereirapinto.github.io/planejamento-comercial/) foi desenhado para ter navegação executiva, fluida e intuitiva para um público que nem sempre tem familiaridade com leitura analítica profunda.
 
 As abas principais cobrem:
 
