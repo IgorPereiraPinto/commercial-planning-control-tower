@@ -19,7 +19,7 @@ O objetivo do projeto não é apenas exibir números. A proposta é transformar 
 
 ## O que o dashboard entrega
 
-O dashboard principal em [https://igorpereirapinto.github.io/planejamento-comercial/) foi desenhado para ter navegação executiva, fluida e intuitiva para um público que nem sempre tem familiaridade com leitura analítica profunda.
+[O dashboard principal em](https://igorpereirapinto.github.io/planejamento-comercial/) foi desenhado para ter navegação executiva, fluida e intuitiva para um público que nem sempre tem familiaridade com leitura analítica profunda.
 
 As abas principais cobrem:
 
